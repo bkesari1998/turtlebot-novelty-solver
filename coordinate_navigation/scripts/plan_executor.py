@@ -5,7 +5,6 @@ import rospy
 import actionlib
 from actionlib_msgs.msg import GoalStatus
 
-from kobuki_msgs.msg import AutoDockingAction, AutoDockingGoal
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 def assign_goal(pose):
