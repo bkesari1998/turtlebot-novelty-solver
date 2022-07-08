@@ -70,5 +70,5 @@ if __name__ == "__main__":
     try:
         MoveToStart()
     except:
-        rospy.loginfo("MoveToStart failed")
+        rospy.logerr("MoveToStart failed")
 

@@ -43,3 +43,10 @@ class PlanExecutor():
         # Stop the turtlebot
         self.cmd_vel.publish(Twist())
         rospy.sleep()
+
+if __name__ == "__main__":
+    
+    try:
+        PlanExecutor()
+    except:
+        rospy.logerr("PlanExecutor failed")
