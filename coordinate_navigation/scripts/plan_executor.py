@@ -6,34 +6,40 @@ import actionlib
 from actionlib_msgs.msg import GoalStatus
 
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from geometry_msgs.msg import Twist
+from std_srvs.srv import Empty
 
-def assign_goal(pose):
-    goal_pose = MoveBaseGoal()
-    goal_pose.target_pose.header.frame_id = 'map'
-    goal_pose.target_pose.pose.position.x = pose[0][0]
-    goal_pose.target_pose.pose.position.y = pose[0][1]
-    goal_pose.target_pose.pose.position.z = pose[0][2]
-    goal_pose.target_pose.pose.orientation.x = pose[1][0]
-    goal_pose.target_pose.pose.orientation.y = pose[1][1]
-    goal_pose.target_pose.pose.orientation.z = pose[1][2]
-    goal_pose.target_pose.pose.orientation.w = pose[1][3]
+class PlanExecutor():
+    
+    def __init__(self):
 
-    return goal_pose
+        # Initialize node
+        rospy.init_node("move_to_start", anonymous=False)
+        rospy.loginfo("Moving turtlebot to starting position")
+        rospy.on_shutdown(self.shutdown)
 
-if __name__ == "__main__":
-    rospy.init_node('move_tb_to_goal_points')
+        self.cmd_vel = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10) # publisher of Twist msg to robot
+        self.rate = rospy.Rate(1) # publish at 1 Hz
+        
+        rospy.wait_for_service("move_to_start")
+        rospy.wait_for_service("dock")
 
-    # Create SimpleActionClient of a move_base action type and wait for server
-    client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-    client.wait_for_server()
+        try:
+            move_to_start = rospy.ServiceProxy("move_to_start", Empty)
+            response = move_to_start(Empty())
+        except rospy.ServiceException as e:
+            rospy.logerr(e)
+        
+        try:
+            dock = rospy.ServiceProxy("dock", Empty)
+            response = dock(Empty())
+        except rospy.ServiceException as e:
+            rospy.logerr(e)
+    
+    def shutdown(self):
 
-    # for each goal point in the list, call the action server and move to goal
-    for tb_pose in goal_points:
-        tb_goal = assign_goal(tb_pose)
-        client.send_goal(tb_goal)
-        client.wait_for_result()
-
-        if client.get_state() == GoalStatus.SUCCEEDED:
-            rospy.loginfo("success")
-        else:
-            rospy.loginfo("failed")
+        rospy.loginfo("Stopping plan_executor node")
+        
+        # Stop the turtlebot
+        self.cmd_vel.publish(Twist())
+        rospy.sleep()
