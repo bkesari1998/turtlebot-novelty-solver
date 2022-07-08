@@ -13,3 +13,7 @@ if __name__ == "__main__":
     rospy.init_node("auto_dock", anonymous=False)
 
     sub = rospy.Subscriber("/dock", Bool, callback=dock)
+
+    while not rospy.is_shutdown():
+        rospy.spin()
+        
