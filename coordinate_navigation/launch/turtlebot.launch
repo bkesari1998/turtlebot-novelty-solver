@@ -5,4 +5,7 @@
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
     </include> 
     <include file="$(find kobuki_auto_docking)/launch/minimal.launch" />
+    
+    <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
+    <node name="move_to_start" pkg="coordinate_navigation" type="move_to_start.py" />
 </launch>
