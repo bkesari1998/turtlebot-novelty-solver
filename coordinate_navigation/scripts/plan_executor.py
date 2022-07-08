@@ -7,7 +7,7 @@ from actionlib_msgs.msg import GoalStatus
 
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Twist
-from std_srvs.srv import Empty
+from std_srvs.srv import Trigger
 
 class PlanExecutor():
     
@@ -25,14 +25,14 @@ class PlanExecutor():
         rospy.wait_for_service("dock")
 
         try:
-            move_to_start = rospy.ServiceProxy("move_to_start", Empty)
-            response = move_to_start(Empty())
+            move_to_start = rospy.ServiceProxy("move_to_start", Trigger)
+            response = move_to_start()
         except rospy.ServiceException as e:
             rospy.logerr(e)
         
         try:
-            dock = rospy.ServiceProxy("dock", Empty)
-            response = dock(Empty())
+            dock = rospy.ServiceProxy("dock", Trigger)
+            response = dock()
         except rospy.ServiceException as e:
             rospy.logerr(e)
     

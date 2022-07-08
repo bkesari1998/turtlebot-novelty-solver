@@ -8,4 +8,5 @@
     
     <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
     <node name="move_to_start" pkg="coordinate_navigation" type="move_to_start.py" />
+    <node name="plan_executor" pkg="coordinate_navigation" type="plan_executor.py" />
 </launch>
