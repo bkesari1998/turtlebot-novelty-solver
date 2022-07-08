@@ -15,3 +15,6 @@ if __name__ == "__main__":
     rospy.init_node("auto_dock", anonymous=False)
 
     dock_srv = rospy.Service("/dock", Empty, callback=dock)
+
+    while not rospy.is_shutdown():
+        rospy.spin()

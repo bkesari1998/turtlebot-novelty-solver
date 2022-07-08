@@ -18,6 +18,9 @@ class MoveToStart():
 
         self.move_service = rospy.Service("move_to_start", Empty, self.move_to_start) # service to start move commands
 
+        while not rospy.is_shutdown():
+            rospy.spin()
+
     def move_to_start(self):
         
         # reverse and rotate the turtlebot
