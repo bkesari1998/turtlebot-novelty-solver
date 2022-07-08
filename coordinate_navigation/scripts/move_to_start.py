@@ -10,7 +10,7 @@ class MoveToStart():
         
         # Initialize node
         rospy.init_node("move_to_start", anonymous=False)
-        rospy.loginfo("Moving turtlebot to starting position")
+        rospy.loginfo("move_to_start service active")
         rospy.on_shutdown(self.shutdown)
 
         self.cmd_vel = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10) # publisher of Twist msg to robot
@@ -21,17 +21,18 @@ class MoveToStart():
         while not rospy.is_shutdown():
             rospy.spin()
 
-    def move_to_start(self):
+    def move_to_start(self, req):
         
         # reverse and rotate the turtlebot
+        rospy.loginfo("In move_to_start")
         self.reverse()
-        self.rotate()
 
     def reverse(self):
+        rospy.loginfo("In reverse")
 
         # create msg to reverse turtlebot 0.5 m
         move_cmd = Twist()
-        move_cmd.linear.x = -0.5
+        move_cmd.linear.x = 0.5
         move_cmd.angular.z = 0
 
         move_cmd = Twist()
@@ -63,4 +64,12 @@ class MoveToStart():
         
         # Stop the turtlebot
         self.cmd_vel.publish(Twist())
-        rospy.sleep()
+        self.rate.sleep()
+
+
+if __name__ == "__main__":
+    try:
+        MoveToStart()
+    except:
+        rospy.loginfo("MoveToStart failed")
+
