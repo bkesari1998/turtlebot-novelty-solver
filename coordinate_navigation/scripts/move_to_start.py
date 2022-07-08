@@ -32,7 +32,7 @@ class MoveToStart():
 
         # create msg to reverse turtlebot 0.5 m
         move_cmd = Twist()
-        move_cmd.linear.x = 0.5
+        move_cmd.linear.x = 10
         move_cmd.angular.z = 0
 
         move_cmd = Twist()
@@ -48,7 +48,7 @@ class MoveToStart():
         # create msg to rotate turtlebot 1 rad
         move_cmd = Twist()
         move_cmd.linear.x = 0
-        move_cmd.angular.z = 1
+        move_cmd.angular.z = 3.14
 
         # publish msg
         self.cmd_vel.publish(move_cmd)
