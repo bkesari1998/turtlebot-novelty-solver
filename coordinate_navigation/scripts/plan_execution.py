@@ -25,9 +25,6 @@ class PlanExecutor():
         rospy.wait_for_service("move_to_start")
         rospy.wait_for_service("dock")
 
-        self.start_action()
-        self.dock_action()
-
     def start_action(self):
 
         # Call to service
