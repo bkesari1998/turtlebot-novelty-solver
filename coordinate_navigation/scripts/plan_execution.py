@@ -2,11 +2,9 @@
 from waypoints_dict import waypoints
 
 import rospy
-import actionlib
 from actionlib_msgs.msg import GoalStatus
 
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from std_srvs.srv import Trigger
 
 class PlanExecutor():
@@ -16,14 +14,31 @@ class PlanExecutor():
         # Initialize node
         rospy.init_node("move_to_start", anonymous=False)
         rospy.loginfo("Moving turtlebot to starting position")
-        rospy.on_shutdown(self.shutdown)
 
-        self.cmd_vel = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10) # publisher of Twist msg to robot
-        self.rate = rospy.Rate(1) # publish at 1 Hz
-        
+        # Set initial pos
+        self.init_pos = PoseWithCovarianceStamped()
+        self.init_pos.pose.pose.position.x = 13.4004869461
+        self.init_pos.pose.pose.position.y = 18.36510849
+        self.init_pos.pose.pose.position.z = 0.0
+        self.init_pos.pose.pose.orientation.x = 0.0
+        self.init_pos.pose.pose.orientation.y = 0.0
+        self.init_pos.pose.pose.orientation.z = -0.988785192633
+        self.init_pos.pose.pose.orientation.w = 0.149344711419
+        self.init_pos.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, \
+        0.0, 0.25, 0.0, 0.0, 0.0, 0.0, \
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, \
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, \
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, \
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892326654787]
+
+        self.init_pos_pub.publish(self.init_pos)
+        self.rate.sleep()
+
         # Wait for action services
         rospy.wait_for_service("move_to_start")
         rospy.wait_for_service("dock")
+
+        self.start_action()
 
     def start_action(self):
 
