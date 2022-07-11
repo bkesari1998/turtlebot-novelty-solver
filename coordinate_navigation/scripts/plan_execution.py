@@ -16,10 +16,13 @@ class PlanExecutor():
         rospy.loginfo("Moving turtlebot to starting position")
 
         # Declare publisher for initial postion
-        self.init_pos_pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=10)
+        self.init_pos_pub = rospy.Publisher("initialpose", PoseWithCovarianceStamped, queue_size=10)
+        self.rate = rospy.Rate(5) # publish at 5 Hz
 
-        # Set initial pos
+        # Set initial pos   
         self.init_pos = PoseWithCovarianceStamped()
+        self.init_pos.header.frame_id = "map"
+        self.init_pos.header.stamp = rospy.Time.now()
         self.init_pos.pose.pose.position.x = 13.4004869461
         self.init_pos.pose.pose.position.y = 18.36510849
         self.init_pos.pose.pose.position.z = 0.0
@@ -29,8 +32,10 @@ class PlanExecutor():
         self.init_pos.pose.pose.orientation.w = 0.149344711419
         self.init_pos.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892326654787]
 
-        self.init_pos_pub.publish(self.init_pos)
-        self.rate.sleep()
+        while not rospy.is_shutdown():
+                
+            self.init_pos_pub.publish(self.init_pos)
+            self.rate.sleep()
 
         # Wait for action services
         rospy.wait_for_service("move_to_start")
