@@ -22,7 +22,7 @@ class PlanExecutor():
 
         # Subscribe to init_pos_recieved topic
         self.init_pos_flag = False
-        self.init_pos_recieved = rospy.Subscriber("amcl_pos", PoseWithCovarianceStamped, callback=self.init_pos_recieved_handler)
+        self.init_pos_recieved = rospy.Subscriber("amcl_pose", PoseWithCovarianceStamped, callback=self.init_pos_recieved_handler)
 
         # Set initial pos   
         self.init_pos = PoseWithCovarianceStamped()
@@ -46,14 +46,17 @@ class PlanExecutor():
             
             # Publish init_pos until it has been recieved
             self.init_pos_pub.publish(self.init_pos)
+            rospy.loginfo("Publishing initial position")
             self.rate.sleep()
 
         self.start_action()
 
     def init_pos_recieved_handler(self, msg):
-        if msg.pose == self.init_pos.pose:
+        if (msg.pose.pose.position.x >= 12.5 and msg.pose.pose.position.x <= 14.5) and \
+            (msg.pose.pose.position.y >= 17.5 and msg.pose.pose.position.y <= 19.5):
             self.init_pos_flag = True
             self.init_pos_recieved.unregister()
+            rospy.loginfo("Initial position recieved")
 
     def start_action(self):
 
