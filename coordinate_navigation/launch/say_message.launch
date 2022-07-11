@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-    <node name="soundplay_node" pkg="sound_play" type="say.py" args="'Human, please open the door for me'"/>
-</launch>
