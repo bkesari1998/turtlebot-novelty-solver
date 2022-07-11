@@ -21,21 +21,30 @@ class PlanExecutor():
         self.cmd_vel = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=10) # publisher of Twist msg to robot
         self.rate = rospy.Rate(1) # publish at 1 Hz
         
+        # Wait for action services
         rospy.wait_for_service("move_to_start")
         rospy.wait_for_service("dock")
 
+    def start_action(self):
+
+        # Call to service
         try:
             move_to_start = rospy.ServiceProxy("move_to_start", Trigger)
             response = move_to_start()
+            rospy.loginfo(response.message)
         except rospy.ServiceException as e:
             rospy.logerr(e)
         
+    def dock_action(self):
+
+        # Call to service
         try:
             dock = rospy.ServiceProxy("dock", Trigger)
             response = dock()
+            rospy.loginfo(response.message)
         except rospy.ServiceException as e:
             rospy.logerr(e)
-    
+
     def shutdown(self):
 
         rospy.loginfo("Stopping plan_executor node")
