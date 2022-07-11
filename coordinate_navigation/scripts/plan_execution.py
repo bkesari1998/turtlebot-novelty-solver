@@ -51,7 +51,7 @@ class PlanExecutor():
         
         # Stop the turtlebot
         self.cmd_vel.publish(Twist())
-        rospy.sleep()
+        rospy.sleep(1)
 
 if __name__ == "__main__":
     
