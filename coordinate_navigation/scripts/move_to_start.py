@@ -28,7 +28,7 @@ class MoveToStart():
         self.reverse()
         self.rotate()
 
-        return True, "Turtlebot ready"
+        return True, "Turtlebot successfully moved to starting position"
 
     def reverse(self):
 
@@ -43,7 +43,7 @@ class MoveToStart():
 
     def rotate(self):
 
-        # create msg to rotate turtlebot 1 rad
+        # create msg to rotate 180 degrees
         move_cmd = Twist()
         move_cmd.linear.x = 0
         move_cmd.angular.z = 3.1
