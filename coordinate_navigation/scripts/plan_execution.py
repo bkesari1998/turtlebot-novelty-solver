@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from subprocess import call
 from waypoints_dict import waypoints
 
 import rospy
@@ -17,7 +18,11 @@ class PlanExecutor():
 
         # Declare publisher for initial postion
         self.init_pos_pub = rospy.Publisher("initialpose", PoseWithCovarianceStamped, queue_size=10)
-        self.rate = rospy.Rate(5) # publish at 5 Hz
+        self.rate = rospy.Rate(2) # publish at 5 Hz
+
+        # Subscribe to init_pos_recieved topic
+        self.init_pos_flag = False
+        self.init_pos_recieved = rospy.Subscriber("amcl_pos", PoseWithCovarianceStamped, callback=self.init_pos_recieved_handler)
 
         # Set initial pos   
         self.init_pos = PoseWithCovarianceStamped()
@@ -32,16 +37,23 @@ class PlanExecutor():
         self.init_pos.pose.pose.orientation.w = 0.149344711419
         self.init_pos.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892326654787]
 
-        while not rospy.is_shutdown():
-                
-            self.init_pos_pub.publish(self.init_pos)
-            self.rate.sleep()
-
         # Wait for action services
         rospy.wait_for_service("move_to_start")
         rospy.wait_for_service("dock")
 
+
+        while not self.init_pos_recieved:
+            
+            # Publish init_pos until it has been recieved
+            self.init_pos_pub.publish(self.init_pos)
+            self.rate.sleep()
+
         self.start_action()
+
+    def init_pos_recieved_handler(self, msg):
+        if msg.pose == self.init_pos.pose:
+            self.init_pos_flag = True
+            self.init_pos_recieved.unregister()
 
     def start_action(self):
 
