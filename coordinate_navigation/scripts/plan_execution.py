@@ -6,6 +6,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move
+from std_msgs.msg import Float32MultiArray
 
 class PlanExecutor():
     
@@ -51,7 +52,7 @@ class PlanExecutor():
         goal_pose = Move()
         goal_pose.final_pose = waypoints[loc][0]
         goal_pose.final_orientation = waypoints[loc][1]
-        rospy.loginfo(goal_pose)
+        rospy.loginfo(goal_pose.final_pose)
         try:
             move_tb = rospy.ServiceProxy("move", Move)
             response = move_tb(goal_pose)
