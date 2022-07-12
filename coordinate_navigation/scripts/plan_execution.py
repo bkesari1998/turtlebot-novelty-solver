@@ -22,7 +22,9 @@ class PlanExecutor():
         rospy.loginfo("All services running")
 
         self.start_action()
-        self.move_action()
+        self.move_action("lab_door_in")
+        self.move_action("dock_in_view")
+        self.dock_action()
 
     def start_action(self):
 
@@ -44,15 +46,14 @@ class PlanExecutor():
         except rospy.ServiceException as e:
             rospy.logerr(e)
 
-    def move_action(self):
-        rospy.loginfo("In move_action")
+    def move_action(self, loc):
         # Call to service
-        rospy.loginfo("In move_action, after Move object created")
+        goal_pose = Move()
+        goal_pose.final_pose = waypoints[loc][0]
+        goal_pose.final_orientation = waypoints[loc][1]
         try:
-            move_tb = rospy.ServiceProxy("move", Trigger)
-            rospy.loginfo("In move_action, Service proxy created")
-            response = move_tb()
-            rospy.loginfo("In move_action, service called")
+            move_tb = rospy.ServiceProxy("move", Move)
+            response = move_tb(goal_pose)
             rospy.loginfo(response.message)
         except rospy.ServiceException as e:
             rospy.logerr(e)
