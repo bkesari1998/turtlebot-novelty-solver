@@ -22,7 +22,7 @@ class PlanExecutor():
         rospy.loginfo("All services running")
 
         self.start_action()
-        rospy.logdebug(waypoints["lab_door_in"])
+        rospy.loginfo(waypoints["lab_door_in"])
         self.move_action(waypoints["lab_door_in"])
 
     def start_action(self):
@@ -46,7 +46,7 @@ class PlanExecutor():
             rospy.logerr(e)
 
     def move_action(self, goal_pose):
-        rospy.logdebug("In move_action")
+        rospy.loginfo("In move_action")
         # Call to service
         goal = Move()
         goal.final_pose = goal_pose[0]
