@@ -11,6 +11,6 @@
     <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
     <node name="move_to_start" pkg="coordinate_navigation" type="move_to_start.py" />
     <!-- <node name="plan_execution" pkg="coordinate_navigation" type="plan_execution.py" />--> 
-    <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
+    <!-- <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>-->
     <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
 </launch>
