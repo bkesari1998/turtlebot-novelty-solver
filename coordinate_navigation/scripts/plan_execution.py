@@ -51,8 +51,10 @@ class PlanExecutor():
         goal = Move()
         goal.final_pose = goal_pose[0]
         goal.final_orientation = goal_pose[1]
+        rospy.loginfo("In move_action, after Move object created")
         try:
             move_tb = rospy.ServiceProxy("move", Move)
+            rospy.loginfo("In move_action, Service proxy created")
             response = move_tb(goal)
             rospy.loginfo(response.message)
         except rospy.ServiceException as e:
