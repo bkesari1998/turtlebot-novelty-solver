@@ -20,28 +20,30 @@ class MoveTB():
         self.simple_action_client = actionlib.SimpleActionClient("move_base", MoveBaseAction)
         self.simple_action_client.wait_for_server()
 
+        self.goal = [(21.7725623016, 19.14204212, 0), (0, 0, -0.0778055926945, 0.996968550028)]
+
         while not rospy.is_shutdown():
             rospy.spin()
 
-    def assign_goal(self, pose, orientation):
+    def assign_goal(self, pose):
         
         # Create MoveBaseGoal object from input
         goal_pose = MoveBaseGoal()
         goal_pose.target_pose.header.frame_id = 'map'
-        goal_pose.target_pose.pose.position.x = pose[0]
-        goal_pose.target_pose.pose.position.y = pose[1]
-        goal_pose.target_pose.pose.position.z = pose[2]
-        goal_pose.target_pose.pose.orientation.x = orientation[0]
-        goal_pose.target_pose.pose.orientation.y = orientation[1]
-        goal_pose.target_pose.pose.orientation.x = orientation[2]
-        goal_pose.target_pose.pose.orientation.y = orientation[3]
+        goal_pose.target_pose.pose.position.x = pose[0][0]
+        goal_pose.target_pose.pose.position.y = pose[0][1]
+        goal_pose.target_pose.pose.position.z = pose[0][2]
+        goal_pose.target_pose.pose.orientation.x = pose[1][0]
+        goal_pose.target_pose.pose.orientation.y = pose[1][1]
+        goal_pose.target_pose.pose.orientation.x = pose[1][2]
+        goal_pose.target_pose.pose.orientation.y = pose[1][3]
 
         return goal_pose
 
     def move_tb(self, req):
 
         # Assign the turtlebot's goal
-        tb_goal = self.assign_goal(waypoints["lab_door_in"][0], waypoints["lab_door_in"][1])
+        tb_goal = self.assign_goal(self.goal)
         rospy.loginfo("Goal assigned")
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
