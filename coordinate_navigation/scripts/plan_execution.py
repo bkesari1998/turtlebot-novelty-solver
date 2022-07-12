@@ -12,8 +12,7 @@ class PlanExecutor():
     def __init__(self):
 
         # Initialize node
-        rospy.init_node("move_to_start", anonymous=False)
-        rospy.loginfo("Moving turtlebot to starting position")
+        rospy.init_node("plan_executor", anonymous=False)
 
         # Wait for action services
         rospy.wait_for_service("move_to_start")
