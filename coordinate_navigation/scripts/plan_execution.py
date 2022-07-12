@@ -5,6 +5,7 @@ import rospy
 
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Trigger
+from coffee_bot_srvs.srv import Move
 
 class PlanExecutor():
     
@@ -17,8 +18,10 @@ class PlanExecutor():
         # Wait for action services
         rospy.wait_for_service("move_to_start")
         rospy.wait_for_service("dock")
+        rospy.wait_for_service("move_tb")
 
         self.start_action()
+
 
     def start_action(self):
 
@@ -36,6 +39,19 @@ class PlanExecutor():
         try:
             dock = rospy.ServiceProxy("dock", Trigger)
             response = dock()
+            rospy.loginfo(response.message)
+        except rospy.ServiceException as e:
+            rospy.logerr(e)
+
+    def move_action(self, pose, orientation):
+
+        # Call to service
+        goal = Move()
+        goal.final_pose = pose
+        goal.final_orientation = orientation
+        try:
+            move_tb = rospy.ServiceProxy("move_tb", Move)
+            response = move_tb(goal)
             rospy.loginfo(response.message)
         except rospy.ServiceException as e:
             rospy.logerr(e)
