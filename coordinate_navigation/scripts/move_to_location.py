@@ -6,13 +6,15 @@ import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import GoalStatus
 from coffee_bot_srvs.srv import Move
+from std_srvs.srv import Trigger
+from waypoints_dict import waypoints
 
 class MoveTB():
     def __init__(self):
 
         rospy.init_node("move_tb", anonymous=False)
 
-        self.move_tb_srv = rospy.Service("/move", Move, self.move_tb)
+        self.move_tb_srv = rospy.Service("/move", Trigger, self.move_tb)
 
         # Create a SimpleActionClient of a move_base action type and wait for server
         self.simple_action_client = actionlib.SimpleActionClient("move_base", MoveBaseAction)
@@ -39,7 +41,7 @@ class MoveTB():
     def move_tb(self, req):
 
         # Assign the turtlebot's goal
-        tb_goal = self.assign_goal(req.final_pose, req.final_orientation)
+        tb_goal = self.assign_goal(waypoints["lab_door_in"][0], waypoints["lab_door_in"][1])
         rospy.loginfo("Goal assigned")
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
