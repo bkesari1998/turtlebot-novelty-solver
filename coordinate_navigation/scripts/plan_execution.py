@@ -22,6 +22,7 @@ class PlanExecutor():
         rospy.loginfo("All services running")
 
         self.start_action()
+        rospy.logdebug(waypoints["lab_door_in"])
         self.move_action(waypoints["lab_door_in"])
 
     def start_action(self):
