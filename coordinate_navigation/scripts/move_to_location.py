@@ -6,7 +6,6 @@ import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import GoalStatus
 from coffee_bot_srvs.srv import Move
-from std_srvs.srv import Trigger
 
 class MoveTB():
     def __init__(self):
@@ -23,7 +22,6 @@ class MoveTB():
             rospy.spin()
 
     def assign_goal(self, pose, orientation):
-        
         # Create MoveBaseGoal object from input
         goal_pose = MoveBaseGoal()
         goal_pose.target_pose.header.frame_id = 'map'

@@ -24,6 +24,7 @@ class PlanExecutor():
 
         self.start_action()
         self.move_action("lab_door_in")
+        rospy.loginfo("Next goal")
         self.move_action("dock_in_view")
         self.dock_action()
 
@@ -49,13 +50,9 @@ class PlanExecutor():
 
     def move_action(self, loc):
         # Call to service
-        goal_pose = Move()
-        goal_pose.final_pose = waypoints[loc][0]
-        goal_pose.final_orientation = waypoints[loc][1]
-        rospy.loginfo(goal_pose.final_pose)
         try:
             move_tb = rospy.ServiceProxy("move", Move)
-            response = move_tb(goal_pose)
+            response = move_tb(waypoints[loc][0], waypoints[loc][1])
             rospy.loginfo(response.message)
         except rospy.ServiceException as e:
             rospy.logerr(e)
