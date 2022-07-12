@@ -19,6 +19,8 @@ class PlanExecutor():
         rospy.wait_for_service("dock")
         rospy.wait_for_service("move")
 
+        rospy.loginfo("All services running")
+
         self.start_action()
         self.move_action(waypoints["lab_door_in"])
 
@@ -43,7 +45,7 @@ class PlanExecutor():
             rospy.logerr(e)
 
     def move_action(self, goal_pose):
-
+        rospy.logdebug("In move_action")
         # Call to service
         goal = Move()
         goal.final_pose = goal_pose[0]
