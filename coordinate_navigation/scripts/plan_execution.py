@@ -50,7 +50,7 @@ class PlanExecutor():
         goal.final_pose = goal_pose[0]
         goal.final_orientation = goal_pose[1]
         try:
-            move_tb = rospy.ServiceProxy("move_tb", Move)
+            move_tb = rospy.ServiceProxy("move", Move)
             response = move_tb(goal)
             rospy.loginfo(response.message)
         except rospy.ServiceException as e:
