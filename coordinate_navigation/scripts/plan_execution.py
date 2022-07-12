@@ -12,7 +12,7 @@ class PlanExecutor():
     def __init__(self):
 
         # Initialize node
-        rospy.init_node("plan_executor", anonymous=False)
+        rospy.init_node("plan_execution", anonymous=False)
 
         # Wait for action services
         rospy.wait_for_service("move_to_start")
