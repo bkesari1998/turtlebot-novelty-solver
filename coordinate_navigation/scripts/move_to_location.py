@@ -47,3 +47,9 @@ class MoveTB():
             return True, "Turtlebot successfully navigated to goal position"
         else:
             return False, "Turtlebot unable to navigate to goal position"
+
+if __name__ == "__main__":
+    try:
+        MoveTB()
+    except:
+        rospy.logerr("MoveTB failed")
