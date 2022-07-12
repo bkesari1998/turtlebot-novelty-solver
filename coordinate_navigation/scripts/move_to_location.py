@@ -36,7 +36,7 @@ class MoveTB():
         goal_pose.target_pose.pose.orientation.x = pose[1][0]
         goal_pose.target_pose.pose.orientation.y = pose[1][1]
         goal_pose.target_pose.pose.orientation.z = pose[1][2]
-        goal_pose.target_pose.pose.orientation.y = pose[1][3]
+        goal_pose.target_pose.pose.orientation.w = pose[1][3]
 
         return goal_pose
 
