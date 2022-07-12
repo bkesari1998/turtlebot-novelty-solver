@@ -18,7 +18,7 @@ class PlanExecutor():
         # Wait for action services
         rospy.wait_for_service("move_to_start")
         rospy.wait_for_service("dock")
-        rospy.wait_for_service("move_tb")
+        rospy.wait_for_service("move")
 
         self.start_action()
         self.move_action(waypoints["lab_door_in"])
