@@ -40,7 +40,7 @@ class MoveTB():
     def move_tb(self, req):
 
         # Assign the turtlebot's goal
-        tb_goal = self.assign_goal(self.goal.final_pose, self.goal.final_orientation)
+        tb_goal = self.assign_goal(self.req.final_pose, self.req.final_orientation)
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
 
