@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-from subprocess import call
 from waypoints_dict import waypoints
 
 import rospy
-from actionlib_msgs.msg import GoalStatus
 
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Trigger
@@ -21,13 +19,6 @@ class PlanExecutor():
         rospy.wait_for_service("dock")
 
         self.start_action()
-
-    def init_pos_recieved_handler(self, msg):
-        if (msg.pose.pose.position.x >= 12.5 and msg.pose.pose.position.x <= 14.5) and \
-            (msg.pose.pose.position.y >= 17.5 and msg.pose.pose.position.y <= 19.5):
-            self.init_pos_flag = True
-            self.init_pos_recieved.unregister()
-            rospy.loginfo("Initial position recieved")
 
     def start_action(self):
 

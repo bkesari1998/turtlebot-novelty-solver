@@ -1,0 +1,7 @@
+float32[] init_pose
+float32[] init_orientation
+float32[] final_pose
+float32[] final_orientation
+---
+bool success
+string message

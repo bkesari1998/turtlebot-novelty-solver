@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(coordinate_navigation)
+project(coffee_bot_srvs)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,12 +8,8 @@ project(coordinate_navigation)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  actionlib
-  move_base_msgs
-  roscpp
-  rospy
+  message_generation
   std_msgs
-  coffee_bot_srvs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -42,7 +38,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## * In this file (CMakeLists.txt):
 ##   * add "message_generation" and every package in MSG_DEP_SET to
 ##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * add "message_runtime" and every package in MSG_DEP_SET to
+##   * add "message_coffee_bot_srvs.srv import Moveruntime" and every package in MSG_DEP_SET to
 ##     catkin_package(CATKIN_DEPENDS ...)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
@@ -57,11 +53,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  Move.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -71,10 +66,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   move_base_msgs#   std_msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -107,8 +102,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES coordinate_navigation
-#  CATKIN_DEPENDS actionlib move_base_msgs roscpp rospy std_msgs
+#  LIBRARIES coffee_bot_srvs
+#  CATKIN_DEPENDS std_msgs
 #  DEPENDS system_lib
 )
 
@@ -125,7 +120,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/coordinate_navigation.cpp
+#   src/${PROJECT_NAME}/coffee_bot_srvs.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -136,7 +131,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/coordinate_navigation_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/coffee_bot_srvs_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -200,7 +195,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_coordinate_navigation.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_coffee_bot_srvs.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
