@@ -21,7 +21,7 @@ class MoveToStart():
         self.rate = rospy.Rate(10)
 
         # Initialize service
-        self.move_to_start_srv = rospy.Service("move_to_start", Trigger, self.move_to_start) # service to start move commands
+        self.move_to_start_srv = rospy.Service("move_to_start", Trigger, self.move_to_start)
         rospy.loginfo("move_to_start service active")
 
         while not rospy.is_shutdown():
@@ -79,10 +79,11 @@ class MoveToStart():
         '''
  
         rospy.loginfo("Stopping move_to_start node")
-        
+        rospy.loginfo("Stopping turtlebot")
+
         # Stop the turtlebot
         self.cmd_vel.publish(Twist())
-        self.rate.sleep()
+        rospy.sleep(1)
 
 
 if __name__ == "__main__":

@@ -76,10 +76,11 @@ class MoveTB():
         '''
         
         rospy.loginfo("Stopping move_tb node")
+        rospy.loginfo("Stopping turtlebot")
         
         # Stop the turtlebot
         self.cmd_vel.publish(Twist())
-        self.rate.sleep()
+        rospy.sleep(1)
 
 if __name__ == "__main__":
     try:

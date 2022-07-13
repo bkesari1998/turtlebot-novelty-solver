@@ -6,7 +6,6 @@ import rospy
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move
-from std_msgs.msg import Float32MultiArray
 
 class PlanExecutor():
     
@@ -14,17 +13,21 @@ class PlanExecutor():
 
         # Initialize node
         rospy.init_node("plan_execution", anonymous=False)
+        rospy.loginfo("plan_execution node active")
+
 
         # Wait for action services
+        rospy.loginfo("Waiting for move_to_start service")
         rospy.wait_for_service("move_to_start")
+        rospy.loginfo("Waiting for dock service")
         rospy.wait_for_service("dock")
+        rospy.loginfo("Waiting for move service")
         rospy.wait_for_service("move")
 
         rospy.loginfo("All services running")
 
         self.start_action()
         self.move_action("lab_door_in")
-        rospy.loginfo("Next goal")
         self.move_action("dock_in_view")
         self.dock_action()
 
