@@ -6,23 +6,33 @@ from std_srvs.srv import Trigger
 
 
 class MoveToStart():
-    
     def __init__(self):
+        '''
+        Initializes move_to_start ROS node
+        '''
         
         # Initialize node
         rospy.init_node("move_to_start", anonymous=False)
         rospy.loginfo("move_to_start service active")
         rospy.on_shutdown(self.shutdown)
 
-        self.cmd_vel = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=10) # publisher of Twist msg to robot
-        self.rate = rospy.Rate(10) # publish at 1 Hz
+        # Velocity command publisher
+        self.cmd_vel = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=10) 
+        self.rate = rospy.Rate(10)
 
-        self.move_service = rospy.Service("move_to_start", Trigger, self.move_to_start) # service to start move commands
+        # Initialize service
+        self.move_to_start_srv = rospy.Service("move_to_start", Trigger, self.move_to_start) # service to start move commands
+        rospy.loginfo("move_to_start service active")
 
         while not rospy.is_shutdown():
             rospy.spin()
 
     def move_to_start(self, req):
+        '''
+        Service handler. Calls functions to reverse and rotate the tb.
+        req: Trigger object
+        returns: Service response
+        '''
 
         # reverse and rotate the turtlebot
         self.reverse()
@@ -31,8 +41,11 @@ class MoveToStart():
         return True, "Turtlebot successfully moved to starting position"
 
     def reverse(self):
+        '''
+        Publishes Twist messages to revese the turtlebot.
+        '''
 
-        # create msg to reverse turtlebot 0.5 m
+        # create msg to reverse turtlebot
         move_cmd = Twist()
         move_cmd.linear.x = -0.2
         move_cmd.angular.z = 0
@@ -42,8 +55,11 @@ class MoveToStart():
             self.rate.sleep()
 
     def rotate(self):
+        '''
+        Publishes Twist messages to rotate the turtlebot.
+        '''
 
-        # create msg to rotate 180 degrees
+        # create msg to rotate turtlebot
         move_cmd = Twist()
         move_cmd.linear.x = 0
         move_cmd.angular.z = 3.1
@@ -58,6 +74,9 @@ class MoveToStart():
         self.rate.sleep()
 
     def shutdown(self):
+        '''
+        Called on node shutdown.
+        '''
  
         rospy.loginfo("Stopping move_to_start node")
         
