@@ -23,6 +23,8 @@ class PlanExecutor():
         rospy.wait_for_service("dock")
         rospy.loginfo("Waiting for move service")
         rospy.wait_for_service("move")
+        rospy.loginfo("Waiting for amcl")
+        rospy.wait_for_message("/initialpose")
 
         rospy.loginfo("All services running")
 
