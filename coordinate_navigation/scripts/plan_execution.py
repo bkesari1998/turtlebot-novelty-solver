@@ -3,7 +3,7 @@ from waypoints_dict import waypoints
 
 import rospy
 
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move
 
@@ -24,7 +24,7 @@ class PlanExecutor():
         rospy.loginfo("Waiting for move service")
         rospy.wait_for_service("move")
         rospy.loginfo("Waiting for amcl")
-        rospy.wait_for_message("/initialpose")
+        rospy.wait_for_message("amcl_pose", PoseWithCovarianceStamped, timeout=10)
 
         rospy.loginfo("All services running")
 
