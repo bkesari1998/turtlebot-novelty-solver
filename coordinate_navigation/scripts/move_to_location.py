@@ -1,6 +1,5 @@
 #!/usr/bin/env python 
 
-from http import client
 import rospy
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
