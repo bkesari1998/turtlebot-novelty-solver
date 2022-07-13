@@ -8,7 +8,7 @@ from std_srvs.srv import Trigger
 class MoveToStart():
     def __init__(self):
         '''
-        Initializes move_to_start ROS node
+        Initializes move_to_start ROS node.
         '''
         
         # Initialize node
