@@ -36,7 +36,7 @@ class MoveToStart():
 
         # reverse and rotate the turtlebot
         self.reverse()
-        self.rotate()
+        # self.rotate()
 
         return True, "Turtlebot successfully moved to starting position"
 

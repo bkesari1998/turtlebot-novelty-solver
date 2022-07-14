@@ -1,15 +1,19 @@
 #!/usr/bin/env python
-from pydoc import _OldStyleClass
 from waypoints_dict import waypoints
+from world_state import *
 
 import rospy
 
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
-from apriltag_ros.msg import AprilTagDetectionArray
 from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move, Plan
 
 class PlanExecutor():
+
+    global agents
+    global doors
+    global rooms
+    global desks
     
     def __init__(self):
 
@@ -47,25 +51,21 @@ class PlanExecutor():
             action = action.split()
 
             if action[0] == 'approach_door':
-                if action[2] == 'lab':
-                    self.move_action('lab_door_in')
-                else:
-                    self.move_action('lab_door_out')
-
-            elif action[0] == 'open_door':
-                pass
+                self.approach_door(action)
+            # elif action[0] == 'open_door':
+                # pass
             elif action[0] == 'exit_room':
-                pass
-            elif action[0] == 'approach_desk':
-                pass
-            elif action[0] == 'make_coffee':
-                pass
+                self.exit_room(action)
+            # elif action[0] == 'approach_desk':
+                # pass
+            # elif action[0] == 'make_coffee':
+                # pass
             elif action[0] == 'approach_desk_refill':
-                pass
-            elif action[0] == 'refill':
-                pass
-            elif action[0] == 'approach_charger':
-                pass
+                self.approach_desk_refill(action)
+            # elif action[0] == 'refill':
+                # pass
+            # elif action[0] == 'approach_charger':
+                # pass
             elif action[0] == 'dock':
                 pass
             elif action[0] == 'undock':
@@ -73,7 +73,118 @@ class PlanExecutor():
             elif action[0] == 'charge':
                 pass
 
-            
+    def approach_door(self, action):
+    
+        door = action[1]
+        room1 = action[2]
+        room2 = action[3]
+
+        # Precondition checking
+        if (doors.has_key(door) and 
+        room1 in door["connect"] and room2 in door["connect"] and 
+        agents["turtlebot"]["at"] == room1 and 
+        not self.turtlebot["docked"]):
+
+            # Call move action
+            status = self.move_action(door + "_" + room1)
+
+            # Update world state
+            if status:
+                agents["turtlebot"]["facing"] = door
+
+            # Return status
+            return status
+
+        return False
+
+    def exit_room(self, action):
+
+        room1 = action[1]
+        room2 = action[2]
+        door = action[3]
+
+        # Precondition checking
+        if doors.has_key(door):
+            if ( room1 in doors[door]["connect"] and room2 in doors[door]["connect"] and
+            agents["turtlebot"]["at"] == room1 and
+            doors[door]["open"]):
+
+                # Call move action
+                status = self.move_action(door + "_" + room2)
+
+                # Update world state
+                if status:
+                    agents["turtlebot"]["at"] == room2
+                
+                return status
+
+        return False
+
+    def approach_desk_refill(self, action):
+
+        room1 = action[1]
+        desk1 = action[2]
+
+        # Precondition checking
+        if (rooms.has_key(room1) and 
+        desks.has_key(desk1)):
+            if (desks[desk1]["in"] == room1 and 
+            agents["turtlebot"]["at"] == room1 and
+            not agents["turtlebot"]["docked"]):
+
+                # Call move action
+                status = self.move_action(desk1)
+
+                # Update world state
+                if status:
+                    agents["turtlebot"]["facing"] == desk1
+                
+                return status
+
+        return False
+
+    def dock(self, action):
+
+        room1 = action[1]
+        charger1 = action[2]
+
+        # Precondition checking
+        if (rooms.has_key(room1) and 
+        chargers.has_key(charger1)):
+            if (agents["turtlebot"]["facing"] == "charger_1" and
+            agents["turtlebot"]["at"] == room1 and 
+            chargers[charger1]["inside"] == room1):
+
+                status = self.dock_action()
+
+                if status:
+                    agents["turtlebot"]["docked"] == True
+                    agents["turtlebot"]["facing"] == charger1
+
+                return status
+
+        return False
+
+    def undock(self, action):
+
+        room1 = action[1]
+        charger1 = action[2]
+
+        if (rooms.has_key(room1) and 
+        chargers.has_key(charger1)):
+            if (agents["turtlebot"]["facing"] == "charger_1" and
+            agents["turtlebot"]["at"] == room1 and 
+            chargers[charger1]["inside"] == room1):
+
+                status = self.dock_action()
+
+                if status:
+                    agents["turtlebot"]["docked"] == False
+                    agents["turtlebot"]["facing"] == charger1
+
+                return status
+    
+        return False
 
     def start_action(self):
 
@@ -95,6 +206,8 @@ class PlanExecutor():
         except rospy.ServiceException as e:
             rospy.logerr(e)
 
+        return response.success
+
     def open_door_action(self):
 
         # Call to service
@@ -113,6 +226,8 @@ class PlanExecutor():
             rospy.loginfo(response.message)
         except rospy.ServiceException as e:
             rospy.logerr(e)
+
+            return response.success
 
     def shutdown(self):
 
