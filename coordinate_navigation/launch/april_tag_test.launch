@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+    <include file="$(find turtlebot_bringup)/launch/3d_sensor.launch" />
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
         <arg name="initial_pose_x" value="16.0213336815" />
