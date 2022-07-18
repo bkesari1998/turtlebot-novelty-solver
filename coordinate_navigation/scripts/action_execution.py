@@ -224,6 +224,7 @@ class PlanExecutor():
             world_state.chargers[charger1]["inside"] == room1):
 
                 status = self.undock_action()
+                rospy.loginfo(status)
 
                 if status:
                     world_state.agents["turtlebot"]["docked"] == False
