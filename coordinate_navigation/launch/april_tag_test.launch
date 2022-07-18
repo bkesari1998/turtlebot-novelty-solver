@@ -3,6 +3,7 @@
     <include file="$(find turtlebot_bringup)/launch/3dsensor.launch" />
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="/camera/rgb" />
+        <arg name="image_topic" value="image_rect_color" />
     </include>
     <!--<node pkg="tf2_ros" type="static_transform_publisher" name="at0_broadcaster" args="23.2069091797 18.1104278564 0 0 0.1246747 0.9921977 map at0" /> -->
 </launch>
