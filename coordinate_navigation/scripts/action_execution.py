@@ -228,6 +228,7 @@ class PlanExecutor():
 
                 return status
     
+        rospy.loginfo("returning false")
         return False
     
     def approach_charger(self, action):
