@@ -109,11 +109,11 @@ class PlanExecutor():
             status = self.move_action(door + "_" + room1)
 
             # Update world state
-            if status:
+            if status.success:
                 world_state.agents["turtlebot"]["facing"] = door
 
             # Return status
-            return status
+            return status.success
 
         return False
 
@@ -140,10 +140,14 @@ class PlanExecutor():
                 status = self.move_action(door + "_" + room2)
 
                 # Update world state
-                if status:
+                if status.success:
                     world_state.agents["turtlebot"]["at"] == room2
                 
-                return status
+                return status.success
+            
+        return False
+
+    def approach_desk_refill(self, action):
         '''
         approach_desk_refill action executor, checks pre and post conditions of action.
         Calls move_action to move the turtlebot.
@@ -165,10 +169,10 @@ class PlanExecutor():
                 status = self.move_action(desk1)
 
                 # Update world state
-                if status:
+                if status.success:
                     world_state.agents["turtlebot"]["facing"] == desk1
                 
-                return status
+                return status.success
 
         return False
 
@@ -193,11 +197,11 @@ class PlanExecutor():
 
                 status = self.dock_action()
 
-                if status:
+                if status.success:
                     world_state.agents["turtlebot"]["docked"] == True
                     world_state.agents["turtlebot"]["facing"] == charger1
 
-                return status
+                return status.success
 
         return False
 
@@ -224,12 +228,12 @@ class PlanExecutor():
 
                 status = self.undock_action()
 
-                if status:
+                if status.success:
                     world_state.agents["turtlebot"]["docked"] == False
                     world_state.agents["turtlebot"]["facing"] == charger1
 
                 rospy.loginfo("docked: " + world_state.agents["turtlebot"]["docked"])
-                return status
+                return status.success
     
         return False
     
@@ -252,10 +256,10 @@ class PlanExecutor():
 
                 status = self.move_action("dock_approach")
 
-                if status:
+                if status.success:
                     world_state.agents["turtlebot"]["facing"] == charger1
 
-                return status
+                return status.success
                 
             return False
 
