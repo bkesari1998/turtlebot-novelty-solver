@@ -11,7 +11,7 @@
     </include> 
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="/camera/rgb" />
-        <arg name="image_topic" value="image_rect_color" />
+        <arg name="image_topic" value="image_raw_color" />
     </include>
     <include file="$(find kobuki_auto_docking)/launch/minimal.launch" />
     <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
