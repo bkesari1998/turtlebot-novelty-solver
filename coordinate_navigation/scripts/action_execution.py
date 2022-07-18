@@ -213,6 +213,8 @@ class PlanExecutor():
         room1 = action[1]
         charger1 = action[2]
 
+        rospy.loginfo("In undock")
+
         if (world_state.rooms.has_key(room1) and 
         world_state.chargers.has_key(charger1)):
             rospy.loginfo("has keys")
