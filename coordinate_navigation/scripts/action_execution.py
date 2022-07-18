@@ -197,11 +197,11 @@ class PlanExecutor():
 
                 status = self.dock_action()
 
-                if status.success:
+                if status:
                     world_state.agents["turtlebot"]["docked"] == True
                     world_state.agents["turtlebot"]["facing"] == charger1
 
-                return status.success
+                return status
 
         return False
 
@@ -226,6 +226,7 @@ class PlanExecutor():
             world_state.agents["turtlebot"]["at"] == room1 and 
             world_state.chargers[charger1]["inside"] == room1):
 
+                rospy.loginfo("calling undock action")
                 status = self.undock_action()
 
                 rospy.loginfo(status.success)
@@ -277,8 +278,14 @@ class PlanExecutor():
             move_to_start = rospy.ServiceProxy("undock", Trigger)
             response = move_to_start()
             rospy.loginfo(response.message)
+            if response.success:
+                return True
+            
+            return False
         except rospy.ServiceException as e:
             rospy.logerr(e)
+        
+        return False
         
     def dock_action(self):
 
@@ -292,10 +299,13 @@ class PlanExecutor():
             dock = rospy.ServiceProxy("dock", Trigger)
             response = dock()
             rospy.loginfo(response.message)
+            if response.success:
+                return True
         except rospy.ServiceException as e:
             rospy.logerr(e)
 
-        return response.success
+        return False
+
 
     def open_door_action(self):
 
@@ -309,8 +319,12 @@ class PlanExecutor():
             open_door = rospy.ServiceProxy("open_door", Trigger)
             response = open_door()
             rospy.loginfo(response.message)
+            if response.success:
+                return True
         except rospy.ServiceException as e:
             rospy.logerr(e)
+        
+        return False
 
     def move_action(self, loc):
 
@@ -324,10 +338,12 @@ class PlanExecutor():
             move_tb = rospy.ServiceProxy("move", Move)
             response = move_tb(waypoints[loc][0], waypoints[loc][1])
             rospy.loginfo(response.message)
+            if response.success:
+                return True
         except rospy.ServiceException as e:
             rospy.logerr(e)
 
-            return response.success
+        return False
 
     def move_forward_point_five(self):
 
