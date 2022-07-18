@@ -245,6 +245,8 @@ class PlanExecutor():
         action: list of strings expressing the pddl approach door action
         returns: boolean representing success/failure of action
         '''
+
+        rospy.loginfo("In approach charger")
         
         room1 = action[1]
         charger1 = action[2]
@@ -253,6 +255,8 @@ class PlanExecutor():
         world_state.chargers.has_key(charger1)):
             if (world_state.agents["turtlebot"]["at"] == room1 and 
             world_state.chargers[charger1]["inside"] == room1):
+
+                rospy.loginfo("passed approach_charger if statement")
 
                 status = self.move_action("dock_approach")
 
