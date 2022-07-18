@@ -66,6 +66,13 @@
   <exec_depend>std_msgs</exec_depend>
   <depend>std_srvs</depend>
   <depend>coffee_bot_srvs</depend>
+  <depend>amcl</depend>
+  <depend>turtlebot_bringup</depend>
+  <depend>turtlebot_navigation</depend>
+  <depend>kobuki_auto_docking</depend>
+  <depend>sound_play</depend>
+  <depend>tf2_ros</depend>
+  <depend>apriltag_ros</depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
