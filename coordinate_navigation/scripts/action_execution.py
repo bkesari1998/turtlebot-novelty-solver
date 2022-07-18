@@ -1,4 +1,3 @@
-# test
 #!/usr/bin/env python
 import math
 from waypoints_dict import waypoints
