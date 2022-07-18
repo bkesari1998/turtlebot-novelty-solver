@@ -9,13 +9,15 @@
         <arg name="initial_pose_y" value="20.7888399585" />
         <arg name="initial_pose_a" value="1.3877" />
     </include> 
-    <include file="$(find apriltag_ros/launch/continuous_detection.launch" />
+    <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
+        <arg name="camera_name" value="/camera/rgb" />
+        <arg name="image_topic" value="image_rect_color" />
+    </include>
     <include file="$(find kobuki_auto_docking)/launch/minimal.launch" />
-    
     <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
     <node name="move_to_start" pkg="coordinate_navigation" type="move_to_start.py" />
-    <node name="plan_execution" pkg="coordinate_navigation" type="plan_execution.py" /> 
+    <node name="action_execution" pkg="coordinate_navigation" type="action_execution.py" /> 
     <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
     <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at0_broadcaster" args="23.2069091797 18.1104278564 0 0 .25 map at0" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="at0_broadcaster" args="23.2069091797 18.1104278564 0 0 0.1246747 0.9921977 map at0" />
 </launch>
