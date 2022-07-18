@@ -46,3 +46,4 @@ if __name__ == '__main__':
 
     # Subscribe to april tag detector topic
     tag_detections = rospy.Subscriber("tag_detection", AprilTagDetectionArray, callback=tag_detections_handler)
+    
