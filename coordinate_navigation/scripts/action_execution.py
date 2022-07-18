@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import math
 from waypoints_dict import waypoints
-from world_state import *
+import world_state
 
 import rospy
 
@@ -11,11 +11,6 @@ from coffee_bot_srvs.srv import Move, Plan
 
 class PlanExecutor():
 
-    global agents
-    global doors
-    global rooms
-    global desks
-    
     def __init__(self):
 
         '''
@@ -105,17 +100,17 @@ class PlanExecutor():
         room2 = action[3]
 
         # Precondition checking
-        if (doors.has_key(door) and 
-        room1 in door["connect"] and room2 in door["connect"] and 
-        agents["turtlebot"]["at"] == room1 and 
-        not self.turtlebot["docked"]):
+        if (world_state.doors.has_key(door) and 
+        room1 in world_state.doors[door]["connect"] and room2 in world_state.doors[door]["connect"] and 
+        world_state.agents["turtlebot"]["at"] == room1 and 
+        not world_state.agents["turtlebot"]["docked"]):
 
             # Call move action
             status = self.move_action(door + "_" + room1)
 
             # Update world state
             if status:
-                agents["turtlebot"]["facing"] = door
+                world_state.agents["turtlebot"]["facing"] = door
 
             # Return status
             return status
@@ -136,17 +131,17 @@ class PlanExecutor():
         door = action[3]
 
         # Precondition checking
-        if doors.has_key(door):
-            if ( room1 in doors[door]["connect"] and room2 in doors[door]["connect"] and
-            agents["turtlebot"]["at"] == room1 and
-            doors[door]["open"]):
+        if world_state.doors.has_key(door):
+            if ( room1 in world_state.doors[door]["connect"] and room2 in world_state.doors[door]["connect"] and
+            world_state.agents["turtlebot"]["at"] == room1 and
+            world_state.doors[door]["open"]):
 
                 # Call move action
                 status = self.move_action(door + "_" + room2)
 
                 # Update world state
                 if status:
-                    agents["turtlebot"]["at"] == room2
+                    world_state.agents["turtlebot"]["at"] == room2
                 
                 return status
         '''
@@ -160,18 +155,18 @@ class PlanExecutor():
         desk1 = action[2]
 
         # Precondition checking
-        if (rooms.has_key(room1) and 
-        desks.has_key(desk1)):
-            if (desks[desk1]["in"] == room1 and 
-            agents["turtlebot"]["at"] == room1 and
-            not agents["turtlebot"]["docked"]):
+        if (world_state.rooms.has_key(room1) and 
+        world_state.desks.has_key(desk1)):
+            if (world_state.desks[desk1]["in"] == room1 and 
+            world_state.agents["turtlebot"]["at"] == room1 and
+            not world_state.agents["turtlebot"]["docked"]):
 
                 # Call move action
                 status = self.move_action(desk1)
 
                 # Update world state
                 if status:
-                    agents["turtlebot"]["facing"] == desk1
+                    world_state.agents["turtlebot"]["facing"] == desk1
                 
                 return status
 
@@ -190,17 +185,17 @@ class PlanExecutor():
         charger1 = action[2]
 
         # Precondition checking
-        if (rooms.has_key(room1) and 
-        chargers.has_key(charger1)):
-            if (agents["turtlebot"]["facing"] == "charger_1" and
-            agents["turtlebot"]["at"] == room1 and 
-            chargers[charger1]["inside"] == room1):
+        if (world_state.rooms.has_key(room1) and 
+        world_state.chargers.has_key(charger1)):
+            if (world_state.agents["turtlebot"]["facing"] == "charger_1" and
+            world_state.agents["turtlebot"]["at"] == room1 and 
+            world_state.chargers[charger1]["inside"] == room1):
 
                 status = self.dock_action()
 
                 if status:
-                    agents["turtlebot"]["docked"] == True
-                    agents["turtlebot"]["facing"] == charger1
+                    world_state.agents["turtlebot"]["docked"] == True
+                    world_state.agents["turtlebot"]["facing"] == charger1
 
                 return status
 
@@ -218,17 +213,17 @@ class PlanExecutor():
         room1 = action[1]
         charger1 = action[2]
 
-        if (rooms.has_key(room1) and 
-        chargers.has_key(charger1)):
-            if (agents["turtlebot"]["facing"] == "charger_1" and
-            agents["turtlebot"]["at"] == room1 and 
-            chargers[charger1]["inside"] == room1):
+        if (world_state.rooms.has_key(room1) and 
+        world_state.chargers.has_key(charger1)):
+            if (world_state.agents["turtlebot"]["facing"] == "charger_1" and
+            world_state.agents["turtlebot"]["at"] == room1 and 
+            world_state.chargers[charger1]["inside"] == room1):
 
                 status = self.undock_action()
 
                 if status:
-                    agents["turtlebot"]["docked"] == False
-                    agents["turtlebot"]["facing"] == charger1
+                    world_state.agents["turtlebot"]["docked"] == False
+                    world_state.agents["turtlebot"]["facing"] == charger1
 
                 return status
     
@@ -246,15 +241,15 @@ class PlanExecutor():
         room1 = action[1]
         charger1 = action[2]
 
-        if (rooms.has_key(room1) and 
-        chargers.has_key(charger1)):
-            if (agents["turtlebot"]["at"] == room1 and 
-            chargers[charger1]["inside"] == room1):
+        if (world_state.rooms.has_key(room1) and 
+        world_state.chargers.has_key(charger1)):
+            if (world_state.agents["turtlebot"]["at"] == room1 and 
+            world_state.chargers[charger1]["inside"] == room1):
 
                 status = self.move_action("dock_approach")
 
                 if status:
-                    agents["turtlebot"]["facing"] == charger1
+                    world_state.agents["turtlebot"]["facing"] == charger1
 
                 return status
                 
