@@ -41,10 +41,10 @@ class PlanExecutor():
 
         rospy.loginfo("All services running")
 
-        self.undock(["lab", "charger_1"])
-        self.approach_door(["lab_door", "lab", "kitchen"])
-        self.approach_charger(["lab", "charger_1"])
-        self.dock(["lab", "charger_1"])
+        self.undock(["undock", "lab", "charger_1"])
+        self.approach_door(["approach_door", "lab_door", "lab", "kitchen"])
+        self.approach_charger(["approach_charger", "lab", "charger_1"])
+        self.dock(["dock","lab", "charger_1"])
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -228,9 +228,9 @@ class PlanExecutor():
                     world_state.agents["turtlebot"]["docked"] == False
                     world_state.agents["turtlebot"]["facing"] == charger1
 
+                rospy.loginfo("docked: " + world_state.agents["turtlebot"]["docked"])
                 return status
     
-        rospy.loginfo("returning false")
         return False
     
     def approach_charger(self, action):
