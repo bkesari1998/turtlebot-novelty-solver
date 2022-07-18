@@ -1,6 +1,3 @@
-from this import d
-
-
 global agents
 agents = {
     "turtlebot": {"at": "lab", "facing": "charger_1", "docked": True}
