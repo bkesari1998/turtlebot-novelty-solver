@@ -232,7 +232,7 @@ class PlanExecutor():
                     world_state.agents["turtlebot"]["facing"] = charger1
 
                 rospy.loginfo("out of if statement")
-                rospy.loginfo("docked: " + world_state.agents["turtlebot"]["docked"])
+                rospy.loginfo(world_state.agents["turtlebot"]["docked"])
                 return status
     
         return False
