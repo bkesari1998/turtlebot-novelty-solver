@@ -228,6 +228,7 @@ class PlanExecutor():
 
                 if status:
                     rospy.loginfo("In if statement")
+                    global world_state
                     world_state.agents["turtlebot"]["docked"] == False
                     world_state.agents["turtlebot"]["facing"] == charger1
 
