@@ -228,6 +228,8 @@ class PlanExecutor():
 
                 status = self.undock_action()
 
+                rospy.loginfo(status.success)
+
                 if status.success:
                     world_state.agents["turtlebot"]["docked"] == False
                     world_state.agents["turtlebot"]["facing"] == charger1
