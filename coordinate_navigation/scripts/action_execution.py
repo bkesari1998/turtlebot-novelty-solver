@@ -109,11 +109,11 @@ class PlanExecutor():
             status = self.move_action(door + "_" + room1)
 
             # Update world state
-            if status.success:
+            if status:
                 world_state.agents["turtlebot"]["facing"] = door
 
             # Return status
-            return status.success
+            return status
 
         return False
 
@@ -172,7 +172,7 @@ class PlanExecutor():
                 if status.success:
                     world_state.agents["turtlebot"]["facing"] == desk1
                 
-                return status.success
+                return status.successa
 
         return False
 
