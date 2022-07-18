@@ -215,6 +215,7 @@ class PlanExecutor():
 
         if (world_state.rooms.has_key(room1) and 
         world_state.chargers.has_key(charger1)):
+            rospy.loginfo("has keys")
             if (world_state.agents["turtlebot"]["facing"] == "charger_1" and
             world_state.agents["turtlebot"]["at"] == room1 and 
             world_state.chargers[charger1]["inside"] == room1):
