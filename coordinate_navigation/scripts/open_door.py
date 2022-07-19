@@ -32,7 +32,7 @@ class OpenDoor(object):
         returns: Service response.
         '''
 
-        while not self.door_open.data:
+        while not self.door_open:
 
             os.system("roslaunch coordinate_navigation open_door.launch")
             # Sleep for 5 seconds after asking to open door
