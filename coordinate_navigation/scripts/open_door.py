@@ -39,7 +39,8 @@ class OpenDoor(object):
             rospy.sleep(5)
 
             try:
-                self.door_open = (rospy.wait_for_message("at1", Bool, timeout=2)).data
+                msg = rospy.wait_for_message("at1", Bool, timeout=2)
+                self.door_open = msg.data
             except rospy.ROSException as e:
                 self.door_open = False
 
