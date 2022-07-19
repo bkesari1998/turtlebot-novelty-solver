@@ -1,49 +1,55 @@
 #!/usr/bin/env python
 
 import rospy
-import math
 
+from std_msgs.msg import Bool
 from apriltag_ros.msg import AprilTagDetectionArray
- 
-def euler_from_quaternion(x, y, z, w):
-        """
-        Convert a quaternion into euler angles (roll, pitch, yaw)
-        roll is rotation around x in radians (counterclockwise)
-        pitch is rotation around y in radians (counterclockwise)
-        yaw is rotation around z in radians (counterclockwise)
-        """
-     
-        t3 = +2.0 * (w * z + x * y)
-        t4 = +1.0 - 2.0 * (y * y + z * z)
-        yaw_z = math.atan2(t3, t4)
-     
-        return  yaw_z # in radians
 
-def distance(x, y):
+class AprilTagHandler(object):
 
-    return math.sqrt(x**2 + y**2)
+    def __init__(self):
+        # Initialize ROS node
+        rospy.init_node("tag_handler")
+        rospy.on_shutdown(self.shutdown)
+        rospy.loginfo("tag_handler node active")
 
-def shutdown():
-    pass
+        # Initialize tag_detections publishers
+        self.tag_ids = rospy.get_param("/tag_ids")
+        self.tag_pubs = []
+        for id in self.tag_ids:
+            name = "at%d" % id
+            self.tag_pubs.append(rospy.Publisher(name, Bool, queue_size=10))
 
-def tag_detections_handler(msg):
+        self.rate = rospy.Rate(10)
 
-    tag_distance = distance(msg.detections[0].pose.pose.position.x, msg.detections[0].pose.pose.position.y)
-    tag_orientation = euler_from_quaternion(msg.detections[0].pose.orientation.x, msg.detections[0].pose.orientation.y, msg.detections[0].pose.orientation.z, msg.detections[0].pose.orientation.w)
+        # Subscribe to april tag detector topic
+        self.tag_detections = rospy.Subscriber("tag_detection", AprilTagDetectionArray, callback=self.tag_detections_handler)
 
-    if (tag_distance < 2 and tag_orientation < math.pi / 4):
+    def tag_detections_handler(self, msg):
+        '''
+        Publishes boolean msg on topics associated with detected april tags.
+        msg: AprilTagsDetectionArray object
+        returns: none
+        '''
 
-        return True
+        for detection in msg.detections:
+            index = self.tag_ids.index(detection.id)
+            msg = Bool()
+            msg.data = True
+            self.tag_pubs[index].publish(msg)
+            self.rate.sleep()
+    
+    def shutdown(self):
+        '''
+        Runs on node shutdown.
+        returns: none
+        '''
 
-    return False
+        rospy.loginfo("Stopping tag_handler node")
 
 if __name__ == '__main__':
-
-    # Initialize ROS node
-    rospy.init_node("tag_detector")
-    rospy.on_shutdown(shutdown)
-    rospy.loginfo("tag_detector node active")
-
-    # Subscribe to april tag detector topic
-    tag_detections = rospy.Subscriber("tag_detection", AprilTagDetectionArray, callback=tag_detections_handler)
     
+    try:
+        AprilTagHandler()
+    except:
+        rospy.logerr("AprilTagHandler failed")
