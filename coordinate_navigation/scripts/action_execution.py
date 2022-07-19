@@ -47,7 +47,7 @@ class PlanExecutor():
 
         self.undock(["undock", "lab", "charger_1"])
         self.approach_door(["approach_door", "lab_door", "lab", "kitchen"])
-        self.open_door(["open_door", "lab", "kitchen", "lab_door"])
+        self.open_door(["open_door", "lab_door", "lab", "kitchen"])
 
         while not rospy.is_shutdown():
             rospy.spin()
