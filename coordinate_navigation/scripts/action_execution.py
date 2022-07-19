@@ -127,7 +127,7 @@ class PlanExecutor():
         action: list of strings expressing the pddl open door action
         returns: boolean representing success/failure of action
         '''
-
+        rospy.loginfo("In open door")
         door = action[1]
         room1 = action[2]
         room2 = action[3]
@@ -138,10 +138,10 @@ class PlanExecutor():
         not world_state.objects["door"][door]["open"] and 
         world_state.agents["turtlebot"]["at"] == room1 and 
         not world_state.agents["turtlebot"]["docked"]):
-
+            rospy.loginfo("Passed preconditions")
             # Call to service
             status = self.open_door_action()
-
+            rospy.loginfo("Passed service call")
             # Update world state
             if status:
                 world_state.objects["door"][door]["open"] = True
