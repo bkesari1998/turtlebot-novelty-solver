@@ -36,7 +36,7 @@ class AprilTagHandler(object):
             if detection.id == 1:
                 msg = Bool()
                 msg.data = True
-                self.at1.publish()
+                self.at1.publish(msg)
                 self.rate.sleep()
     
     def shutdown(self):
