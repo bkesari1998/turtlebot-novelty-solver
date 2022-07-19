@@ -7,7 +7,7 @@
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
         <arg name="initial_pose_x" value="-0.908094167709" />
         <arg name="initial_pose_y" value="1.18058991432" />
-        <arg name="initial_pose_a" value="6.12359" />
+        <arg name="initial_pose_a" value="2.98359" />
     </include> 
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="/camera/rgb" />
