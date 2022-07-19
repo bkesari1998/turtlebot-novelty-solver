@@ -31,9 +31,8 @@ class AprilTagHandler(object):
         returns: none
         '''
 
-        rospy.loginfo(str(len(msg.detections)))
         for detection in msg.detections:
-            if detection.id == 1:
+            if detection.id[0] == 1:
                 msg = Bool()
                 msg.data = True
                 self.at1.publish(msg)
