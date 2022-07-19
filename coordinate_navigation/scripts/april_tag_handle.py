@@ -21,6 +21,9 @@ class AprilTagHandler(object):
         # Subscribe to april tag detector topic
         self.tag_detections = rospy.Subscriber("tag_detection", AprilTagDetectionArray, callback=self.tag_detections_handler)
 
+        while not rospy.is_shutdown():
+            rospy.spin()
+
     def tag_detections_handler(self, msg):
         '''
         Publishes boolean msg on topics associated with detected april tags.
