@@ -19,7 +19,7 @@ class AprilTagHandler(object):
         self.rate = rospy.Rate(10)
 
         # Subscribe to april tag detector topic
-        self.tag_detections = rospy.Subscriber("tag_detection", AprilTagDetectionArray, callback=self.tag_detections_handler)
+        self.tag_detections = rospy.Subscriber("tag_detections", AprilTagDetectionArray, callback=self.tag_detections_handler)
 
         while not rospy.is_shutdown():
             rospy.spin()
