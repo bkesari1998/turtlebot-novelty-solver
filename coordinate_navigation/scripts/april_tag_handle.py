@@ -19,7 +19,7 @@ class AprilTagHandler(object):
         self.rate = rospy.Rate(10)
 
         # Subscribe to april tag detector topic
-        self.tag_detections = rospy.Subscriber("tag_detections", AprilTagDetectionArray, callback=self.tag_detections_handler)
+        self.tag_detections = rospy.Subscriber("/tag_detections", AprilTagDetectionArray, callback=self.tag_detections_handler)
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -31,6 +31,7 @@ class AprilTagHandler(object):
         returns: none
         '''
 
+        rospy.loginfo(str(len(msg.detections)))
         for detection in msg.detections:
             if detection.id == 1:
                 msg = Bool()
