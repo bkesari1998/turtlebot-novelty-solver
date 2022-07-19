@@ -20,7 +20,7 @@ class OpenDoor(object):
         self.open_door_srv = rospy.Service("/open_door", Trigger, self.open_door)
         rospy.loginfo("open_door service active")
 
-        self.door_open = world_state.objects["door"]["lab_door"]["open"]
+        self.door_open = False
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -41,9 +41,7 @@ class OpenDoor(object):
             try:
                 self.door_open = (rospy.wait_for_message("at1", Bool, timeout=2)).data
             except rospy.ROSException as e:
-                self.door_open.data = False
-
-        world_state.objects["door"]["lab_door"]["open"] == True
+                self.door_open = False
 
         return True, "Door is open"
 

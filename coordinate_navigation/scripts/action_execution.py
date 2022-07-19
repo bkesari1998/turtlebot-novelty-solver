@@ -45,8 +45,7 @@ class PlanExecutor():
 
         self.undock(["undock", "lab", "charger_1"])
         self.approach_door(["approach_door", "lab_door", "lab", "kitchen"])
-        self.approach_charger(["approach_charger", "lab", "charger_1"])
-        self.dock(["dock","lab", "charger_1"])
+        self.open_door("[open_door", "lab", "kitchen", "lab_door")
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -67,8 +66,8 @@ class PlanExecutor():
 
             if action[0] == 'approach_door':
                 self.approach_door(action)
-            # elif action[0] == 'open_door':
-                # pass
+            elif action[0] == 'open_door':
+                self.open_door(action)
             elif action[0] == 'exit_room':
                 self.go_through_door(action)
             # elif action[0] == 'approach_desk':
@@ -80,7 +79,7 @@ class PlanExecutor():
             # elif action[0] == 'refill':
                 # pass
             elif action[0] == 'approach_charger':
-                pass
+                self.approach_charger(action)
             elif action[0] == 'dock':
                 self.dock(action)
             elif action[0] == 'undock':
@@ -119,6 +118,36 @@ class PlanExecutor():
 
         return False
 
+    def open_door(self, action):
+        '''
+        open_door action executor. Checks pre and post conditions of action
+        Call open_door_action.
+        action: list of strings expressing the pddl open door action
+        returns: boolean representing success/failure of action
+        '''
+
+        door = action[1]
+        room1 = action[2]
+        room2 = action[3]
+
+        # Precondition checking
+        if (world_state.objects["door"].has_key(door) and 
+        room1 in world_state.objects["door"][door]["connect"] and room2 in world_state.objects["door"][door]["connect"] and
+        not world_state.objects["door"][door]["open"] and 
+        world_state.agents["turtlebot"]["at"] == room1 and 
+        not world_state.agents["turtlebot"]["docked"]):
+
+            # Call to service
+            status = self.open_door_action()
+
+            # Update world state
+            if status:
+                world_state.objects["door"][door]["open"] = True
+            
+            return status
+        
+        return False
+
     def go_through_door(self, action):
 
         '''
@@ -142,10 +171,10 @@ class PlanExecutor():
                 status = self.move_action(door + "_" + room2)
 
                 # Update world state
-                if status.success:
+                if status:
                     world_state.agents["turtlebot"]["at"] == room2
                 
-                return status.success
+                return status
             
         return False
 
