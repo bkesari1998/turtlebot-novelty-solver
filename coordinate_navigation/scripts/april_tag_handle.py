@@ -14,7 +14,7 @@ class AprilTagHandler(object):
         rospy.loginfo("tag_handler node active")
 
         # Initialize tag_detections publishers
-        rospy.Publisher("at1", Bool, queue_size=10)
+        self.at1 = rospy.Publisher("at1", Bool, queue_size=10)
 
         self.rate = rospy.Rate(10)
 
@@ -29,11 +29,11 @@ class AprilTagHandler(object):
         '''
 
         for detection in msg.detections:
-            index = self.tag_ids.index(detection.id)
-            msg = Bool()
-            msg.data = True
-            self.tag_pubs[index].publish(msg)
-            self.rate.sleep()
+            if detection.id == 1:
+                msg = Bool()
+                msg.data = True
+                self.at1.publish()
+                self.rate.sleep()
     
     def shutdown(self):
         '''
