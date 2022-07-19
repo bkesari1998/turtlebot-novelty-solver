@@ -14,11 +14,7 @@ class AprilTagHandler(object):
         rospy.loginfo("tag_handler node active")
 
         # Initialize tag_detections publishers
-        self.tag_ids = [0, 1]
-        self.tag_pubs = []
-        for id in self.tag_ids:
-            name = "at%d" % id
-            self.tag_pubs.append(rospy.Publisher(name, Bool, queue_size=10))
+        rospy.Publisher("at1", Bool, queue_size=10)
 
         self.rate = rospy.Rate(10)
 
