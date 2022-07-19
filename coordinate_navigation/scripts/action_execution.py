@@ -40,6 +40,8 @@ class PlanExecutor():
         rospy.wait_for_service("move")
         rospy.loginfo("Waiting for amcl")
         rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, timeout=10)
+        rospy.loginfo("Waiting for open_door service")
+        rospy.wait_for_service("open_door")
 
         rospy.loginfo("All services running")
 
