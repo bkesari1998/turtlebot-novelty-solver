@@ -14,7 +14,7 @@ class AprilTagHandler(object):
         rospy.loginfo("tag_handler node active")
 
         # Initialize tag_detections publishers
-        self.tag_ids = rospy.get_param("/tag_ids")
+        self.tag_ids = [0, 1]
         self.tag_pubs = []
         for id in self.tag_ids:
             name = "at%d" % id
