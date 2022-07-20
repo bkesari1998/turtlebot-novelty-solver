@@ -46,7 +46,7 @@ class OpenDoor(object):
 
             os.system("roslaunch coordinate_navigation open_door.launch")
             # Sleep for 5 seconds after asking to open door
-            rospy.sleep(5)
+            rospy.sleep(1)
             
             rospy.loginfo(self.door_open)
     
