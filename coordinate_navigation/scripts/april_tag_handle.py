@@ -21,7 +21,7 @@ class AprilTagHandler(object):
             pub_name = "at%d" % id_num
             self.tag_pubs.append(rospy.Publisher(pub_name, Bool, queue_size=1))
 
-        self.rate = rospy.Rate(10)
+        self.rate = rospy.Rate(1)
 
         # Subscribe to april tag detector topic
         self.tag_detections = rospy.Subscriber("/tag_detections", AprilTagDetectionArray,
