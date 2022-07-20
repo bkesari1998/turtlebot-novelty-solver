@@ -42,6 +42,7 @@ class AprilTagHandler(object):
             index = self.tag_ids.index(id_num)
             msg = Bool()
             msg.data = True
+            rospy.loginfo("Publishing message on topic at%d" % id_num)
             self.tag_pubs[index].publish(msg)
             self.rate.sleep()
 
