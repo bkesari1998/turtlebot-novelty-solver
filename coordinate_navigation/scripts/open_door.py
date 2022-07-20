@@ -50,7 +50,8 @@ class OpenDoor(object):
             # rospy.sleep(5)
             
             rospy.loginfo(self.door_open)
-
+    
+        door_sub.unregister()
         return True, "Door is open"
 
     def shutdown(self):
