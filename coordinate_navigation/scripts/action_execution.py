@@ -138,10 +138,8 @@ class PlanExecutor():
         not world_state.objects["door"][door]["open"] and 
         world_state.agents["turtlebot"]["at"] == room1 and 
         not world_state.agents["turtlebot"]["docked"]):
-            rospy.loginfo("Passed preconditions")
             # Call to service
             status = self.open_door_action()
-            rospy.loginfo("Passed service call")
             # Update world state
             if status:
                 world_state.objects["door"][door]["open"] = True
@@ -258,7 +256,6 @@ class PlanExecutor():
             world_state.objects["charger"][charger1]["inside"] == room1):
 
                 status = self.undock_action()
-                rospy.loginfo(status)
 
                 if status:
                     world_state.agents["turtlebot"]["docked"] = False

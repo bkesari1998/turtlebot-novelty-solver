@@ -43,6 +43,8 @@ class OpenDoor(object):
                 self.door_open = msg.data
             except rospy.ROSException as e:
                 self.door_open = False
+            
+            rospy.loginfo(self.door_open)
 
         return True, "Door is open"
 
