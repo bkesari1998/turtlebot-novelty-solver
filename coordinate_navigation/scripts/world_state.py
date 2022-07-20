@@ -22,6 +22,6 @@ objects = {
     },
 
     "desk": {
-        "desk_refil": {"inside": "kitchen"}
+        "desk_refill": {"inside": "kitchen"}
     }
 }

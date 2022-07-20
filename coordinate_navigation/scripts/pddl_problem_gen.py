@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-#import rospy
+import rospy
 import world_state
-
 from std_srvs.srv import Trigger
 
 class PddlProblemGen(object):
@@ -10,24 +9,24 @@ class PddlProblemGen(object):
     def __init__(self):
 
         # Initialize ROS node
-        # rospy.init_node("pddl_problem_gen")
-        # rospy.ologinfo("pddl_problem_gen node active")
-        # rospy.on_shutdown(self.shutdown)
+        rospy.init_node("pddl_problem_gen")
+        rospy.loginfo("pddl_problem_gen node active")
+        rospy.on_shutdown(self.shutdown)
 
         # Initialize service
-        # self.problem_gen_srv = rospy.Service("problem_gen", Trigger, self.generate_problem)
-        # rospy.loginfo("problem_gen service active")
+        self.problem_gen_srv = rospy.Service("problem_gen", Trigger, self.generate_problem)
+        rospy.loginfo("problem_gen service active")
 
         # Counter for naming different problem files
         self.prob_count = 0
 
-        # while not rospy.is_shutdown():
-        #     rospy.spin()
+        while not rospy.is_shutdown():
+            rospy.spin()
 
     def generate_problem(self):
-        
+
         # Create/Open file
-        path = "../../pddl/problem_%d.pddl" % self.prob_count
+        path = "problem_%d.pddl" % self.prob_count
         fp = open(path, "w")
 
         # Add problem definition to file
@@ -39,10 +38,10 @@ class PddlProblemGen(object):
         # Parse dict
         for object_type in world_state.objects:
             object_line = ""
-            for object in object_type:
+            for obj in world_state.objects[object_type]:
                 # Append object to line
-                object_line += (object + " ")
-            
+                object_line += (obj + " ")
+
             # Append object type to line
             object_line += "- %s\n" % object_type
             fp.write("\t%s" % object_line)
@@ -51,33 +50,33 @@ class PddlProblemGen(object):
         fp.write("(:init\n")
         # Add initial state of agent
         for predicate, value in world_state.agents["turtlebot"].items():
-            
+
             # Check if predicate is a boolean
             if type(value) == bool:
-                if value == False:
+                if not value:
                     state_line = "(not(%s))\n" % predicate
                 else:
                     state_line = "(%s)\n" % predicate
             # Predicate is not boolean
             else:
-                state_line = "(%s %s)\n" % predicate, value
+                state_line = "(%s %s)\n" % (predicate, value)
             fp.write("\t%s" % state_line)
 
         # Add initial state of other objects
         for object_type in world_state.objects:
-            # Pasrse dict
-            for object in object_type:
+            # Parse dict
+            for obj in world_state.objects[object_type]:
                 # Parse dict
-                for predicate, value in object:
+                for predicate, value in world_state.objects[object_type][obj].items():
+                    other_objects = ""
                     # Check if predicate is boolean
                     if type(value) == bool:
-                        if value == False:
-                            state_line = "(not(%s %s))\n" % predicate, object
+                        if not value:
+                            state_line = "(not(%s %s))\n" % (predicate, obj)
                         else:
-                            state_line = "(%s %s)\n" % predicate, object
+                            state_line = "(%s %s)\n" % (predicate, obj)
                     # Predicate is not boolean
                     else:
-                        other_objects = ""
                         # Check if value is a list
                         if type(value) == list:
                             # Parse list
@@ -89,17 +88,22 @@ class PddlProblemGen(object):
                         # Value is not a list 
                         else:
                             other_objects = value
-                
-                state_line = "(%s %s %s)\n" % predicate, other_objects, object
-                fp.write("\t%" % state_line)
+
+                        state_line = "(%s %s %s)\n" % (predicate, other_objects, obj)
+
+                    fp.write("\t%s" % state_line)
 
         fp.write(")\n\n")
 
         fp.write("(:goal (and\n\t(facing desk_refill)\n))\n)")
+        fp.close()
+        self.prob_count += 1
+
 
 if __name__ == '__main__':
     try:
         pddl = PddlProblemGen()
         pddl.generate_problem()
     except:
-        print("Failed")
+        rospy.loginfo("PddlProblemGen failed")
+
