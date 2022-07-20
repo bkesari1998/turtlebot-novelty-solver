@@ -18,8 +18,8 @@ class AprilTagHandler(object):
         rospy.loginfo("tag_handler node active")
 
         # Initialize tag_detections publishers
-        self.tag_in_frame = [False, False]
-        self.tag_ids = [0, 1] # Make this a rosparam later
+        self.tag_in_frame = [False, False, False, False, False]
+        self.tag_ids = [0, 1, 2, 3, 4] # Make this a rosparam later
         self.tag_pubs = []
         for id_num in self.tag_ids:
             pub_name = "at%d" % id_num
