@@ -36,6 +36,11 @@ class AprilTagHandler(object):
         msg: AprilTagsDetectionArray object
         returns: none
         """
+
+        if not msg.detections:
+            rospy.loginfo("empty")
+            return
+
         rospy.loginfo("Starting over")
         rospy.loginfo(msg.detections)
         for detection in msg.detections:
