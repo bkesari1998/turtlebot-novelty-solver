@@ -25,6 +25,14 @@ class OpenDoor(object):
         while not rospy.is_shutdown():
             rospy.spin()
 
+    def set_door_open(self, msg):
+        """
+        Setter for door_open
+        returns: none
+        """
+
+        self.door_open = msg.data
+
     def open_door(self, req):
         """
         Service request handler.
@@ -32,17 +40,13 @@ class OpenDoor(object):
         returns: Service response.
         """
 
+        door_sub = rospy.Subscriber("at1", Bool, self.set_door_open)
+
         while not self.door_open:
 
             os.system("roslaunch coordinate_navigation open_door.launch")
             # Sleep for 5 seconds after asking to open door
             rospy.sleep(5)
-
-            try:
-                msg = rospy.wait_for_message("at1", Bool, timeout=2)
-                self.door_open = msg.data
-            except rospy.ROSException as e:
-                self.door_open = False
             
             rospy.loginfo(self.door_open)
 
