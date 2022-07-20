@@ -18,7 +18,7 @@ class AprilTagHandler(object):
         self.tag_ids = [0, 1] # Make this a rosparam later
         self.tag_pubs = []
         for id_num in self.tag_ids:
-            pub_name = "at%d" % id
+            pub_name = "at%d" % id_num
             self.tag_pubs.append(rospy.Publisher(pub_name, Bool, queue_size=10))
 
         self.rate = rospy.Rate(10)
