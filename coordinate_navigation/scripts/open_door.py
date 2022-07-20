@@ -30,7 +30,6 @@ class OpenDoor(object):
         Setter for door_open
         returns: none
         """
-        rospy.loginfo("recieved at msg")
         self.door_open = msg.data
 
     def open_door(self, req):
