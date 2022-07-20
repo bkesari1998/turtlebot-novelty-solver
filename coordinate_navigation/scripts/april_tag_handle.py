@@ -37,6 +37,7 @@ class AprilTagHandler(object):
         returns: none
         """
         rospy.loginfo("Starting over")
+        rospy.loginfo(msg.detections)
         for detection in msg.detections:
             id_num = detection.id[0] # Using standalone tags
             index = self.tag_ids.index(id_num)
