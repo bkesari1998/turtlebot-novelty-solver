@@ -4,9 +4,14 @@ import rospy
 import world_state
 from std_srvs.srv import Trigger
 
+
 class PddlProblemGen(object):
 
     def __init__(self):
+        """
+        Initializes pddl_problem_gen node and service.
+        returns: none
+        """
 
         # Initialize ROS node
         rospy.init_node("pddl_problem_gen")
@@ -24,6 +29,9 @@ class PddlProblemGen(object):
             rospy.spin()
 
     def generate_problem(self):
+        """
+        Handles service call. Generates pddl problem file from world_state.py
+        """
 
         # Create/Open file
         path = "problem_%d.pddl" % self.prob_count
@@ -95,6 +103,7 @@ class PddlProblemGen(object):
 
         fp.write(")\n\n")
 
+        # Write goal to file
         fp.write("(:goal (and\n\t(facing desk_refill)\n))\n)")
         fp.close()
         self.prob_count += 1
@@ -103,7 +112,5 @@ class PddlProblemGen(object):
 if __name__ == '__main__':
     try:
         pddl = PddlProblemGen()
-        pddl.generate_problem()
     except:
         rospy.loginfo("PddlProblemGen failed")
-

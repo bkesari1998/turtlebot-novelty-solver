@@ -33,12 +33,12 @@ class MoveTB():
             rospy.spin()
 
     def assign_goal(self, pose, orientation):
-        '''
+        """
         Assigns a pose and orientation to a MoveBaseGoal object.
         pose: Cartiesian pose list [x, y, z]
         orientation: Quaternion rotation list [x, y ,z ,w]
         returns: MoveBaseGoal object
-        '''
+        """
 
         # Create MoveBaseGoal object from input
         goal_pose = MoveBaseGoal()
@@ -54,11 +54,11 @@ class MoveTB():
         return goal_pose
 
     def move_tb(self, req):
-        '''
+        """
         Handler for move_tb service. Calls SimpleAction service to move tb to goal position.
         req: Service request, a Move object.
         returns: Service response.
-        '''
+        """
 
         # Assign the turtlebot's goal
         tb_goal = self.assign_goal(req.final_pose, req.final_orientation)
@@ -71,9 +71,9 @@ class MoveTB():
             return False, "Turtlebot unable to navigate to goal position"
 
     def shutdown(self):
-        '''
+        """
         Called on shutdown of node.
-        '''
+        """
         
         rospy.loginfo("Stopping move_tb node")
         rospy.loginfo("Stopping turtlebot")

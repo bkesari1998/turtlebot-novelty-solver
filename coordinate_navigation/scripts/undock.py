@@ -7,9 +7,10 @@ from std_srvs.srv import Trigger
 
 class MoveToStart():
     def __init__(self):
-        '''
+        """
         Initializes move_to_start ROS node.
-        '''
+        returns: none
+        """
         
         # Initialize node
         rospy.init_node("undock", anonymous=False)
@@ -28,11 +29,11 @@ class MoveToStart():
             rospy.spin()
 
     def move_to_start(self, req):
-        '''
+        """
         Service handler. Calls functions to reverse and rotate the tb.
         req: Trigger object
         returns: Service response
-        '''
+        """
 
         # reverse and rotate the turtlebot
         self.reverse()
@@ -41,9 +42,10 @@ class MoveToStart():
         return True, "Turtlebot successfully moved to starting position"
 
     def reverse(self):
-        '''
-        Publishes Twist messages to revese the turtlebot.
-        '''
+        """
+        Publishes Twist messages to reverse the turtlebot.
+        returns: none
+        """
 
         # create msg to reverse turtlebot
         move_cmd = Twist()
@@ -55,9 +57,10 @@ class MoveToStart():
             self.rate.sleep()
 
     def rotate(self):
-        '''
+        """
         Publishes Twist messages to rotate the turtlebot.
-        '''
+        returns: none
+        """
 
         # create msg to rotate turtlebot
         move_cmd = Twist()
@@ -74,9 +77,10 @@ class MoveToStart():
         self.rate.sleep()
 
     def shutdown(self):
-        '''
+        """
         Called on node shutdown.
-        '''
+        returns: none
+        """
  
         rospy.loginfo("Stopping move_to_start node")
         rospy.loginfo("Stopping turtlebot")

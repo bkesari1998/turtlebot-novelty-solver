@@ -26,11 +26,11 @@ class OpenDoor(object):
             rospy.spin()
 
     def open_door(self, req):
-        '''
+        """
         Service request handler.
         req: Trigger object.
         returns: Service response.
-        '''
+        """
 
         while not self.door_open:
 
@@ -47,9 +47,9 @@ class OpenDoor(object):
         return True, "Door is open"
 
     def shutdown(self):
-        '''
+        """
         Called on node shutdown.
-        '''
+        """
 
         rospy.loginfo("Stopping open_door node")
 
