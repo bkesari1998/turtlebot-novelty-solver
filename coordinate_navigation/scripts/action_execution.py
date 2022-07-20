@@ -304,7 +304,6 @@ class PlanExecutor():
             move_to_start = rospy.ServiceProxy("undock", Trigger)
             response = move_to_start()
             rospy.loginfo(response.message)
-            rospy.loginfo(response.success)
             if response.success:
                 return True
         except rospy.ServiceException as e:

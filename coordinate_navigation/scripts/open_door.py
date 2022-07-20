@@ -30,7 +30,7 @@ class OpenDoor(object):
         Setter for door_open
         returns: none
         """
-
+        rospy.loginfo("recieved at msg")
         self.door_open = msg.data
 
     def open_door(self, req):
@@ -41,12 +41,13 @@ class OpenDoor(object):
         """
 
         door_sub = rospy.Subscriber("at1", Bool, self.set_door_open)
+        rospy.loginfo(self.door_open)
 
         while not self.door_open:
 
-            os.system("roslaunch coordinate_navigation open_door.launch")
+            # os.system("roslaunch coordinate_navigation open_door.launch")
             # Sleep for 5 seconds after asking to open door
-            rospy.sleep(5)
+            # rospy.sleep(5)
             
             rospy.loginfo(self.door_open)
 
