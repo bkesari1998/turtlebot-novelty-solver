@@ -42,4 +42,6 @@ if __name__ == '__main__':
     
     camera_frame_pose = transform_to_tag_frame(tag.pose)
 
-    print(tfBuffer.transform(camera_frame_pose, tag_frame, new_type=geometry_msgs.msg.PoseWithCovarianceStamped))
+    trans = tfBuffer.transform(camera_frame_pose, tag_frame, new_type=geometry_msgs.msg.PoseWithCovarianceStamped)
+
+    print(trans)
