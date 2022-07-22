@@ -11,7 +11,7 @@ def transform_to_tag_frame(camera_frame_pose):
 
     # Header
     tag_frame_pose.header.stamp = rospy.Time.now()
-    tag_frame_pose.pose.header.frame_id = 'map'
+    tag_frame_pose.header.frame_id = 'map'
 
     # Position
     tag_frame_pose.pose.pose.position.x = -camera_frame_pose.pose.pose.position.x
