@@ -81,7 +81,7 @@ class AprilTagHandler(object):
                 self.tag_in_frame[index] == True
                 
                 try:
-                   tb_pose_in_tag_frame = self.transform_to_tag_frame(detection.pose.pose.pose)
+                   tb_pose_in_tag_frame = self.transform_to_tag_frame(detection.pose.pose.pose, id_num)
                    tb_pose_in_map_frame = self.listener.transformPose('/map', tb_pose_in_tag_frame)
                    init_pose = PoseWithCovarianceStamped()
                    init_pose.header = tb_pose_in_map_frame.header
