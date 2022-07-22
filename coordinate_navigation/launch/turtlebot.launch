@@ -19,7 +19,6 @@
     <node name="open_door" pkg="coordinate_navigation" type="open_door.py"/>
     <!--<node name="action_execution" pkg="coordinate_navigation" type="action_execution.py" />-->
     <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
-    <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
+    <node name="broadcaster" pkg="coordinate_navigation" type="broadcaster.py"/>
     <!--<node name="tag_handler" pkg="coordinate_navigation" type="april_tag_handle.py"/>-->
-    <!--<node pkg="tf2_ros" type="static_transform_publisher" name="at0_broadcaster" args="23.2069091797 18.1104278564 0 0 0.1246747 0.9921977 map at0" />--> 
 </launch>
