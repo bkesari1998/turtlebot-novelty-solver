@@ -43,6 +43,7 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         try:
             (trans,rot) = listener.lookupTransform('/map', '/at0_', rospy.Time(0))
+            listener.transformPose('/map', geometry_msgs.msg.PoseStamped())
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             continue
 
