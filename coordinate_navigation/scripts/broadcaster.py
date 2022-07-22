@@ -11,7 +11,7 @@ import geometry_msgs.msg
 if __name__ == '__main__':
     rospy.init_node('broadcaster')
 
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(100)
 
     br = tf2_ros.TransformBroadcaster()
     t = geometry_msgs.msg.TransformStamped()

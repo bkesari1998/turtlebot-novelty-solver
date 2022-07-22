@@ -2,6 +2,7 @@
 
 import rospy
 import tf
+from geometry_msgs.msg import PoseStamped
 import geometry_msgs.msg
 from apriltag_ros.msg import AprilTagDetectionArray
 from tf import TransformListener
@@ -12,7 +13,7 @@ def transform_to_tag_frame(camera_frame_pose):
 
     # Header
     tag_frame_pose.header.stamp = rospy.Time.now()
-    tag_frame_pose.header.frame_id = 'at0_'
+    tag_frame_pose.header.frame_id = 'base_link'
 
     # Position
     tag_frame_pose.pose.position.x = -camera_frame_pose.pose.pose.position.x
@@ -34,21 +35,29 @@ if __name__ == '__main__':
     rospy.init_node("tf_test")
     
     listener = tf.TransformListener()
-    transformer = tf.TransformerROS()
-
-
-    t = tf.Transformer(True, rospy.Duration(10.0))
+    rospy.sleep(1)
     
     rate = rospy.Rate(10.0)
     while not rospy.is_shutdown():
-        try:
-            (trans,rot) = listener.lookupTransform('/map', '/at0_', rospy.Time(0))
-            listener.transformPose('/map', geometry_msgs.msg.PoseStamped())
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            continue
-
-        print(trans)
-        print(rot)
+        now = rospy.Time.now()
+        listener.waitForTransform("/map", "/base_link", now, rospy.Duration(5))
+        if(listener.canTransform('/map', '/base_link', now)):
+                print('can transform')
+                mpose = PoseStamped()
+                
+                mpose.pose.position.x = 1
+                mpose.pose.position.y = 0
+                mpose.pose.position.z = 0
+                
+                mpose.pose.orientation.x = 0
+                mpose.pose.orientation.y = 0
+                mpose.pose.orientation.z = 0
+                mpose.pose.orientation.w = 0
+                
+                mpose.header.frame_id = '/base_link'
+                mpose.header.stamp = now
+                mpose_transf = listener.transformPose('/map',mpose)
+                print(mpose_transf)
 
         rate.sleep()
 
