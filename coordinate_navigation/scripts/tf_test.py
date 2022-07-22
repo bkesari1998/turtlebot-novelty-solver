@@ -3,6 +3,7 @@
 import rospy
 import tf2_ros
 import geometry_msgs.msg
+from apriltag_ros.msg import AprilTagDetectionArray
 
 def transform_to_tag_frame(camera_frame_pose):
 
@@ -35,7 +36,7 @@ if __name__ == '__main__':
     tfBuffer = tf2_ros.Buffer()
     listener = tf2_ros.TransformListener(tfBuffer)
 
-    detections_array = rospy.wait_for_message("/tag_detections", timeout=10)
+    detections_array = rospy.wait_for_message("/tag_detections", AprilTagDetectionArray, timeout=10)
     tag = detections_array.detections[0]
     tag_frame = "at%d" % tag.id[0]
     
