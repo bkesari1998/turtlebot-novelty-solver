@@ -1,5 +1,6 @@
 #!/usr/bin/env python  
 import rospy
+import copy
 
 # Because of transformations
 import tf_conversions
@@ -14,7 +15,10 @@ import geometry_msgs.msg
 if __name__ == '__main__':
     rospy.init_node('tf2_at0_broadcaster')
 
+    rate = rospy.Rate(10)
+
     br = tf2_ros.TransformBroadcaster()
+    br1 = tf2_ros.TransformBroadcaster()
     t = geometry_msgs.msg.TransformStamped()
 
     t.header.stamp = rospy.Time.now()
@@ -29,6 +33,10 @@ if __name__ == '__main__':
     t.transform.rotation.z = q[2]
     t.transform.rotation.w = q[3]
 
-    br.sendTransform(t)
+    t1 = copy.deepcopy(t)
+    t1.child_frame_id = "at1"
 
-    rospy.spin()
+    while not rospy.is_shutdown():
+        br.sendTransform([t, t1])
+
+        rate.sleep()
