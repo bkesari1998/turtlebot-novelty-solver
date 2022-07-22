@@ -1,15 +1,11 @@
 #!/usr/bin/env python  
 import rospy
-import copy
 
 # Because of transformations
 import tf_conversions
 
 import tf2_ros
 import geometry_msgs.msg
-
-
-
 
 
 if __name__ == '__main__':
@@ -22,7 +18,7 @@ if __name__ == '__main__':
 
     t.header.stamp = rospy.Time.now()
     t.header.frame_id = "map"
-    t.child_frame_id = "at0"
+    t.child_frame_id = "at0_"
     t.transform.translation.x = 0.0
     t.transform.translation.y = 0.0
     t.transform.translation.z = 0.0
@@ -34,5 +30,5 @@ if __name__ == '__main__':
 
 
     while not rospy.is_shutdown():
-        br.sendTransform([t, t1])
+        br.sendTransform(t)
         rate.sleep()

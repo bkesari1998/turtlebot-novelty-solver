@@ -4,6 +4,7 @@ import rospy
 import tf
 import geometry_msgs.msg
 from apriltag_ros.msg import AprilTagDetectionArray
+from tf import TransformListener
 
 def transform_to_tag_frame(camera_frame_pose):
 
@@ -11,7 +12,7 @@ def transform_to_tag_frame(camera_frame_pose):
 
     # Header
     tag_frame_pose.header.stamp = rospy.Time.now()
-    tag_frame_pose.header.frame_id = 'map'
+    tag_frame_pose.header.frame_id = 'at0_'
 
     # Position
     tag_frame_pose.pose.position.x = -camera_frame_pose.pose.pose.position.x
@@ -31,15 +32,22 @@ def transform_to_tag_frame(camera_frame_pose):
 if __name__ == '__main__':
 
     rospy.init_node("tf_test")
-
+    
+    listener = tf.TransformListener()
     transformer = tf.TransformerROS()
 
-    detections_array = rospy.wait_for_message("/tag_detections", AprilTagDetectionArray, timeout=10)
-    tag = detections_array.detections[0]
-    tag_frame = "at%d" % tag.id[0]
+
+    t = tf.Transformer(True, rospy.Duration(10.0))
     
-    camera_frame_pose = transform_to_tag_frame(tag.pose)
+    rate = rospy.Rate(10.0)
+    while not rospy.is_shutdown():
+        try:
+            (trans,rot) = listener.lookupTransform('/map', '/at0_', rospy.Time(0))
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            continue
 
-    tag_frame_pose = transformer.transformPose(tag_frame, camera_frame_pose)
+        print(trans)
+        print(rot)
 
-    print(tag_frame_pose)
+        rate.sleep()
+
