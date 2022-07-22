@@ -18,7 +18,6 @@ if __name__ == '__main__':
     rate = rospy.Rate(10)
 
     br = tf2_ros.TransformBroadcaster()
-    br1 = tf2_ros.TransformBroadcaster()
     t = geometry_msgs.msg.TransformStamped()
 
     t.header.stamp = rospy.Time.now()
@@ -33,10 +32,7 @@ if __name__ == '__main__':
     t.transform.rotation.z = q[2]
     t.transform.rotation.w = q[3]
 
-    t1 = copy.deepcopy(t)
-    t1.child_frame_id = "at1"
 
     while not rospy.is_shutdown():
         br.sendTransform([t, t1])
-
         rate.sleep()
