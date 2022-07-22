@@ -50,9 +50,9 @@ class AprilTagHandler(object):
         tag_frame_pose.header.frame_id = 'at%d_' % id_num
 
         # Position
-        tag_frame_pose.pose.position.x = -camera_frame_pose.pose.pose.position.x
+        tag_frame_pose.pose.position.x = -camera_frame_pose.position.x
         tag_frame_pose.pose.position.y = 0
-        tag_frame_pose.pose.position.z = camera_frame_pose.pose.pose.position.z
+        tag_frame_pose.pose.position.z = camera_frame_pose.position.z
 
         tag_frame_pose.pose.orientation.w = 1
         tag_frame_pose.pose.orientation.x = 0
