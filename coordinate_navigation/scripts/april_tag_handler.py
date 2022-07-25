@@ -72,7 +72,9 @@ class AprilTagHandler(object):
         tag_frame_pose.pose.orientation.w = 1
         tag_frame_pose.pose.orientation.x = 0
         tag_frame_pose.pose.orientation.y = 0
-        tag_frame_pose.pose.orientation.z =tag_frame_pose.header.stamp = rospy.Time.now()
+        tag_frame_pose.pose.orientation.z = 0
+
+        return tag_frame_pose
 
     def pose_of_base_footprint(self, laser_pose, trans, rot):
         """
