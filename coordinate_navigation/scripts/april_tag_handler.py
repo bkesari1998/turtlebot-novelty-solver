@@ -38,6 +38,7 @@ class AprilTagHandler(object):
 
         # Initialize initial_pose publisher
         self.pose_pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1)
+        self.test_pub = rospy.Publisher("test", Bool, queue_size=10)
 
         self.rate = rospy.Rate(60)
 
@@ -76,7 +77,7 @@ class AprilTagHandler(object):
 
         return tag_frame_pose
 
-    def pose_of_base_footprint(self, laser_pose, trans, rot):
+    def pose_of_base_footprint(self, laser_pose, transform):
         """
         Calculates position of base_footprint in map frame based on transformation from laser_link.
         laser_pose: PoseStamped object representing location of laser in map frame
@@ -90,13 +91,14 @@ class AprilTagHandler(object):
         base_footprint_pose.header.stamp = rospy.Time.now()
 
         # Position
-        base_footprint_pose.pose.pose.position.x = laser_pose.pose.position.x + trans[0]
-        base_footprint_pose.pose.pose.position.y = laser_pose.pose.position.y + trans[1]
-        base_footprint_pose.pose.pose.position.z = laser_pose.pose.position.z + trans[2]
+        base_footprint_pose.pose.pose.position.x = laser_pose.pose.position.x + transform.transform.translation.x
+        base_footprint_pose.pose.pose.position.y = laser_pose.pose.position.y + transform.transform.translation.y
+        base_footprint_pose.pose.pose.position.z = laser_pose.pose.position.z + transform.transform.translation.z
 
         # Orientaton
-        laser_quat = [laser_pose.pose.pose.orientation.x, laser_pose.pose.pose.orientation.y, laser_pose.pose.pose.orientation.z, laser_pose.pose.pose.orientation.w]
-        base_foot_quat = quaternion_multiply(laser_quat, rot)
+        transform_quat = [transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w]
+        laser_quat = [laser_pose.pose.orientation.x, laser_pose.pose.orientation.y, laser_pose.pose.orientation.z, laser_pose.pose.orientation.w]
+        base_foot_quat = quaternion_multiply(laser_quat, transform_quat)
 
         base_footprint_pose.pose.pose.orientation.x = base_foot_quat[0]
         base_footprint_pose.pose.pose.orientation.y = base_foot_quat[1]
@@ -122,6 +124,7 @@ class AprilTagHandler(object):
 
         # Loop over detected april tags.
         for detection in msg.detections:
+            #rospy.loginfo("in detection")
 
             # Get index of tag in tag_id list
             index = self.tag_ids.index(detection.id[0])
@@ -129,6 +132,7 @@ class AprilTagHandler(object):
 
             # Only update pose with tag previously out of view before
             if not self.tag_in_view[index]:
+                rospy.loginfo(detection.id[0])
 
                 # Update tag_in_view list
                 self.tag_in_view[index] = True
@@ -146,35 +150,32 @@ class AprilTagHandler(object):
                     try:
                         laser_in_map_frame = self.buffer.transform(laser_in_tag_frame, 'map')
                     except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                        rospy.logerr("Unable to transform from frame %s to frame 'map'" % laser_in_map_frame.header.frame_id)
+                        rospy.logerr("Unable to transform from frame %s to frame 'map'" % laser_in_tag_frame.header.frame_id)
                         continue
 
                      # Lookup transform between laser and base_footprint
                     try:
-                        laser_to_base_trans, laser_to_base_rot = self.buffer.lookup_transform('base_footprint', 'laser_link')
+                        laser_to_base_transform = self.buffer.lookup_transform('base_footprint', 'camera_rgb_frame', rospy.Time(0))
                     except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                        rospy.logerr("No transform available between 'laser_link' and 'base_footprint'" % laser_in_map_frame.header.frame_id)
+                        rospy.logerr("No transform available between 'laser_link' and 'base_footprint'")
                         continue
+
+                    # Get position of base_footprint in map frame
+                    base_foot_pose = self.pose_of_base_footprint(laser_in_map_frame, laser_to_base_transform)
+
+                    # Publish
+                    self.pose_pub.publish(base_foot_pose)
+                    self.rate.sleep()
 
         # Set tag_in_view to false for tags not seen in camera image            
         for tag_id in self.tag_ids:
 
             try:
+                #rospy.loginfo('Reset')
                 tags_seen_indecies.index(tag_id)
             except ValueError:
-                self.tag_in_view[self.tag_ids.index(tag_id)]
-
-
-
-
-
-                    
-                        
-
-
-            
-
-
+                #rospy.loginfo('Except')
+                self.tag_in_view[self.tag_ids.index(tag_id)] = False
 
     def shutdown(self):
         """
