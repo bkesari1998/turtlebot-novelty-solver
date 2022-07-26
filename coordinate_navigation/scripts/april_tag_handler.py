@@ -105,6 +105,16 @@ class AprilTagHandler(object):
         base_footprint_pose.pose.pose.orientation.z = base_foot_quat[2]
         base_footprint_pose.pose.pose.orientation.w = base_foot_quat[3]
 
+        # Covariance
+        base_footprint_pose.pose.covariance = [0] * 36
+
+        # .25m variance in x direction
+        base_footprint_pose.pose.covariance[0] = 0.25
+        # .25m variance in y direction
+        base_footprint_pose.pose.covariance[7] = 0.25
+        # 1 radian variance in yaw axis
+        base_footprint_pose.pose.covariance[35] = 1
+
         return base_footprint_pose
         
 
