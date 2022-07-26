@@ -142,7 +142,6 @@ class AprilTagHandler(object):
 
             # Only update pose with tag previously out of view before
             if not self.tag_in_view[index]:
-                rospy.loginfo(detection.id[0])
 
                 # Update tag_in_view list
                 self.tag_in_view[index] = True
