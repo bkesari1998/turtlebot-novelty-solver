@@ -7,7 +7,7 @@ from apriltag_ros.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 import tf2_ros
-from tf.transformations import quaternion_multiply
+from tf.transformations import quaternion_multiply, quaternion_about_axis
 
 
 class AprilTagHandler(object):
@@ -67,13 +67,18 @@ class AprilTagHandler(object):
         # Position
         tag_frame_pose.pose.position.x = -camera_frame_pose.position.x
         tag_frame_pose.pose.position.y = -camera_frame_pose.position.y
-        tag_frame_pose.pose.position.z = camera_frame_pose.position.z
+        tag_frame_pose.pose.position.z = -camera_frame_pose.position.z
 
-        # Orientation,
-        tag_frame_pose.pose.orientation.w = 1
-        tag_frame_pose.pose.orientation.x = 0
-        tag_frame_pose.pose.orientation.y = 0
-        tag_frame_pose.pose.orientation.z = 0
+        # Orientation
+        camera_frame_quat = [camera_frame_pose.orientation.x, camera_frame_pose.orientation.y, camera_frame_pose.orientation.z, camera_frame_pose.orientation.w]
+        # Flip camera frame quat 180 deg around x and y axis
+        rot = quaternion_about_axis(4.4428829, [0.7071068, 0, 0.7071068])
+        tag_frame_quat = quaternion_multiply(camera_frame_quat, rot)
+
+        tag_frame_pose.pose.orientation.w = tag_frame_quat[0]
+        tag_frame_pose.pose.orientation.x = tag_frame_quat[1]
+        tag_frame_pose.pose.orientation.y = tag_frame_quat[2]
+        tag_frame_pose.pose.orientation.z = tag_frame_quat[3]
 
         return tag_frame_pose
 
@@ -109,11 +114,11 @@ class AprilTagHandler(object):
         base_footprint_pose.pose.covariance = [0] * 36
 
         # .25m variance in x direction
-        base_footprint_pose.pose.covariance[0] = 0.25
+        base_footprint_pose.pose.covariance[0] = 0.15
         # .25m variance in y direction
-        base_footprint_pose.pose.covariance[7] = 0.25
+        base_footprint_pose.pose.covariance[7] = 0.15
         # 1 radian variance in yaw axis
-        base_footprint_pose.pose.covariance[35] = 1
+        base_footprint_pose.pose.covariance[35] = 0.25
 
         return base_footprint_pose
         
