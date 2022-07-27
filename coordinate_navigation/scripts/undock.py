@@ -51,7 +51,7 @@ class Undock():
         if not self.charge_status:
             return True, "Turtlebot successfully undocked"
 
-        return False
+        return True, "Turtlebot failed to undock"
 
     def reverse(self):
         """

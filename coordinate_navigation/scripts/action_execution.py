@@ -104,7 +104,7 @@ class PlanExecutor():
         action: list of strings expressing the pddl approach door action
         returns: boolean representing success/failure of action
         '''
-    
+        rospy.loginfo("In approach door")
         door = action[1]
         room1 = action[2]
         room2 = action[3]
@@ -114,6 +114,8 @@ class PlanExecutor():
         room1 in world_state.objects["door"][door]["connect"] and room2 in world_state.objects["door"][door]["connect"] and 
         world_state.agents["turtlebot"]["at"] == room1 and 
         not world_state.agents["turtlebot"]["docked"]):
+
+            rospy.loginfo("Passed preconds")
 
             # Call move action
             status = self.move_action(door + "_" + room1)
@@ -227,16 +229,15 @@ class PlanExecutor():
 
         room1 = action[1]
         charger1 = action[2]
-        rospy.loginfo("In Dock")
+  
         # Precondition checking
         if (world_state.objects["room"].has_key(room1) and 
         world_state.objects["charger"].has_key(charger1)):
             if (world_state.agents["turtlebot"]["facing"] == charger1 and
             world_state.agents["turtlebot"]["at"] == room1 and 
             world_state.objects["charger"][charger1]["inside"] == room1):
-                rospy.loginfo("passed preconds")
+
                 status = self.dock_action()
-                rospy.loginfo("Passed dock action")
                 if status:
                     world_state.agents["turtlebot"]["docked"] == True
                     world_state.agents["turtlebot"]["facing"] == charger1
