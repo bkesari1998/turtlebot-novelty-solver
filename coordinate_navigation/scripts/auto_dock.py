@@ -4,11 +4,9 @@ import rospy
 import os
 
 from std_srvs.srv import Trigger
-from geometry_msgs.msg import Twist
 from kobuki_msgs.msg import PowerSystemEvent
 
 charge_status = False
-
 
 def dock_tb(req):
     """

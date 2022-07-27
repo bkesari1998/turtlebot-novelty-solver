@@ -5,8 +5,7 @@ import os
 
 from std_msgs.msg import Float64
 from coffee_bot_srvs.srv import Open_Door
-
-from waypoints import state_check
+from state.waypoints import state_check
 
 class OpenDoor(object):
 

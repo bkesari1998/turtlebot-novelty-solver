@@ -24,7 +24,7 @@ class Undock():
         # Initialize service
         self.move_to_start_srv = rospy.Service("undock", Trigger, self.undock)
         rospy.loginfo("undock service active")
-        self.charge_status == True
+        self.charge_status = True
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -95,11 +95,6 @@ class Undock():
         """
  
         rospy.loginfo("Stopping move_to_start node")
-        rospy.loginfo("Stopping turtlebot")
-
-        # Stop the turtlebot
-        self.cmd_vel.publish(Twist())
-        rospy.sleep(1)
 
 
 if __name__ == "__main__":

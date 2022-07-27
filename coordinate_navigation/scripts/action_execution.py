@@ -5,8 +5,8 @@ import math
 import rospy
 
 # Global Vars
-from coordinate_navigation.scripts.waypoints import waypoints
-import world_state
+from state.waypoints import waypoints
+import state.world_state as world_state
 
 # ROS Messages/Services
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
