@@ -1,0 +1,5 @@
+string door
+string room
+---
+bool success
+string message

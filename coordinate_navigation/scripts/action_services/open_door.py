@@ -2,10 +2,11 @@
 
 import rospy
 import os
-from std_msgs.msg import Bool
-from std_srvs.srv import Trigger
 
-import world_state
+from std_msgs.msg import Float64
+from coffee_bot_srvs.srv import Open_Door
+
+from waypoints import state_check
 
 class OpenDoor(object):
 
@@ -17,7 +18,7 @@ class OpenDoor(object):
         rospy.on_shutdown(self.shutdown)
 
         # Initialize service
-        self.open_door_srv = rospy.Service("/open_door", Trigger, self.open_door)
+        self.open_door_srv = rospy.Service("/open_door", Open_Door, self.open_door)
         rospy.loginfo("open_door service active")
 
         self.door_open = False
@@ -25,12 +26,15 @@ class OpenDoor(object):
         while not rospy.is_shutdown():
             rospy.spin()
 
-    def set_door_open(self, msg):
+    def set_door_open(self, msg, key):
         """
         Setter for door_open
         returns: none
         """
-        self.door_open = msg.data
+        if msg.data == -1:
+            self.door_open = not state_check[key]['in_view']
+        else:
+            self.door_open = state_check[key]['in_view']
 
     def open_door(self, req):
         """
@@ -38,8 +42,11 @@ class OpenDoor(object):
         req: Trigger object.
         returns: Service response.
         """
-
-        door_sub = rospy.Subscriber("at4", Bool, self.set_door_open)
+        door = req.door
+        key = door + "_" + req.room + "_open"
+        april_tag = state_check[key]["tag"]
+        
+        door_sub = rospy.Subscriber(april_tag, Float64, self.set_door_open, callback_args=key)
         rospy.loginfo(self.door_open)
 
         while not self.door_open:

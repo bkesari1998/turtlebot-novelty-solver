@@ -2,7 +2,7 @@
 
 import rospy
 import math
-from std_msgs.msg import Bool
+from std_msgs.msg import Float64
 from apriltag_ros.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
@@ -34,12 +34,11 @@ class AprilTagHandler(object):
         self.tag_pubs = []
         for id_num in self.tag_ids:
             pub_name = "at%d" % id_num
-            self.tag_pubs.append(rospy.Publisher(pub_name, Bool, queue_size=1))
+            self.tag_pubs.append(rospy.Publisher(pub_name, Float64, queue_size=1))
 
         # Initialize initial_pose publisher
         self.pose_pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1)
-        self.test_pub = rospy.Publisher("test", Bool, queue_size=10)
-
+    
         self.rate = rospy.Rate(60)
 
         # Subscribe to april tag detector topic
@@ -138,15 +137,21 @@ class AprilTagHandler(object):
 
         # Loop over detected april tags.
         for detection in msg.detections:
-            #rospy.loginfo("in detection")
+
 
             # Get index of tag in tag_id list
             index = self.tag_ids.index(detection.id[0])
             tags_seen_indecies.append(detection.id[0])
 
-            # Only update if tag is less than 2m away
-            distance = math.sqrt(detection.pose.pose.pose.position.x ** 2 +  detection.pose.pose.pose.position.y ** 2 +  detection.pose.pose.pose.position.z ** 2)
-            if distance <= 3.5 and distance >= 1.75:
+            
+            # Publish distance to detected april_tag
+            distance = Float64()
+            distance.data = math.sqrt(detection.pose.pose.pose.position.x ** 2 +  detection.pose.pose.pose.position.y ** 2 +  detection.pose.pose.pose.position.z ** 2)
+            self.tag_pubs[index].publish(distance)
+            self.rate.sleep()
+
+            # Only update if tag is in distance range
+            if distance.data <= 3.5 and distance.data >= 1.75:
                 rospy.loginfo(detection.pose.pose.pose)
 
                 # Only update pose with tag previously out of view before
@@ -189,11 +194,16 @@ class AprilTagHandler(object):
         for tag_id in self.tag_ids:
 
             try:
-                #rospy.loginfo('Reset')
                 tags_seen_indecies.index(tag_id)
             except ValueError:
-                #rospy.loginfo('Except')
                 self.tag_in_view[self.tag_ids.index(tag_id)] = False
+
+                # Publish that tag distance is -1
+                distance = Float64()
+                distance.data = -1
+                self.tag_pubs[self.tag_ids.index(tag_id)].publish(distance)
+
+
 
     def shutdown(self):
         """

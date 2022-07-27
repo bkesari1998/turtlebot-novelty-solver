@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
+# Utility
 import math
-from waypoints_dict import waypoints
-import world_state
-
 import rospy
 
+# Global Vars
+from coordinate_navigation.scripts.waypoints import waypoints
+import world_state
+
+# ROS Messages/Services
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move, Plan
@@ -91,6 +94,8 @@ class PlanExecutor():
             elif action[0] == 'charge':
                 pass
 
+##################### Symbolic Actions #####################
+
     def approach_door(self, action):
 
         '''
@@ -140,6 +145,7 @@ class PlanExecutor():
         not world_state.objects["door"][door]["open"] and 
         world_state.agents["turtlebot"]["at"] == room1 and 
         not world_state.agents["turtlebot"]["docked"]):
+        
             # Call to service
             status = self.open_door_action()
             # Update world state
@@ -294,6 +300,8 @@ class PlanExecutor():
                 
             return False
 
+##################### Service Callers #####################
+
     def undock_action(self):
 
         '''
@@ -332,7 +340,6 @@ class PlanExecutor():
 
         return False
 
-
     def open_door_action(self):
 
         '''
@@ -370,6 +377,8 @@ class PlanExecutor():
             rospy.logerr(e)
 
         return False
+
+##################### Primative Move Actions #####################
 
     def move_forward_point_five(self):
 
@@ -466,7 +475,6 @@ class PlanExecutor():
         self.cmd_vel.publish(Twist())
         self.rate.sleep()
 
-
     def turn_cc_pi_over_two(self):
 
         '''
@@ -505,7 +513,6 @@ class PlanExecutor():
         self.cmd_vel.publish(Twist())
         self.rate.sleep()
 
-
     def turn_cc_pi_over_two(self):
 
         '''
@@ -524,6 +531,8 @@ class PlanExecutor():
         # Stop turtlebot
         self.cmd_vel.publish(Twist())
         self.rate.sleep()
+
+##################### Shutdown #####################
 
     def shutdown(self):
 

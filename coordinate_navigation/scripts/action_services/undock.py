@@ -5,7 +5,7 @@ from geometry_msgs.msg import Twist
 from std_srvs.srv import Trigger
 
 
-class MoveToStart():
+class Undock():
     def __init__(self):
         """
         Initializes move_to_start ROS node.
@@ -22,24 +22,36 @@ class MoveToStart():
         self.rate = rospy.Rate(10)
 
         # Initialize service
-        self.move_to_start_srv = rospy.Service("undock", Trigger, self.move_to_start)
+        self.move_to_start_srv = rospy.Service("undock", Trigger, self.undock)
         rospy.loginfo("undock service active")
+        self.charge_status == True
 
         while not rospy.is_shutdown():
             rospy.spin()
 
-    def move_to_start(self, req):
+    def set_charge_status(self, msg):
+
+        if msg.event == msg.PLUGGED_TO_DOCKBASE:
+            self.charge_status = True
+        elif msg.event == msg.UNPLUGGED:
+            self.charge_status = False
+
+    def undock(self, req):
         """
         Service handler. Calls functions to reverse and rotate the tb.
         req: Trigger object
         returns: Service response
         """
 
-        # reverse and rotate the turtlebot
-        self.reverse()
-        # self.rotate()
+        if self.charge_status:
+            # reverse  the turtlebot
+            self.reverse()
+            rospy.sleep(1)
 
-        return True, "Turtlebot successfully moved to starting position"
+        if not self.charge_status:
+            return True, "Turtlebot successfully undocked"
+
+        return False
 
     def reverse(self):
         """
@@ -92,7 +104,7 @@ class MoveToStart():
 
 if __name__ == "__main__":
     try:
-        MoveToStart()
+        Undock()
     except:
-        rospy.logerr("MoveToStart failed")
+        rospy.logerr("Undock failed")
 
