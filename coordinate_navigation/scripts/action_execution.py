@@ -47,7 +47,9 @@ class PlanExecutor():
 
         self.undock(["undock", "lab", "charger_1"])
         self.approach_door(["approach_door", "lab_door", "lab", "kitchen"])
-        self.open_door(["open_door", "lab_door", "lab", "kitchen"])
+        self.approach_charger(["approach_charger", "lab", "charger_1"])
+        self.dock(["dock", "lab", "charger_1"])
+        #self.open_door(["open_door", "lab_door", "lab", "kitchen"])
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -219,16 +221,16 @@ class PlanExecutor():
 
         room1 = action[1]
         charger1 = action[2]
-
+        rospy.loginfo("In Dock")
         # Precondition checking
         if (world_state.objects["room"].has_key(room1) and 
         world_state.objects["charger"].has_key(charger1)):
             if (world_state.agents["turtlebot"]["facing"] == charger1 and
             world_state.agents["turtlebot"]["at"] == room1 and 
             world_state.objects["charger"][charger1]["inside"] == room1):
-
+                rospy.loginfo("passed preconds")
                 status = self.dock_action()
-
+                rospy.loginfo("Passed dock action")
                 if status:
                     world_state.agents["turtlebot"]["docked"] == True
                     world_state.agents["turtlebot"]["facing"] == charger1

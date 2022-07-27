@@ -39,7 +39,7 @@ class OpenDoor(object):
         returns: Service response.
         """
 
-        door_sub = rospy.Subscriber("at1", Bool, self.set_door_open)
+        door_sub = rospy.Subscriber("at4", Bool, self.set_door_open)
         rospy.loginfo(self.door_open)
 
         while not self.door_open:

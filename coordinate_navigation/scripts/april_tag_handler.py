@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-
+import math
 from std_msgs.msg import Bool
 from apriltag_ros.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseWithCovarianceStamped
@@ -24,10 +24,10 @@ class AprilTagHandler(object):
         rospy.loginfo("tag_handler node active")
 
         # Create a list to keep track if a tag is in the camera's view
-        self.tag_in_view = [False]
+        self.tag_in_view = [False, False, False, False, False, False, False, False, False, False, False, False, False, False]
 
         # Create a list of active april tag ids.
-        self.tag_ids = [0] # Make this a rosparam later
+        self.tag_ids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] # Make this a rosparam later
 
         # Initialize a topic/publisher for each april tag being used
         # Store publishers in a list
@@ -72,8 +72,7 @@ class AprilTagHandler(object):
         # Orientation
         camera_frame_quat = [camera_frame_pose.orientation.x, camera_frame_pose.orientation.y, camera_frame_pose.orientation.z, camera_frame_pose.orientation.w]
         # Flip camera frame quat 180 deg around x and y axis
-        rot = quaternion_about_axis(4.4428829, [0.7071068, 0, 0.7071068])
-        tag_frame_quat = quaternion_multiply(camera_frame_quat, rot)
+        tag_frame_quat = quaternion_multiply(camera_frame_quat, [0, .894, 0, -0.44807])
 
         tag_frame_pose.pose.orientation.w = tag_frame_quat[0]
         tag_frame_pose.pose.orientation.x = tag_frame_quat[1]
@@ -114,9 +113,9 @@ class AprilTagHandler(object):
         base_footprint_pose.pose.covariance = [0] * 36
 
         # .25m variance in x direction
-        base_footprint_pose.pose.covariance[0] = 0.15
+        base_footprint_pose.pose.covariance[0] = 0.1
         # .25m variance in y direction
-        base_footprint_pose.pose.covariance[7] = 0.15
+        base_footprint_pose.pose.covariance[7] = 0.1
         # 1 radian variance in yaw axis
         base_footprint_pose.pose.covariance[35] = 0.25
 
@@ -145,41 +144,46 @@ class AprilTagHandler(object):
             index = self.tag_ids.index(detection.id[0])
             tags_seen_indecies.append(detection.id[0])
 
-            # Only update pose with tag previously out of view before
-            if not self.tag_in_view[index]:
+            # Only update if tag is less than 2m away
+            distance = math.sqrt(detection.pose.pose.pose.position.x ** 2 +  detection.pose.pose.pose.position.y ** 2 +  detection.pose.pose.pose.position.z ** 2)
+            if distance <= 3.5 and distance >= 1.75:
+                rospy.loginfo(detection.pose.pose.pose)
 
-                # Update tag_in_view list
-                self.tag_in_view[index] = True
-                
-                # Update pose only once per set of new detections
-                if not set_pose_flag:
+                # Only update pose with tag previously out of view before
+                if not self.tag_in_view[index]:
+
+                    # Update tag_in_view list
+                    self.tag_in_view[index] = True
                     
-                    # Transform location of tag in camera's frame to position of camera in tag's frame
-                    tag_in_camera_frame = detection.pose.pose.pose
-                    laser_in_tag_frame = self.transform_to_tag_frame(tag_in_camera_frame, detection.id[0])
+                    # Update pose only once per set of new detections
+                    if not set_pose_flag:
+                        
+                        # Transform location of tag in camera's frame to position of camera in tag's frame
+                        tag_in_camera_frame = detection.pose.pose.pose
+                        laser_in_tag_frame = self.transform_to_tag_frame(tag_in_camera_frame, detection.id[0])
 
-                    # Transform location of camera to map's frame
-                    now = rospy.Time.now()
-                    laser_in_tag_frame.header.stamp = now
-                    try:
-                        laser_in_map_frame = self.buffer.transform(laser_in_tag_frame, 'map')
-                    except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                        rospy.logerr("Unable to transform from frame %s to frame 'map'" % laser_in_tag_frame.header.frame_id)
-                        continue
+                        # Transform location of camera to map's frame
+                        now = rospy.Time.now()
+                        laser_in_tag_frame.header.stamp = now
+                        try:
+                            laser_in_map_frame = self.buffer.transform(laser_in_tag_frame, 'map')
+                        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+                            rospy.logerr("Unable to transform from frame %s to frame 'map'" % laser_in_tag_frame.header.frame_id)
+                            continue
 
-                     # Lookup transform between laser and base_footprint
-                    try:
-                        laser_to_base_transform = self.buffer.lookup_transform('base_footprint', 'camera_rgb_frame', rospy.Time(0))
-                    except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                        rospy.logerr("No transform available between 'laser_link' and 'base_footprint'")
-                        continue
+                        # Lookup transform between laser and base_footprint
+                        try:
+                            laser_to_base_transform = self.buffer.lookup_transform('base_footprint', 'camera_rgb_frame', rospy.Time(0))
+                        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+                            rospy.logerr("No transform available between 'laser_link' and 'base_footprint'")
+                            continue
 
-                    # Get position of base_footprint in map frame
-                    base_foot_pose = self.pose_of_base_footprint(laser_in_map_frame, laser_to_base_transform)
+                        # Get position of base_footprint in map frame
+                        base_foot_pose = self.pose_of_base_footprint(laser_in_map_frame, laser_to_base_transform)
 
-                    # Publish
-                    self.pose_pub.publish(base_foot_pose)
-                    self.rate.sleep()
+                        # Publish
+                        self.pose_pub.publish(base_foot_pose)
+                        self.rate.sleep()
 
         # Set tag_in_view to false for tags not seen in camera image            
         for tag_id in self.tag_ids:
