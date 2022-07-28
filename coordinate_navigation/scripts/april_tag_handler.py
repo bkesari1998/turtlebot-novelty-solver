@@ -112,11 +112,11 @@ class AprilTagHandler(object):
         base_footprint_pose.pose.covariance = [0] * 36
 
         # .25m variance in x direction
-        base_footprint_pose.pose.covariance[0] = 0.1
+        base_footprint_pose.pose.covariance[0] = 0.05
         # .25m variance in y direction
-        base_footprint_pose.pose.covariance[7] = 0.1
+        base_footprint_pose.pose.covariance[7] = 0.05
         # 1 radian variance in yaw axis
-        base_footprint_pose.pose.covariance[35] = 0.25
+        base_footprint_pose.pose.covariance[35] = 0.1
 
         return base_footprint_pose
         
@@ -151,7 +151,7 @@ class AprilTagHandler(object):
             self.rate.sleep()
 
             # Only update if tag is in distance range
-            if distance.data <= 3 and distance.data >= 1.5:
+            if distance.data <= 4 and distance.data >= 1:
                 rospy.loginfo(detection.pose.pose.pose)
 
                 # Only update pose with tag previously out of view before

@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <param name="/move_base/DWAPlannerROS/xy_goal_tolerance" type="double" value="0.15" />
-    <param name="/move_base/DWAPlannerROS/max_vel_trans" type="double" value="0.35" />
-    <param name="/move_base/DWAPlannerROS/max_vel_theta" type="double" value="0.5" />
-    <param name="/move_base/DWAPlannerROS/occdist_scale" type="double" value="0.001" />
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>

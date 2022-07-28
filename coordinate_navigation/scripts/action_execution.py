@@ -98,6 +98,7 @@ class PlanExecutor():
 ##################### Symbolic Actions #####################
 
     def approach_door(self, action):
+        global world_state
 
         '''
         approach_door action executor, checks pre and post conditions of action.
@@ -131,6 +132,8 @@ class PlanExecutor():
         return False
 
     def open_door(self, action):
+        global world_state
+
         '''
         open_door action executor. Checks pre and post conditions of action
         Call open_door_action.
@@ -163,6 +166,7 @@ class PlanExecutor():
         return False
 
     def go_through_door(self, action):
+        global world_state
 
         '''
         go_through_door action executor, checks pre and post conditions of action.
@@ -198,6 +202,7 @@ class PlanExecutor():
         return False
 
     def approach_desk_refill(self, action):
+        global world_state
 
         '''
         approach_desk_refill action executor, checks pre and post conditions of action.
@@ -213,6 +218,7 @@ class PlanExecutor():
         # Precondition checking
         if (world_state.objects["room"].has_key(room1) and 
         world_state.objects["desk"].has_key(desk1)):
+            rospy.loginfo("passed")
             if (world_state.objects["desk"][desk1]["in"] == room1 and 
             world_state.agents["turtlebot"]["at"] == room1 and
             not world_state.agents["turtlebot"]["docked"]):
