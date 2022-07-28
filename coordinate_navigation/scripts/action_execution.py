@@ -9,6 +9,7 @@ from state.waypoints import waypoints
 import state.world_state as world_state
 
 # ROS Messages/Services
+from std_msgs.msg import String
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move, Plan, Open_Door
@@ -29,6 +30,7 @@ class PlanExecutor():
         # Initialize velocit publisher
         self.cmd_vel = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=10) 
         self.rate = rospy.Rate(10)
+        self.move_plan_pub = rospy.Publisher('move_goal', String, queue_size=10)
 
         # Initialize service
         self.plan_executor_srv = rospy.Service("/action_executor", Plan, self.execute_plan) 
@@ -106,6 +108,7 @@ class PlanExecutor():
         action: list of strings expressing the pddl approach door action
         returns: boolean representing success/failure of action
         '''
+
         rospy.loginfo("In approach door")
         door = action[1]
         room1 = action[2]
@@ -140,7 +143,7 @@ class PlanExecutor():
         action: list of strings expressing the pddl open door action
         returns: boolean representing success/failure of action
         '''
-        rospy.loginfo("In open door")
+    
         door = action[1]
         room1 = action[2]
         room2 = action[3]
@@ -152,7 +155,6 @@ class PlanExecutor():
         world_state.agents["turtlebot"]["at"] == room1 and 
         not world_state.agents["turtlebot"]["docked"]):
 
-            rospy.loginfo("pased preconds")
         
             # Call to service
             status = self.open_door_action(door, room1)
@@ -210,15 +212,10 @@ class PlanExecutor():
         room1 = action[1]
         desk1 = action[2]
 
-        rospy.loginfo("In desk refill")
         # Precondition checking
         if (world_state.objects["room"].has_key(room1) and 
         world_state.objects["desk"].has_key(desk1)):
-            print(room1)
-            print(world_state.objects["desk"][desk1]["in"])
-            print(world_state.agents["turtlebot"]["at"])
-            print(world_state.agents["turtlebot"]["docked"])
-            if (world_state.objects["desk"][desk1]["in"] == room1 and 
+            if (world_state.objects["desk"][desk1]["inside"] == room1 and 
             world_state.agents["turtlebot"]["at"] == room1 and
             not world_state.agents["turtlebot"]["docked"]):
 
@@ -230,7 +227,7 @@ class PlanExecutor():
                     world_state.agents["turtlebot"]["facing"] == desk1
                 
                 return status.success
-        rospy.loginfo("returning false ")
+
         return False
 
     def dock(self, action):
@@ -387,7 +384,13 @@ class PlanExecutor():
 
         # Call to service
         try:
+            msg = String()
+            msg.data = loc
+            self.move_plan_pub.publish(msg)
+
+            
             move_tb = rospy.ServiceProxy("move", Move)
+
             response = move_tb(waypoints[loc][0], waypoints[loc][1])
             rospy.loginfo(response.message)
             if response.success:

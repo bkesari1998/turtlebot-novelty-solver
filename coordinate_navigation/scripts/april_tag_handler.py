@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
+from state.waypoints import state_check
+
 import rospy
 import math
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, String
+from std_srvs.srv import Empty
 from apriltag_ros.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 import tf2_ros
-from tf.transformations import quaternion_multiply, quaternion_about_axis
+from tf.transformations import quaternion_multiply
 
 
 class AprilTagHandler(object):
@@ -16,6 +19,11 @@ class AprilTagHandler(object):
         # Initialize ROS node
         rospy.init_node("tag_handler")
         rospy.on_shutdown(self.shutdown)
+
+        rospy.Subscriber('move_goal', String, callback=self.set_goal)
+        self.goal_tag = ''
+        self.goal_dist = 0
+        self.cancel_goal = rospy.ServiceProxy('move_base/cancel', Empty)
 
         # Initialize tf transform listener
         self.buffer = tf2_ros.Buffer()
@@ -48,6 +56,10 @@ class AprilTagHandler(object):
         while not rospy.is_shutdown():
             rospy.spin()
 
+
+    def set_goal(self, msg):
+        self.goal_tag = state_check['at_' + msg.data]['tag']
+        self.goal_dist = state_check['at_' + msg.data]['distance']
     
     def transform_to_tag_frame(self, camera_frame_pose, id_num):
         """
@@ -149,6 +161,9 @@ class AprilTagHandler(object):
             distance.data = math.sqrt(detection.pose.pose.pose.position.x ** 2 +  detection.pose.pose.pose.position.y ** 2 +  detection.pose.pose.pose.position.z ** 2)
             self.tag_pubs[index].publish(distance)
             self.rate.sleep()
+
+            if ('at_' + str(tag_id)) == self.goal_tag and distance.data <= self.goal_dist:
+                self.cancel_goal()
 
             # Only update if tag is in distance range
             if distance.data <= 4 and distance.data >= 1.5:

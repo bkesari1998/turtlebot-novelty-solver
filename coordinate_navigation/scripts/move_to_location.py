@@ -65,7 +65,9 @@ class MoveTB():
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
 
-        if (self.simple_action_client.get_state() == GoalStatus.SUCCEEDED):
+        if (self.simple_action_client.get_state() == GoalStatus.SUCCEEDED or 
+        self.simple_action_client.get_state() == GoalStatus.PREEMPTED or 
+        self.simple_action_client.get_state() == GoalStatus.PREEMPTING):
             return True, "Turtlebot successfully navigated to goal position"
         else:
             return False, "Turtlebot unable to navigate to goal position"
