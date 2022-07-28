@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <param name="/move_base/DWAPlannerROS/xy_goal_tolerance" type="double" value="0.35" />
+    <param name="/move_base/DWAPlannerROS/xy_goal_tolerance" type="double" value="0.15" />
     <param name="/move_base/DWAPlannerROS/max_vel_trans" type="double" value="0.35" />
     <param name="/move_base/DWAPlannerROS/max_vel_theta" type="double" value="0.5" />
+    <param name="/move_base/DWAPlannerROS/occdist_scale" type="double" value="0.001" />
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
@@ -20,5 +21,6 @@
     <node name="open_door" pkg="coordinate_navigation" type="open_door.py"/>
     <!--<node name="action_execution" pkg="coordinate_navigation" type="action_execution.py" />-->
     <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
+    <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
     <node name="tag_handler" pkg="coordinate_navigation" type="april_tag_handler.py"/>
 </launch>

@@ -151,7 +151,7 @@ class AprilTagHandler(object):
             self.rate.sleep()
 
             # Only update if tag is in distance range
-            if distance.data <= 3.5 and distance.data >= 1.5:
+            if distance.data <= 3 and distance.data >= 1.5:
                 rospy.loginfo(detection.pose.pose.pose)
 
                 # Only update pose with tag previously out of view before
