@@ -5,7 +5,7 @@ from state.waypoints import state_check
 import rospy
 import math
 from std_msgs.msg import Float64, String
-from std_srvs.srv import Empty
+from actionlib_msgs.msg import GoalID
 from apriltag_ros.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
@@ -23,7 +23,7 @@ class AprilTagHandler(object):
         rospy.Subscriber('move_goal', String, callback=self.set_goal)
         self.goal_tag = ''
         self.goal_dist = 0
-        self.cancel_goal = rospy.ServiceProxy('move_base/cancel', Empty)
+        self.cancel_goal = rospy.Publisher('move_base/cancel', GoalID)
 
         # Initialize tf transform listener
         self.buffer = tf2_ros.Buffer()
@@ -163,7 +163,7 @@ class AprilTagHandler(object):
             self.rate.sleep()
 
             if ('at_' + str(detection.id[0])) == self.goal_tag and distance.data <= self.goal_dist:
-                self.cancel_goal()
+                self.cancel_goal.publish(GoalID())
 
             # Only update if tag is in distance range
             if distance.data <= 4 and distance.data >= 1.5:
