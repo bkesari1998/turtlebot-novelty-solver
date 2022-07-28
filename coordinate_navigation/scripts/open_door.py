@@ -4,6 +4,7 @@ import rospy
 import os
 
 from std_msgs.msg import Float64
+from std_srvs.srv import Empty
 from coffee_bot_srvs.srv import Open_Door
 from state.waypoints import state_check
 
@@ -19,6 +20,9 @@ class OpenDoor(object):
         # Initialize service
         self.open_door_srv = rospy.Service("/open_door", Open_Door, self.open_door)
         rospy.loginfo("open_door service active")
+
+        rospy.wait_for_service("/move_base/clear_costmaps")
+        self.clear_costmap = rospy.ServiceProxy("/move_base/clear_costmaps", Empty)
 
         self.door_open = False
 
@@ -55,6 +59,8 @@ class OpenDoor(object):
             rospy.sleep(1)
             
             rospy.loginfo(self.door_open)
+        
+        self.clear_costmap()
     
         door_sub.unregister()
         return True, "Door is open"
