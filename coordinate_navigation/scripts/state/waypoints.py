@@ -7,9 +7,9 @@ waypoints = {
 }
 
 state_check = {
-    "at_lab_door_lab": {"tag": "at3", "distance": 3},
+    "at_lab_door_lab": {"tag": "at3", "distance": 2},
     "lab_door_lab_open": {"tag": "at4", "in_view": True},
     "lab_door_kitchen_open": {"tag": "at13", "in_view": False},
-    "at_dock_approach": {"tag": "at0", "distance": 3},
+    "at_dock_approach": {"tag": "at0", "distance": 2},
     "at_desk_refill": {"tag": "at9", "distance": 1},
 }
