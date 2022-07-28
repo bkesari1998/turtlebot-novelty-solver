@@ -162,7 +162,7 @@ class AprilTagHandler(object):
             self.tag_pubs[index].publish(distance)
             self.rate.sleep()
 
-            if ('at_' + str(tag_id)) == self.goal_tag and distance.data <= self.goal_dist:
+            if ('at_' + str(detection.id[0])) == self.goal_tag and distance.data <= self.goal_dist:
                 self.cancel_goal()
 
             # Only update if tag is in distance range
