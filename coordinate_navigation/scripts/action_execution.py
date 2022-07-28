@@ -179,16 +179,12 @@ class PlanExecutor():
         room2 = action[2]
         door = action[3]
 
-        rospy.loginfo("in go through")
-
         # Precondition checking
         if (world_state.objects["door"].has_key(door) and 
             room1 in world_state.objects["door"][door]["connect"] and room2 in world_state.objects["door"][door]["connect"] and
             world_state.objects["door"][door]["open"] and 
             world_state.agents["turtlebot"]["at"] == room1 and 
             not world_state.agents["turtlebot"]["docked"]):
-
-                rospy.loginfo("passed precond")
 
                 # Call move action
                 status = self.move_action(door + "_" + room2)
@@ -218,12 +214,13 @@ class PlanExecutor():
         # Precondition checking
         if (world_state.objects["room"].has_key(room1) and 
         world_state.objects["desk"].has_key(desk1)):
-            rospy.loginfo("passed")
+            print(room1)
+            print(world_state.objects["desk"][desk1]["in"])
+            print(world_state.agents["turtlebot"]["at"])
+            print(world_state.agents["turtlebot"]["docked"])
             if (world_state.objects["desk"][desk1]["in"] == room1 and 
             world_state.agents["turtlebot"]["at"] == room1 and
             not world_state.agents["turtlebot"]["docked"]):
-
-                rospy.loginfo("passed preconds")
 
                 # Call move action
                 status = self.move_action(desk1)
