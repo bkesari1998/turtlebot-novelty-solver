@@ -7,6 +7,8 @@ from actionlib_msgs.msg import GoalStatus
 from coffee_bot_srvs.srv import Move
 from geometry_msgs.msg import Twist
 
+from state.waypoints import waypoints, state_check
+
 class MoveTB():
     def __init__(self):
         '''
@@ -60,17 +62,30 @@ class MoveTB():
         returns: Service response.
         """
 
+        # Gather info about waypoint
+        if waypoints.has_key(req.waypoint):
+            pose = waypoints[req.waypoint][0]
+            orientation = waypoints[req.waypoint][1]
+        else:
+            return False, "Waypoint does not exist"
+
+        associated_tag = state_check['at_' + req.waypoint]['tag']
+        distance = state_check['at_' + req.waypoint]['distance']
+
         # Assign the turtlebot's goal
-        tb_goal = self.assign_goal(req.final_pose, req.final_orientation)
+        tb_goal = self.assign_goal(pose, orientation)
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
 
-        if (self.simple_action_client.get_state() == GoalStatus.SUCCEEDED or 
-        self.simple_action_client.get_state() == GoalStatus.PREEMPTED or 
-        self.simple_action_client.get_state() == GoalStatus.PREEMPTING):
+        try:
+            tag_distance = rospy.wait_for_message(associated_tag, rospy.Duration(2))
+        except rospy.ROSException:
+            return False, "Tag not in view"
+
+        if tag_distance <= distance:
             return True, "Turtlebot successfully navigated to goal position"
         else:
-            return False, "Turtlebot unable to navigate to goal position"
+            return False, "Tag is too far away"
 
     def shutdown(self):
         """

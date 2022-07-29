@@ -21,9 +21,6 @@ class OpenDoor(object):
         self.open_door_srv = rospy.Service("/open_door", Open_Door, self.open_door)
         rospy.loginfo("open_door service active")
 
-        rospy.wait_for_service("/move_base/clear_costmaps")
-        self.clear_costmap = rospy.ServiceProxy("/move_base/clear_costmaps", Empty)
-
         self.door_open = False
 
         while not rospy.is_shutdown():
@@ -59,8 +56,6 @@ class OpenDoor(object):
             rospy.sleep(1)
             
             rospy.loginfo(self.door_open)
-        
-        self.clear_costmap()
     
         door_sub.unregister()
         return True, "Door is open"

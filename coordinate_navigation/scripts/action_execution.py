@@ -30,7 +30,6 @@ class PlanExecutor():
         # Initialize velocit publisher
         self.cmd_vel = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=10) 
         self.rate = rospy.Rate(10)
-        self.move_plan_pub = rospy.Publisher('move_goal', String, queue_size=10)
 
         # Initialize service
         self.plan_executor_srv = rospy.Service("/action_executor", Plan, self.execute_plan) 
@@ -384,14 +383,8 @@ class PlanExecutor():
 
         # Call to service
         try:
-            msg = String()
-            msg.data = loc
-            self.move_plan_pub.publish(msg)
-
-            
             move_tb = rospy.ServiceProxy("move", Move)
-
-            response = move_tb(waypoints[loc][0], waypoints[loc][1])
+            response = move_tb(waypoints[loc])
             rospy.loginfo(response.message)
             if response.success:
                 return True
