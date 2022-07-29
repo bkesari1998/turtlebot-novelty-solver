@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from turtle import clear
 import rospy
 import os
 
@@ -20,6 +21,9 @@ class OpenDoor(object):
         # Initialize service
         self.open_door_srv = rospy.Service("/open_door", Open_Door, self.open_door)
         rospy.loginfo("open_door service active")
+
+        # Clear costmaps service
+        self.clear_costmaps = rospy.ServiceProxy("/move_base/clear_costmaps", Empty)
 
         self.door_open = False
 
@@ -68,6 +72,9 @@ class OpenDoor(object):
             rospy.sleep(1)
     
         door_sub.unregister()
+
+        # Clear costmaps
+        self.clear_costmaps()
 
         # Set door flag back to false for next use
         self.door_open = False
