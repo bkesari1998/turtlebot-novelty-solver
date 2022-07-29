@@ -3,3 +3,6 @@ coordinate_navigation/.vscode/settings.json
 coordinate_navigation/scripts/state/__init__.pyc
 coordinate_navigation/scripts/state/waypoints.pyc
 coordinate_navigation/scripts/state/world_state.pyc
+.vscode/settings.json
+.vscode/launch.json
+.vscode/c_cpp_properties.json
