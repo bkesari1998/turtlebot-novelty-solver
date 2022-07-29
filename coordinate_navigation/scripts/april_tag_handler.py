@@ -26,10 +26,10 @@ class AprilTagHandler(object):
         rospy.loginfo("tag_handler node active")
 
         # Create a list to keep track if a tag is in the camera's view
-        self.tag_in_view = [False, False, False]
+        self.tag_in_view = [False, False, False, False, False, False, False]
 
         # Create a list of active april tag ids.
-        self.tag_ids = [3, 4, 9] # Make this a rosparam later
+        self.tag_ids = [1, 3, 4, 6, 9, 13, 14] # Make this a rosparam later
 
         # Initialize a topic/publisher for each april tag being used
         # Store publishers in a list
@@ -202,7 +202,7 @@ class AprilTagHandler(object):
                         quaternion_conjugate([base_foot_pose.pose.pose.orientation.x, base_foot_pose.pose.pose.orientation.y, base_foot_pose.pose.pose.orientation.z, base_foot_pose.pose.pose.orientation.w]))
 
                         _, _, yaw_diff = euler_from_quaternion(quat_diff)
-                        if pose_diff > 1 and (yaw_diff > 1 and yaw_diff < 5): 
+                        if pose_diff > 2 and (yaw_diff > 1 and yaw_diff < 5): 
                             self.pose_pub.publish(base_foot_pose)
 
         # Set tag_in_view to false for tags not seen in camera image            
