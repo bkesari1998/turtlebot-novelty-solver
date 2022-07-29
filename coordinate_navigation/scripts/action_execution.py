@@ -216,20 +216,19 @@ class PlanExecutor():
         # Precondition checking
         if (world_state.objects["room"].has_key(room1) and 
         world_state.objects["desk"].has_key(desk1)):
-            rospy.loginfo("passed 1st preconds")
             if (world_state.objects["desk"][desk1]["inside"] == room1 and 
             world_state.agents["turtlebot"]["at"] == room1 and
             not world_state.agents["turtlebot"]["docked"]):
-                rospy.loginfo("passed 2nd preconds")
+
                 # Call move action
                 status = self.move_action(desk1)
-
                 # Update world state
-                if status.success:
+                if status:
                     world_state.agents["turtlebot"]["facing"] = desk1
                 
-                return status.success
+                return status
 
+        rospy.loginfo('Returning false')
         return False
 
     def dock(self, action):
