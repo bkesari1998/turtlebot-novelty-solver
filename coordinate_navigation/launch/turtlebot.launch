@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+    <rosparam file="$(find coordinate_navigation)/config/waypoints.yaml" />
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
     <include file="$(find coordinate_navigation)/launch/tag_static_frames.launch"/>
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
@@ -7,7 +8,8 @@
         <arg name="initial_pose_x" value="0.827" />
         <arg name="initial_pose_y" value="1.044" />
         <arg name="initial_pose_a" value="0" />
-    </include> 
+    </include>
+    <include file="$(find rplidar_ros)/launch/rplidar.launch" /> 
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="/camera/rgb" />
         <arg name="image_topic" value="image_raw" />

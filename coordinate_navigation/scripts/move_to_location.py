@@ -7,8 +7,6 @@ from std_msgs.msg import Float64
 from coffee_bot_srvs.srv import Move
 from geometry_msgs.msg import Twist
 
-from state.waypoints import waypoints, state_check
-
 class MoveTB():
     def __init__(self):
         '''
@@ -62,38 +60,40 @@ class MoveTB():
         returns: Service response.
         """
         rospy.loginfo('In move_tb')
-        # Gather info about waypoint
-        if waypoints.has_key(req.waypoint):
-            pose = waypoints[req.waypoint][0]
-            orientation = waypoints[req.waypoint][1]
-        else:
-            return False, "Waypoint does not exist"
 
-        rospy.loginfo('Got waypoint info')
+        # Get waypoint info
+        try:
+            waypoint = rospy.get_param('waypoints/%s' % req.waypoint)
+        except (rospy.ROSException, KeyError):
+            return False, 'Waypoint does not exist' 
 
-        associated_tag = state_check['at_' + req.waypoint]['tag']
-        distance = state_check['at_' + req.waypoint]['distance']
-        rospy.loginfo(distance)
-
-        rospy.loginfo('got april tag info')
+        try:
+            state_confirmation = rospy.get_param('state_confirmation/at_%s' % req.waypoint)
+        except (rospy.ROSException, KeyError):
+            return False, 'Waypoint does not have entry in state_confirmation dictionary'
 
         # Assign the turtlebot's goal
-        tb_goal = self.assign_goal(pose, orientation)
+        tb_goal = self.assign_goal(waypoint[0], waypoint[1])
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
 
-        rospy.loginfo('Passed service call')
 
+        # Get distance to the tag
         try:
-            tag_distance = rospy.wait_for_message(associated_tag, Float64, rospy.Duration(2))
+            tag_distance = rospy.wait_for_message(state_confirmation['tag'], Float64, rospy.Duration(2))
         except rospy.ROSException:
             return False, "Tag not in view"
+        except KeyError:
+            return False, "Tag is not set for waypoint"
         
-        rospy.loginfo(tag_distance)
-        if tag_distance.data <= distance:
-            return True, "Turtlebot successfully navigated to goal position"
-        else:
-            return False, "Tag is too far away"
+        # Check if tag is close enough
+        try: 
+            if tag_distance.data <= state_confirmation['distance']:
+                return True, "Turtlebot successfully navigated to goal position"
+            else:
+                return False, "Tag is too far away"
+        except KeyError:
+            return False, 'Distance is not set for tag'
 
     def shutdown(self):
         """

@@ -26,15 +26,16 @@ class OpenDoor(object):
         while not rospy.is_shutdown():
             rospy.spin()
 
-    def set_door_open(self, msg, key):
+    def set_door_open(self, msg, in_view):
         """
         Setter for door_open
         returns: none
         """
+
         if msg.data == -1:
-            self.door_open = not state_check[key]['in_view']
+            self.door_open = not in_view
         else:
-            self.door_open = state_check[key]['in_view']
+            self.door_open = in_view
 
     def open_door(self, req):
         """
@@ -42,22 +43,35 @@ class OpenDoor(object):
         req: Trigger object.
         returns: Service response.
         """
-        door = req.door
-        key = door + "_" + req.room + "_open"
-        april_tag = state_check[key]["tag"]
+
+        try:
+            state_confirmation = rospy.get_param('state_confirmation/%s_%s_open' % (req.door, req.room))
+        except (rospy.ROSException, KeyError):
+            return False, 'Door does not have entry in state_confirmation dictionary'
+
+        try:
+            april_tag = state_confirmation['tag']
+        except KeyError:
+            return False, 'Tag not set for door'
+
+        try:
+            in_view = state_confirmation['in_view']
+        except KeyError:
+            return False, 'In_view not set for door'    
         
-        door_sub = rospy.Subscriber(april_tag, Float64, self.set_door_open, callback_args=key)
-        rospy.loginfo(self.door_open)
+        door_sub = rospy.Subscriber(april_tag, Float64, self.set_door_open, callback_args=in_view)
 
         while not self.door_open:
 
             os.system("roslaunch coordinate_navigation open_door.launch")
             # Sleep for 5 seconds after asking to open door
             rospy.sleep(1)
-            
-            rospy.loginfo(self.door_open)
     
         door_sub.unregister()
+
+        # Set door flag back to false for next use
+        self.door_open = False
+
         return True, "Door is open"
 
     def shutdown(self):

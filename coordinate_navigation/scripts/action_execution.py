@@ -5,7 +5,6 @@ import math
 import rospy
 
 # Global Vars
-from state.waypoints import waypoints
 import state.world_state as world_state
 
 # ROS Messages/Services
