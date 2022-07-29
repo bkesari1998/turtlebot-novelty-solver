@@ -9,11 +9,11 @@ waypoints: {
 
 state_confirmation: {
     "at_lab_door_lab_lab": {"tag": "at3", "distance": 3},
-    "at_lab_door_lab_kitchen": {"tag": "at15", "distance": 3},
-    "at_lab_door_kitchen_kitchen": {"tag": "at4", "distance": 1.5},
+    "at_lab_door_lab_kitchen": {"tag": "at8", "distance": 3},
+    "at_lab_door_kitchen_kitchen": {"tag": "at5", "distance": 1.5},
     "at_lab_door_kitchen_lab": {"tag": "at4", "distance": 1.5},
     "at_dock_approach": {"tag": "at0", "distance": 2},
     "at_desk_refill": {"tag": "at9", "distance": 2},
-    "lab_door_lab_open": {"tag": "at4", "in_view": True},
-    "lab_door_kitchen_open": {"tag": "at15", "in_view": True},
+    "lab_door_lab_open": {"tag": "at4_view", "in_view": True},
+    "lab_door_kitchen_open": {"tag": "at15_view", "in_view": False},
 }
