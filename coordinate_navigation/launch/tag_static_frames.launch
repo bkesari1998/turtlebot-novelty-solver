@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at0_broadcaster" args="16.08587 21.10824 0.3 -0.70710 0 0 0.70710 map at0_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at1_broadcaster" args="15.19880 19.72371 0.21 -0.5 -0.5 0.5 0.5 map at1_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at2_broadcaster" args="16.98918 12.33663 0.21 -0.09229 0.70106 -0.70106 0.09229 map at2_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at3_broadcaster" args="23.14595 18.24015 0.255 -0.54167 0.45451 -0.45451 0.54167 map at3_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at4_broadcaster" args="24.96181 19.46917 0.24 -0.54167 0.45451 -0.45451 0.54167 map at4_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at5_broadcaster" args="23.01524 19.56915 0.26 -0.45451 -0.54167 0.54167 0.45451 map at5_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at6_broadcaster" args="24.64900 22.04900 0.295 -0.70710 0 0 0.70710 map at6_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at7_broadcaster" args="25.95919 19.58059 0.255 -0.09229 0.70106 -0.70106 0.09229 map at7_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at8_broadcaster" args="27.48586 15.61090 0.255 -0.09229 0.70106 -0.70106 0.09229 map at8_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at9_broadcaster" args="27.35806 16.63330 0.305 -0.45451 -0.54167 0.54167 0.45451 map at9_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at10_broadcaster" args="18.13372 14.0562 0.185 -0.09229 0.70106 -0.70106 0.09229 map at10_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at11_broadcaster" args="21.51573 14.36746 0.185 -0.09229 0.70106 -0.70106 0.09229 map at11_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at12_broadcaster" args="22.79717 13.26829 0.255 -0.09229 0.70106 -0.70106 0.09229 map at12_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at13_broadcaster" args="23.11574 18.89944 0.255 -0.5 -0.5 0.5 0.5 map at13_" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="at3_broadcaster" args="-1.086 -5.106 0.255 0.706 0.031 -0.031 -0.706 map at3_" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="at4_broadcaster" args="-0.085 -6.895 0.24 0.706 0.031 -0.031 -0.706 map at4_" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="at9_broadcaster" args="-2.617 -7.891 0.30 0 0.707 -0.707 0 map at9_" />
 </launch>

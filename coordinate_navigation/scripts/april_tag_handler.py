@@ -27,10 +27,10 @@ class AprilTagHandler(object):
         rospy.loginfo("tag_handler node active")
 
         # Create a list to keep track if a tag is in the camera's view
-        self.tag_in_view = [False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+        self.tag_in_view = [False, False, False]
 
         # Create a list of active april tag ids.
-        self.tag_ids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] # Make this a rosparam later
+        self.tag_ids = [3, 4, 9] # Make this a rosparam later
 
         # Initialize a topic/publisher for each april tag being used
         # Store publishers in a list
