@@ -5,9 +5,8 @@ from state.waypoints import state_check
 import rospy
 import math
 from std_msgs.msg import Float64, String
-from actionlib_msgs.msg import GoalID
 from apriltag_ros.msg import AprilTagDetectionArray
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 from tf2_geometry_msgs import PoseStamped
 import tf2_ros
 from tf.transformations import quaternion_multiply, quaternion_conjugate, euler_from_quaternion
@@ -51,10 +50,6 @@ class AprilTagHandler(object):
         while not rospy.is_shutdown():
             rospy.spin()
 
-
-    def set_goal(self, msg):
-        self.goal_tag = state_check['at_' + msg.data]['tag']
-        self.goal_dist = state_check['at_' + msg.data]['distance']
     
     def transform_to_tag_frame(self, camera_frame_pose, id_num):
         """
@@ -71,8 +66,8 @@ class AprilTagHandler(object):
         tag_frame_pose.header.frame_id = 'at%d_' % id_num
 
         # Position
-        tag_frame_pose.pose.position.x = -camera_frame_pose.position.x
-        tag_frame_pose.pose.position.y = -camera_frame_pose.position.y
+        tag_frame_pose.pose.position.x = camera_frame_pose.position.x
+        tag_frame_pose.pose.position.y = camera_frame_pose.position.y
         tag_frame_pose.pose.position.z = -camera_frame_pose.position.z
 
         # Orientation
@@ -144,7 +139,9 @@ class AprilTagHandler(object):
         set_pose_flag = False
 
         # Get odometry position
-        odom_pose = rospy.wait_for_message("/odom/pose/pose")
+
+        odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped)
+        odom_pose = odom_pose.pose.pose
 
         # Loop over detected april tags.
         for detection in msg.detections:
@@ -157,6 +154,7 @@ class AprilTagHandler(object):
             distance = Float64()
             distance.data = math.sqrt(detection.pose.pose.pose.position.x ** 2 +  detection.pose.pose.pose.position.y ** 2 +  detection.pose.pose.pose.position.z ** 2)
             self.tag_pubs[index].publish(distance)
+            rospy.loginfo(distance)
 
             # Only update if tag is in distance range
             if distance.data <= 3 and distance.data >= 1.5:
@@ -204,7 +202,6 @@ class AprilTagHandler(object):
                         quaternion_conjugate([base_foot_pose.pose.pose.orientation.x, base_foot_pose.pose.pose.orientation.y, base_foot_pose.pose.pose.orientation.z, base_foot_pose.pose.pose.orientation.w]))
 
                         _, _, yaw_diff = euler_from_quaternion(quat_diff)
-
                         if pose_diff > 1 and (yaw_diff > 1 and yaw_diff < 5): 
                             self.pose_pub.publish(base_foot_pose)
 

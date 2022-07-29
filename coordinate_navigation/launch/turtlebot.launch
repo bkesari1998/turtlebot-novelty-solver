@@ -17,7 +17,7 @@
     <node name="undock" pkg="coordinate_navigation" type="undock.py" />
     <node name="open_door" pkg="coordinate_navigation" type="open_door.py"/>
     <!--<node name="action_execution" pkg="coordinate_navigation" type="action_execution.py" />-->
-    <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
+    <!-- <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/> -->
     <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
-    <node name="tag_handler" pkg="coordinate_navigation" type="april_tag_handler.py"/>
+    <!-- <node name="tag_handler" pkg="coordinate_navigation" type="april_tag_handler.py"/> -->
 </launch>

@@ -64,7 +64,7 @@ class Undock():
         move_cmd.linear.x = -0.2
         move_cmd.angular.z = 0
 
-        for i in range(25):
+        for i in range(50):
             self.cmd_vel.publish(move_cmd)
             self.rate.sleep()
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at3_broadcaster" args="-1.086 -5.106 0.255 0.706 0.031 -0.031 -0.706 map at3_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at4_broadcaster" args="-0.085 -6.895 0.24 0.706 0.031 -0.031 -0.706 map at4_" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="at9_broadcaster" args="-2.617 -7.891 0.30 0 0.707 -0.707 0 map at9_" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="at3_broadcaster" args="-1.086 -5.106 0.255 -0.031 0.706 -0.706 0.031 map at3_" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="at4_broadcaster" args="-0.085 -6.895 0.24 -0.031 0.706 -0.706 0.031 map at4_" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="at9_broadcaster" args="-2.617 -7.891 0.30 -0.707 0 0 -0.707 map at9_" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="at15_broadcaster" args="-1.149 -1.886 0.155 -0.707 0 0 -0.707 map at15_" />
 </launch>

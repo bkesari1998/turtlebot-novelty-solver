@@ -9,7 +9,6 @@ from state.waypoints import waypoints
 import state.world_state as world_state
 
 # ROS Messages/Services
-from std_msgs.msg import String
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move, Plan, Open_Door
@@ -51,11 +50,12 @@ class PlanExecutor():
 
         self.undock(["undock", "lab", "charger_1"])
         self.approach_door(["approach_door", "lab_door", "lab", "kitchen"])
-        # self.approach_charger(["approach_charger", "lab", "charger_1"])
-        # self.dock(["dock", "lab", "charger_1"])
         self.open_door(["open_door", "lab_door", "lab", "kitchen"])
         self.go_through_door(["go_through_door", "lab", "kitchen", "lab_door"])
         self.approach_desk_refill(["approach_desk_refill", "kitchen", "desk_refill"])
+        self.approach_door(["approach_door", "lab_door", "kitchen", "lab"])
+        self.go_through_door(["go_through_door", "kitchen", "lab", "lab_door"])
+        
         while not rospy.is_shutdown():
             rospy.spin()
         
@@ -122,7 +122,7 @@ class PlanExecutor():
             rospy.loginfo("Passed preconds")
 
             # Call move action
-            status = self.move_action(door + "_" + room1)
+            status = self.move_action(door + "_" + room1 + "_" + room1)
 
             # Update world state
             if status:
@@ -188,11 +188,12 @@ class PlanExecutor():
             not world_state.agents["turtlebot"]["docked"]):
 
                 # Call move action
-                status = self.move_action(door + "_" + room2)
+                status = self.move_action(door + "_" + room2 + "_"+ room1)
 
                 # Update world state
                 if status:
-                    world_state.agents["turtlebot"]["at"] == room2
+                    world_state.agents["turtlebot"]["at"] = room2
+                    print(world_state.agents["turtlebot"]["at"])
                 
                 return status
             
@@ -200,6 +201,8 @@ class PlanExecutor():
 
     def approach_desk_refill(self, action):
         global world_state
+
+        rospy.loginfo("In approach desk refill")
 
         '''
         approach_desk_refill action executor, checks pre and post conditions of action.
@@ -214,16 +217,17 @@ class PlanExecutor():
         # Precondition checking
         if (world_state.objects["room"].has_key(room1) and 
         world_state.objects["desk"].has_key(desk1)):
+            rospy.loginfo("passed 1st preconds")
             if (world_state.objects["desk"][desk1]["inside"] == room1 and 
             world_state.agents["turtlebot"]["at"] == room1 and
             not world_state.agents["turtlebot"]["docked"]):
-
+                rospy.loginfo("passed 2nd preconds")
                 # Call move action
                 status = self.move_action(desk1)
 
                 # Update world state
                 if status.success:
-                    world_state.agents["turtlebot"]["facing"] == desk1
+                    world_state.agents["turtlebot"]["facing"] = desk1
                 
                 return status.success
 
@@ -251,8 +255,8 @@ class PlanExecutor():
                 rospy.loginfo("passed preconds")
                 status = self.dock_action()
                 if status:
-                    world_state.agents["turtlebot"]["docked"] == True
-                    world_state.agents["turtlebot"]["facing"] == charger1
+                    world_state.agents["turtlebot"]["docked"] = True
+                    world_state.agents["turtlebot"]["facing"] = charger1
 
                 return status
 
@@ -384,7 +388,7 @@ class PlanExecutor():
         # Call to service
         try:
             move_tb = rospy.ServiceProxy("move", Move)
-            response = move_tb(waypoints[loc])
+            response = move_tb(loc)
             rospy.loginfo(response.message)
             if response.success:
                 return True
