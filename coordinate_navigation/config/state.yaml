@@ -1,0 +1,40 @@
+agents: {
+    turtlebot: {at: "lab", facing: "charger_1", docked: True}
+}
+
+objects : {
+    room : {
+        lab: {},
+        kitchen: {},
+        office: {} 
+    }, 
+
+    door: {
+        lab_door : {connect : ["lab", "kitchen"], open: false},
+        office_door : {connect: ["office", "kitchen"], open: false}
+    },
+
+    charger: {
+        charger_1: {inside: "lab"},
+        charger_2: {inside: "lab"}
+    },
+
+    desk: {
+        desk_refill: {inside: "kitchen"}
+    }
+}
+
+state_confirmation: {
+    at : {
+      lab_door_lab_lab: {tag: "at3", distance: 3},
+      lab_door_lab_kitchen: {tag: "at8", distance: 3},
+      lab_door_kitchen_kitchen: {tag: "at5", distance: 1.5},
+      lab_door_kitchen_lab: {tag: "at4", distance: 1.5},
+      dock_approach: {tag: "at0", distance: 2},
+      desk_refill": {tag: "at9", distance: 2},
+    }, 
+    open : {
+      lab_door_lab: {tag: "at4_view", in_view: True},
+      lab_door_kitchen: {tag: "at15_view", in_view: False},
+    }
+}
