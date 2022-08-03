@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node name="soundplay_node" pkg="sound_play" type="say.py" args="'Human, please open the door to room 474 for me'"/>
+    <node name="say_node" pkg="sound_play" type="say.py" args="'Human, please open the door'"/>
 </launch>

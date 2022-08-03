@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <param name="/move_base/DWAPlannerROS/xy_goal_tolerance" type="double" value="0.25" />
-
+    <rosparam file="$(find coordinate_navigation)/config/waypoints.yaml" />
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+    <include file="$(find coordinate_navigation)/launch/tag_static_frames.launch"/>
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
-        <arg name="initial_pose_x" value="16.0213336815" />
-        <arg name="initial_pose_y" value="20.7888399585" />
-        <arg name="initial_pose_a" value="1.3877" />
-    </include> 
+        <arg name="initial_pose_x" value="0.827" />
+        <arg name="initial_pose_y" value="1.044" />
+        <arg name="initial_pose_a" value="0" />
+    </include>
+    <!-- <include file="$(find rplidar_ros)/launch/rplidar.launch" />  -->
+    <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
+        <arg name="camera_name" value="/camera/rgb" />
+        <arg name="image_topic" value="image_raw" />
+    </include>
     <include file="$(find kobuki_auto_docking)/launch/minimal.launch" />
     <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
-    <node name="move_to_start" pkg="coordinate_navigation" type="move_to_start.py" />
-    <node name="plan_execution" pkg="coordinate_navigation" type="plan_execution.py" /> 
+    <node name="undock" pkg="coordinate_navigation" type="undock.py" />
+    <node name="open_door" pkg="coordinate_navigation" type="open_door.py"/>
+    <!--<node name="action_execution" pkg="coordinate_navigation" type="action_execution.py" />-->
     <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
     <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
-
-
+    <node name="tag_handler" pkg="coordinate_navigation" type="april_tag_handler.py"/>
 </launch>

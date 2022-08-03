@@ -3,7 +3,7 @@
 import rospy
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from actionlib_msgs.msg import GoalStatus
+from std_msgs.msg import Float64
 from coffee_bot_srvs.srv import Move
 from geometry_msgs.msg import Twist
 
@@ -33,12 +33,12 @@ class MoveTB():
             rospy.spin()
 
     def assign_goal(self, pose, orientation):
-        '''
+        """
         Assigns a pose and orientation to a MoveBaseGoal object.
         pose: Cartiesian pose list [x, y, z]
         orientation: Quaternion rotation list [x, y ,z ,w]
         returns: MoveBaseGoal object
-        '''
+        """
 
         # Create MoveBaseGoal object from input
         goal_pose = MoveBaseGoal()
@@ -54,26 +54,51 @@ class MoveTB():
         return goal_pose
 
     def move_tb(self, req):
-        '''
+        """
         Handler for move_tb service. Calls SimpleAction service to move tb to goal position.
         req: Service request, a Move object.
         returns: Service response.
-        '''
+        """
+        rospy.loginfo('In move_tb')
+
+        # Get waypoint info
+        try:
+            waypoint = rospy.get_param('waypoints/%s' % req.waypoint)
+        except (rospy.ROSException, KeyError):
+            return False, 'Waypoint does not exist' 
+
+        try:
+            state_confirmation = rospy.get_param('state_confirmation/at_%s' % req.waypoint)
+        except (rospy.ROSException, KeyError):
+            return False, 'Waypoint does not have entry in state_confirmation dictionary'
 
         # Assign the turtlebot's goal
-        tb_goal = self.assign_goal(req.final_pose, req.final_orientation)
+        tb_goal = self.assign_goal(waypoint[0], waypoint[1])
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
 
-        if (self.simple_action_client.get_state() == GoalStatus.SUCCEEDED):
-            return True, "Turtlebot successfully navigated to goal position"
-        else:
-            return False, "Turtlebot unable to navigate to goal position"
+
+        # Get distance to the tag
+        try:
+            tag_distance = rospy.wait_for_message(state_confirmation['tag'], Float64, rospy.Duration(2))
+        except rospy.ROSException:
+            return False, "Tag not in view"
+        except KeyError:
+            return False, "Tag is not set for waypoint"
+        
+        # Check if tag is close enough
+        try: 
+            if tag_distance.data <= state_confirmation['distance']:
+                return True, "Turtlebot successfully navigated to goal position"
+            else:
+                return False, "Tag is too far away"
+        except KeyError:
+            return False, 'Distance is not set for tag'
 
     def shutdown(self):
-        '''
+        """
         Called on shutdown of node.
-        '''
+        """
         
         rospy.loginfo("Stopping move_tb node")
         rospy.loginfo("Stopping turtlebot")

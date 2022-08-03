@@ -1,5 +1,4 @@
-float32[] final_pose
-float32[] final_orientation
+string waypoint
 ---
 bool success
 string message

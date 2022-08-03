@@ -58,6 +58,7 @@
     :parameters (?room01 - room ?room02 - room ?door01 - door)
     :precondition (and
         (at ?room01)
+        (not(docked))
         (connect ?room01 ?room02 ?door01)
         ; (facing ?door01)
         (open ?door01)
@@ -155,6 +156,7 @@
     :parameters (?room01 - room ?charger01 - charger)
     :precondition (and 
         (facing ?charger01)
+        (at ?room01)
         (inside ?room01 ?charger01)
      )
     :effect (and
