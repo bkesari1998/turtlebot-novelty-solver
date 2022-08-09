@@ -9,7 +9,6 @@
         <arg name="initial_pose_y" value="1.044" />
         <arg name="initial_pose_a" value="0" />
     </include>
-    <!-- <include file="$(find rplidar_ros)/launch/rplidar.launch" />  -->
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="/camera/rgb" />
         <arg name="image_topic" value="image_raw" />
@@ -18,8 +17,8 @@
     <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
     <node name="undock" pkg="coordinate_navigation" type="undock.py" />
     <node name="open_door" pkg="coordinate_navigation" type="open_door.py"/>
-    <!--<node name="action_execution" pkg="coordinate_navigation" type="action_execution.py" />-->
     <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
     <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
-    <node name="tag_handler" pkg="coordinate_navigation" type="april_tag_handler.py"/>
+    <node name="tag_handler" pkg="coordinate_navigation" type="april_tag_localization.py"/>
+    <node name="state_confirmer" pkg="coordinate_navigation" type="state_confirmation.py"/>
 </launch>
