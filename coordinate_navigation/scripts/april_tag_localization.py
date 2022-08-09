@@ -32,7 +32,6 @@ class AprilTagLocalization(object):
             self.reset_rot_min = rospy.get_param("reset_rot_min")
         except (KeyError, rospy.ROSException):
             rospy.logerr("Error getting tag parameters.")
-            pass
 
 
         # Initialize a topic/publisher for each april tag being used
