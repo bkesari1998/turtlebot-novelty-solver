@@ -10,8 +10,8 @@ from geometry_msgs.msg import Pose
 
 from std_srvs.srv import Empty
 
-from shapely.geometry import Point
-from shapely.geometry import Polygon
+# from shapely.geometry import Point
+# from shapely.geometry import Polygon
 
 
 class StateConfirmer(object):
