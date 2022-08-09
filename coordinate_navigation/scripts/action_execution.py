@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # Utility
-import math
 import rospy
 
 # ROS Messages/Services
@@ -26,10 +25,6 @@ class PlanExecutor():
         self.cmd_vel = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=10) 
         self.rate = rospy.Rate(10)
 
-        # Initialize service
-        self.plan_executor_srv = rospy.Service("/action_executor", Action, self.execute_plan) 
-        rospy.loginfo("action_executor service active")
-
         # Get state parameters
         self.agents = rospy.get_param("agents")
         self.objects = rospy.get_param("objects")
@@ -50,6 +45,10 @@ class PlanExecutor():
         rospy.loginfo("Waiting for confirm_state service")
         rospy.wait_for_service("confirm_state")
         rospy.loginfo("All services running")
+
+        # Initialize service
+        self.action_executor_srv = rospy.Service("/action_executor", Action, self.execute_action) 
+        rospy.loginfo("action_executor service active")
     
         # Create primitive move service proxy
         self.prim_move_client = rospy.ServiceProxy("/primitive_move_actions", Action)
@@ -61,13 +60,34 @@ class PlanExecutor():
         while not rospy.is_shutdown():
             rospy.spin()
         
-    def execute_plan(self, req):
+    def execute_action(self, req):
 
         '''
-        Executes pddl plan.
-        req: Plan() object containing pddl plan as a list of strings
-        returns: None
+        Executes action, either symbolic or primitive.
+        req: Action() object containing list of strings
+        returns: Status of action (bool, string)
         '''
+
+        if req.action[0] == 'approach':
+           return self.approach(req.action)
+
+        if req.action[0] == 'open_door':
+            return self.open_door(req.action)
+        
+        if req.action[0] == 'pass_through_door':
+            return self.pass_through_door(req.action)
+        
+        if req.action[0] == 'dock':
+            return self.dock(req.action)
+        
+        if req.action[0] == 'undock':
+            return self.undock(req.action)
+        
+        if req.action[0] == 'move':
+            return self.primitive_move(req.action[1])
+
+        return False, "Unknown action provided"
+
     
 
 ##################### Symbolic Actions #####################

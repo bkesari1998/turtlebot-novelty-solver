@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import rospy
-import world_state
 from std_srvs.srv import Trigger
 
 
