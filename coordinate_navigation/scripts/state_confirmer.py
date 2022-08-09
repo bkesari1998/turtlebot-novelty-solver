@@ -21,7 +21,6 @@ class StateConfirmer(object):
         # Initialize node
         rospy.init_node("state_confirmer")
         rospy.loginfo("state_confirmer node active")
-        rospy.on_shutdown(self.shutdown)
 
         # Initialize service
         self.state_conf = rospy.Service("confirm_state", Empty, self.confirm_state)
