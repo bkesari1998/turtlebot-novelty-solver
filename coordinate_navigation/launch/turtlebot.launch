@@ -20,5 +20,5 @@
     <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
     <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
     <node name="tag_handler" pkg="coordinate_navigation" type="april_tag_localization.py"/>
-    <node name="state_confirmer" pkg="coordinate_navigation" type="state_confirmation.py"/>
+    <node name="state_confirmer" pkg="coordinate_navigation" type="state_confirmer.py"/>
 </launch>
