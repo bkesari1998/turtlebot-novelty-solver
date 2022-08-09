@@ -35,7 +35,7 @@ class StateConfirmer(object):
             self.param_boundaries = rospy.get_param("boundaries")
         except (KeyError, rospy.ROSException):
             rospy.logerr("Error getting parameters.")
-            raise ValueError
+            pass
 
         self.boundaries = {}
         for boundary_name, boundary_edges in self.param_boundaries:
