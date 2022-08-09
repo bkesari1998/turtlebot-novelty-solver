@@ -66,8 +66,7 @@ class StateConfirmer(object):
         for boundary_name, boundary in self.boundaries:
             if boundary.contains(point):
                 rospy.set_param("agents/turtlebot/at", boundary_name)
-
-        facing_flag = True
+                rospy.set_param("agents/turtlebot/facing", "%s_wall" % boundary_name)
 
         # Loop through tag_detections
         for detection in tag_detections:
@@ -88,7 +87,7 @@ class StateConfirmer(object):
                             if key == "agent":
                                 continue
 
-                            rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), value)
+                            rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
 
                 else:
                      if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
@@ -96,35 +95,34 @@ class StateConfirmer(object):
                             if key == "agent":
                                 continue
 
-                            rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), value)
+                            rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
 
 
             except ValueError:
-                pass
 
-            # Set object state
-            try:
-                state_value = self.object_state_confirmation[tag_id]
-                if type(state_value["range"]["distance"]) == list:
-                    if dist >= state_value["range"]["distance"][0] and dist < state_value["range"]["distance"][1] and abs(rot) < state_value["range"]["orientation"]:
-                        for key, value in state_value["state"]:
-                            if key == "object":
-                                continue
+                # Set object state
+                try:
+                    state_value = self.object_state_confirmation[tag_id]
+                    if type(state_value["range"]["distance"]) == list:
+                        if dist >= state_value["range"]["distance"][0] and dist < state_value["range"]["distance"][1] and abs(rot) < state_value["range"]["orientation"]:
+                            for key, value in state_value["state"]:
+                                if key == "object":
+                                    continue
 
-                            rospy.set_param("objects/%s/%s" % (state_value["state"]["object"], key), value)
+                                rospy.set_param("objects/%s/%s" % (state_value["state"]["object"], key), [value])
 
-                else:
-                     if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
-                        for key, value in state_value["state"]:
-                            if key == "object":
-                                continue
+                    else:
+                        if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
+                            for key, value in state_value["state"]:
+                                if key == "object":
+                                    continue
 
-                            rospy.set_param("objects/%s/%s" % (state_value["state"]["objects"], key), value)
+                                rospy.set_param("objects/%s/%s" % (state_value["state"]["objects"], key), [value])
 
 
-            except ValueError:
-                pass
-
+                except ValueError:
+                    pass
+        
 if __name__ == "__main__":
     try:
         StateConfirmer()

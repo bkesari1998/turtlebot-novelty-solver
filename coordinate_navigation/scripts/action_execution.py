@@ -6,7 +6,7 @@ import rospy
 
 # ROS Messages/Services
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
-from std_srvs.srv import Trigger
+from std_srvs.srv import Trigger, Empty
 from coffee_bot_srvs.srv import Move, Open_Door, Action
 
 class PlanExecutor():
@@ -34,9 +34,6 @@ class PlanExecutor():
         self.agents = rospy.get_param("agents")
         self.objects = rospy.get_param("objects")
 
-        # Create primitive move service proxy
-        self.prim_move_client = rospy.ServiceProxy("/primitive_move_actions", Action)
-
         # Wait for action services
         rospy.loginfo("Waiting for undock service")
         rospy.wait_for_service("undock")
@@ -48,8 +45,19 @@ class PlanExecutor():
         rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, timeout=10)
         rospy.loginfo("Waiting for open_door service")
         rospy.wait_for_service("open_door")
+        rospy.loginfo("Waiting for primitive_move_actions service")
+        rospy.wait_for_service("primitive_move_actions")
+        rospy.loginfo("Waiting for confirm_state service")
+        rospy.wait_for_service("confirm_state")
         rospy.loginfo("All services running")
-        
+    
+        # Create primitive move service proxy
+        self.prim_move_client = rospy.ServiceProxy("/primitive_move_actions", Action)
+
+        # Create state_confirmer service proxy
+        self.state_conf_client = rospy.ServiceProxy("/confirm_state", Empty)
+
+
         while not rospy.is_shutdown():
             rospy.spin()
         
@@ -94,10 +102,8 @@ class PlanExecutor():
                 self.move_action(waypoint)
 
                 # State update
-                self.update_agent_at()
-                facing = self.update_agent_facing()
-                self.update_door_open()
-                self.update_agent_docked()
+                self.update_state()
+                facing = self.agents["turtlebot"]["facing"]
 
                 # Postcondition checking
                 if object_2 in facing and object_1 not in facing:
@@ -133,13 +139,12 @@ class PlanExecutor():
                 self.open_door_action(door_1)
 
                 # State update
-                self.update_agent_at()
-                facing = self.update_agent_facing()
-                doors_open = self.update_door_open()
-                self.update_agent_docked()
+                self.update_state()
+                facing = self.agents["turtlebot"]["facing"]
+                door_open = self.objects[door_1]["open"]
                 
                 # Postcondition checking
-                if self.objects[door_1]["open"] == True and \
+                if door_open == True and \
                 door_1 not in facing and wall_1 in facing:
                     return True, "Action succeeded."
                 
@@ -175,10 +180,8 @@ class PlanExecutor():
                 self.move_action(waypoint)
 
                 # State update
-                at = self.update_agent_at()
-                self.update_agent_facing()
-                self.update_door_open()
-                self.update_agent_docked()
+                self.update_state()
+                at = self.agents["turtlebot"]["at"]
                 
                 # Postcondition checking
                 if room_2 in at and room_1 not in at:
@@ -214,10 +217,8 @@ class PlanExecutor():
                 self.dock_action()
 
                 # State update
-                self.update_agent_at()
-                self.update_agent_facing()
-                self.update_door_open()
-                docked = self.update_agent_docked()
+                self.update_state()
+                docked = self.agents["turtlebot"]["docked"]
                 
                 # Postcondition checking
                 if docked:
@@ -251,10 +252,10 @@ class PlanExecutor():
                 self.undock_action()
 
                 # State update
-                at = self.update_agent_at()
-                facing = self.update_agent_facing()
-                self.update_door_open()
-                docked = self.update_agent_docked()
+                self.update_state()
+                docked = self.agents["turtlebot"]["docked"]
+                at = self.agents["turtlebot"]["at"]
+                facing = self.agents["turtlebot"]["facing"]
                 
                 # Postcondition checking
                 if not docked and facing == charger_1 and at == room_1:
@@ -362,14 +363,12 @@ class PlanExecutor():
         return result
 
 ##################### State Update ####################
-    def update_agent_at(self):
-        pass
-    def update_door_open(self):
-        pass
-    def update_agent_facing(self):
-        pass
-    def update_agent_docked(self):
-        pass
+
+    def update_state(self):
+        
+        self.state_conf_client()
+        self.agents = rospy.get_param("agents")
+        self.objects = rospy.get_param("objects")
 
 ##################### Shutdown #####################
 

@@ -1,5 +1,5 @@
 agents: {
-  turtlebot: {at: "lab", facing: "charger_1", docked: true}
+  turtlebot: {at: ["lab"], facing: ["charger_1"], docked: [true]}
 }
 
 objects : {
@@ -7,11 +7,11 @@ objects : {
 
   kitchen: {},
 
-  door_1 : {connect : ["lab", "kitchen"], inside: ["lab", "kitchen"], open: false},
+  door_1 : {connect : ["lab", "kitchen"], inside: ["lab", "kitchen"], open: [false]},
 
-  charger_1: {inside: "lab"},
+  charger_1: {inside: ["lab"]},
 
-  sink_1: {inside: "kitchen"},
+  sink_1: {inside: ["kitchen"]},
 
   kitchen_wall : {},
   
