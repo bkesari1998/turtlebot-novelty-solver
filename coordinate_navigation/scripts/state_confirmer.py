@@ -28,22 +28,22 @@ class StateConfirmer(object):
         rospy.loginfo("confirm_state service active")
 
         # Get state_conf tag param
-        try:
-            self.state_tags = rospy.get_param("state_tags")
-            self.agent_state_confirmation = rospy.get_param("agent_state_confirmation")
-            self.object_state_confirmation = rospy.get_param("object_state_confirmation")
-            self.param_boundaries = rospy.get_param("boundaries")
-        except (KeyError, rospy.ROSException):
-            rospy.logerr("Error getting parameters.")
-            pass
+        # try:
+        #     self.state_tags = rospy.get_param("state_tags")
+        #     self.agent_state_confirmation = rospy.get_param("agent_state_confirmation")
+        #     self.object_state_confirmation = rospy.get_param("object_state_confirmation")
+        #     self.param_boundaries = rospy.get_param("boundaries")
+        # except (KeyError, rospy.ROSException):
+        #     rospy.logerr("Error getting parameters.")
+        #     pass
 
-        self.boundaries = {}
-        for boundary_name, boundary_edges in self.param_boundaries:
-            edges = []
-            for edge in boundary_edges:
-                edges.append((edge[0], edge[1]))
-            polygon = Polygon(edges)
-            self.boundaries[boundary_name] = polygon
+        # self.boundaries = {}
+        # for boundary_name, boundary_edges in self.param_boundaries:
+        #     edges = []
+        #     for edge in boundary_edges:
+        #         edges.append((edge[0], edge[1]))
+        #     polygon = Polygon(edges)
+        #     self.boundaries[boundary_name] = polygon
 
 
         while not rospy.is_shutdown():
