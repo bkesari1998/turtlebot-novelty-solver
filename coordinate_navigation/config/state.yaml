@@ -1,40 +1,36 @@
 agents: {
-    turtlebot: {at: "lab", facing: "charger_1", docked: True}
+  turtlebot: {at: "lab", facing: "charger_1", docked: true}
 }
 
 objects : {
-    room : {
-        lab: {},
-        kitchen: {},
-        office: {} 
-    }, 
+  lab: {},
 
-    door: {
-        lab_door : {connect : ["lab", "kitchen"], open: false},
-        office_door : {connect: ["office", "kitchen"], open: false}
-    },
+  kitchen: {},
 
-    charger: {
-        charger_1: {inside: "lab"},
-        charger_2: {inside: "lab"}
-    },
+  door_1 : {connect : ["lab", "kitchen"], inside: ["lab", "kitchen"], open: false},
 
-    desk: {
-        desk_refill: {inside: "kitchen"}
-    }
+  charger_1: {inside: "lab"},
+
+  sink_1: {inside: "kitchen"},
+
+  kitchen_wall : {},
+  
+  lab_wall : {}
 }
 
-state_confirmation: {
-    at : {
-      lab_door_lab_lab: {tag: "at3", distance: 3},
-      lab_door_lab_kitchen: {tag: "at8", distance: 3},
-      lab_door_kitchen_kitchen: {tag: "at5", distance: 1.5},
-      lab_door_kitchen_lab: {tag: "at4", distance: 1.5},
-      dock_approach: {tag: "at0", distance: 2},
-      desk_refill": {tag: "at9", distance: 2},
-    }, 
-    open : {
-      lab_door_lab: {tag: "at4_view", in_view: True},
-      lab_door_kitchen: {tag: "at15_view", in_view: False},
-    }
+agent_state_confirmation: {
+  1: {state: {agent: "turtlebot", at: "lab", facing: "door_1"}, range: {distance: 2, orientation: 0.25}},
+  2: {state: {agent: "turtlebot", at: "kitchen", facing: "door_1"}, range: {distance: 2, orientation: 0.25}},
+  3: {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.25}},
+  4: {state: {agent: "turtlebot", at: "lab", facing: "charger_1"}, range: {distance: 2, orientation: 0.25}} 
+}
+
+object_state_confirmation: {
+  5: {state: {object: "door_1", open: true}, range: {distance: [2, 4], orientation: 0.25}},
+  6: {state: {object: "door_1", open: true}, range: {distance: [2, 4], orientation: 0.25}}
+}
+
+boundaries: {
+  lab: [[0, 0], [0, 0], [0, 0], [0, 0]],
+  kitchen: []
 }

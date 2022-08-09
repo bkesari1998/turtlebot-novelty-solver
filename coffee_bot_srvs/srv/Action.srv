@@ -1,4 +1,4 @@
-string[] plan
+string action
 ---
 bool success
 string message

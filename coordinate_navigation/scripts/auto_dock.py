@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 import rospy
-import os
+
+import actionlib
+from actionlib_msgs.msg import GoalStatus
+from kobuki_msgs.msg import AutoDockingAction, AutoDockingGoal
 
 from std_srvs.srv import Trigger
-from kobuki_msgs.msg import PowerSystemEvent
-
-charge_status = False
 
 def dock_tb(req):
     """
@@ -14,27 +14,24 @@ def dock_tb(req):
     req: Trigger object.
     """
 
-    global charge_status
+    # Create simple action client 
+    client = actionlib.SimpleActionClient('dock_drive-action', AutoDockingAction)
+    while not client.wait_for_server(rospy.Duration(5.0)):
+        if rospy.is_shutdown(): return
+        print('Action server is not connected yet. still waiting...')
 
-    if not charge_status:
+    # Send goal to server 
+    goal = AutoDockingGoal()
+    client.send_goal(goal)
+    rospy.on_shutdown(client.cancel_goal)
+    client.wait_for_result()
 
-        # Run shell command to launch auto docking node
-        os.system("roslaunch kobuki_auto_docking activate.launch")
-        rospy.sleep(1)
-
-    if charge_status:
-        return True, "Turtlebot Docked"
+    # Check success or failure
+    if (client.get_state() == GoalStatus.SUCCEEDED):
+        return True, "Turtlebot successfully docked."
     
-    return False, "Dock action failed"
+    return False, "Turtlebot did not successfully dock."
 
-def set_charge_status(msg):
-
-    global charge_status
-    
-    if msg.event == msg.PLUGGED_TO_DOCKBASE:
-        charge_status = True
-    elif msg.event == msg.UNPLUGGED:
-        charge_status = False
 
 def shutdown():
     """
@@ -43,17 +40,12 @@ def shutdown():
 
     rospy.loginfo("Stopping auto_dock node")
 
-
-
 if __name__ == "__main__":
 
     # Initialize ROS node
     rospy.init_node("auto_dock", anonymous=False)
     rospy.loginfo("auto_dock node active")
     rospy.on_shutdown(shutdown)
-
-    # Create subscriber to check if tb is charging
-    charge_sub = rospy.Subscriber("/mobile_base/events/power_system", PowerSystemEvent, set_charge_status)
 
     # Initialize service
     dock_srv = rospy.Service("/dock", Trigger, dock_tb)
