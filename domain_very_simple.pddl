@@ -31,38 +31,35 @@
         (inside ?room01 ?object02)
         (at ?room01)
         (facing ?object01)
-        ; (not (docked))
+        (not (docked))
      )
     :effect ( and
-    (not (facing ?object01))
     (facing ?object02)
     )
 )
 
 (:action open_door
-    :parameters (?door01 - door ?wall01 - wall)
+    :parameters (?door01 - door ?room01 - room ?room02 - room ?wall01 - wall)
     :precondition (and
-        (not(facing ?wall01))
         (not (open ?door01))
         (facing ?door01)
          )
     :effect (and 
         (open ?door01)
-        (not (facing ?door01))
         (facing ?wall01)
     )
 )
 
 (:action pass_through_door
-    :parameters (?room01 - room ?room02 - room ?door01 - door)
+    :parameters (?room01 - room ?room02 - room ?door01 - door ?wall01 - wall)
     :precondition (and
         (at ?room01)
         (connect ?room01 ?room02 ?door01)
         (open ?door01)
+        (facing ?wall01)
      )
     :effect (and
         (at ?room02)
-        (not (at ?room01))
      )
 )
 
