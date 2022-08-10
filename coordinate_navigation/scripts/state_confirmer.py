@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import rospy
 import math
 
@@ -34,10 +33,10 @@ class StateConfirmer(object):
             self.param_boundaries = rospy.get_param("boundaries")
         except (KeyError, rospy.ROSException):
             rospy.logerr("Error getting parameters.")
-            pass
-
+            raise ValueError
+        
         self.boundaries = {}
-        for boundary_name, boundary_edges in self.param_boundaries:
+        for boundary_name, boundary_edges in self.param_boundaries.items():
             edges = []
             for edge in boundary_edges:
                 edges.append((edge[0], edge[1]))
@@ -71,8 +70,7 @@ class StateConfirmer(object):
         for detection in tag_detections:
 
             # Get tag id
-            tag_id = detection.id[0]
-
+            tag_id = str(detection.id[0])
             tag_in_camera_frame = detection.pose.pose.pose
             dist = math.sqrt(tag_in_camera_frame.position.x**2 + tag_in_camera_frame.position.y**2 + tag_in_camera_frame.position.z**2)
             _, rot, _ = euler_from_quaternion([tag_in_camera_frame.orientation.x, tag_in_camera_frame.orientation.y, tag_in_camera_frame.orientation.z, tag_in_camera_frame.orientation.w])
@@ -125,7 +123,4 @@ class StateConfirmer(object):
         
         
 if __name__ == "__main__":
-    try:
-        StateConfirmer()
-    except:
-        rospy.logerr("State confirmer failed") 
+    StateConfirmer()

@@ -24,21 +24,18 @@ class AprilTagLocalization(object):
         rospy.loginfo("tag_localization node active")
 
         # Create a list of active april tag ids.
-        # try:
-        #     self.positional_tags = rospy.get_param("postitional_tags")
-        #     self.reset_dist_max = rospy.get_param("reset_dist_max")
-        #     self.reset_dist_min = rospy.get_param("reset_dist_min")
-        #     self.reset_rot_max = rospy.get_param("reset_rot_max")
-        #     self.reset_rot_min = rospy.get_param("reset_rot_min")
-        # except (KeyError, rospy.ROSException):
-        #     rospy.logerr("Error getting tag parameters.")
+        try:
+            self.positional_tags = rospy.get_param("positional_tags")
+            self.reset_dist_max = rospy.get_param("reset_dist_max")
+            self.reset_dist_min = rospy.get_param("reset_dist_min")
+            self.reset_rot_max = rospy.get_param("reset_rot_max")
+            self.reset_rot_min = rospy.get_param("reset_rot_min")
+        except (KeyError, rospy.ROSException):
+            rospy.logerr("Error getting tag parameters.")
 
-
-        # Initialize a topic/publisher for each april tag being used
-        # Store publishers in a list
-        # self.tag_in_view = []
-        # for id_num in self.positional_tags:
-        #     self.tag_in_view.append(False)
+        self.tag_in_view = []
+        for id_num in self.positional_tags:
+            self.tag_in_view.append(False)
 
 
         # Initialize initial_pose publisher
@@ -47,8 +44,8 @@ class AprilTagLocalization(object):
         self.rate = rospy.Rate(60)
 
         # Subscribe to april tag detector topic
-        # self.tag_detections = rospy.Subscriber("/tag_detections", AprilTagDetectionArray,
-        #                                        callback=self.tag_detections_handler)
+        self.tag_detections = rospy.Subscriber("/tag_detections", AprilTagDetectionArray,
+                                               callback=self.tag_detections_handler)
 
         while not rospy.is_shutdown():
             rospy.spin()
