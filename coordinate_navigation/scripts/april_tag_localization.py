@@ -26,16 +26,17 @@ class AprilTagLocalization(object):
         # Create a list of active april tag ids.
         try:
             self.positional_tags = rospy.get_param("positional_tags")
-            self.reset_dist_max = rospy.get_param("reset_dist_max")
-            self.reset_dist_min = rospy.get_param("reset_dist_min")
-            self.reset_rot_max = rospy.get_param("reset_rot_max")
-            self.reset_rot_min = rospy.get_param("reset_rot_min")
+            self.reset_dist_detect_max = rospy.get_param("reset_dist_detect_max")
+            self.reset_dist_detect_min = rospy.get_param("reset_dist_detect_min")
+            self.reset_rot_detect = rospy.get_param("reset_rot_detect")
+            self.reset_dist_thresh = rospy.get_param("reset_dist_thresh")
+            self.reset_rot_thresh = rospy.get_param("reset_rot_thresh")
         except (KeyError, rospy.ROSException):
             rospy.logerr("Error getting tag parameters.")
 
-        self.tag_in_view = []
+        self.tags = {}
         for id_num in self.positional_tags:
-            self.tag_in_view.append(False)
+            self.tags[id_num] = False
 
 
         # Initialize initial_pose publisher
@@ -132,33 +133,33 @@ class AprilTagLocalization(object):
         """
 
         # List to keep track of tags seen
-        pose_tags_seen_indecies = []
+        tags_seen = []
+        set_pose_flage = True
+
         # Get odometry position
         odom_pose = rospy.wait_for_message("/odom/pose/pose", Pose)
 
         for detection in msg.detections:
 
-            # Get index of tag in tag_id list
             tag_id = detection.id[0]
-            try:
-                index = self.positional_tags.index(tag_id)
-            except ValueError:
-                rospy.logwarn("Tag %d not provided." % tag_id)
-                continue
+            tags_seen.append(tag_id)
 
             tag_in_camera_frame = detection.pose.pose.pose
             dist = math.sqrt(tag_in_camera_frame.position.x**2 + tag_in_camera_frame.position.y**2 + tag_in_camera_frame.position.z**2)
             _, rot, _ = euler_from_quaternion([tag_in_camera_frame.orientation.x, tag_in_camera_frame.orientation.y, tag_in_camera_frame.orientation.z, tag_in_camera_frame.orientation.w])
+            
+            if rot > math.pi:
+                rot -= (2*math.pi)
 
             # Only update if tag is in distance range
-            if dist <= self.reset_dist_max and dist >= self.reset_dist_min and \
-            rot <= self.reset_rot_max and rot >= self.reset_rot_min:
+            if dist <= self.reset_dist_detect_max and dist > self.reset_dist_detect_min and \
+            abs(rot) > self.reset_rot_detect:
 
                 # Only update pose with tag previously out of view before
-                if not self.tag_in_view[index]:
+                if not self.tags[tag_id]:
 
                     # Update tag_in_view list
-                    self.tag_in_view[index] = True
+                    self.tags[tag_id] = True
                     
                     # Update pose only once per set of new detections
                     if set_pose_flag:
@@ -196,16 +197,18 @@ class AprilTagLocalization(object):
                         quaternion_conjugate([base_foot_pose.pose.pose.orientation.x, base_foot_pose.pose.pose.orientation.y, base_foot_pose.pose.pose.orientation.z, base_foot_pose.pose.pose.orientation.w]))
 
                         _, _, yaw_diff = euler_from_quaternion(quat_diff)
-                        if pose_diff > 2 and (yaw_diff > 1 and yaw_diff < 5): 
+                        if yaw_diff > math.pi:
+                            yaw_diff -= (2 * math.pi)
+                        if pose_diff > 2 and abs(yaw_diff) > self.reset_rot_thresh: 
                             self.pose_pub.publish(base_foot_pose)
 
         # Set tag_in_view to false for tags not seen in camera image            
-        for tag_id in self.tag_ids:
+        for tag_id in self.tags:
 
             try:
-                pose_tags_seen_indecies.index(tag_id)
+                tags_seen.index(tag_id)
             except ValueError:
-                self.tag_in_view[self.tag_ids.index(tag_id)] = False
+                self.tags[tag_id] = False
                 
         self.rate.sleep()
 

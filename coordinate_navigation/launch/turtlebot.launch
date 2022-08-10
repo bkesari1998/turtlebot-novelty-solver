@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <rosparam file="$(find coordinate_navigation)/config/waypoints.yaml" />
+    <rosparam file="$(find coordinate_navigation)/config/state.yaml" />
+    <rosparam file="$(find coordinate_navigation)/config/tags.yaml" />
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
     <include file="$(find coordinate_navigation)/launch/tag_static_frames.launch"/>
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
