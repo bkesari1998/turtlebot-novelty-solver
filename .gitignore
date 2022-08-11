@@ -7,3 +7,5 @@ coordinate_navigation/scripts/state/world_state.pyc
 .vscode/launch.json
 .vscode/c_cpp_properties.json
 coordinate_navigation/config/.vscode/settings.json
+coordinate_navigation/launch/.vscode/settings.json
+coordinate_navigation/launch/.vscode/c_cpp_properties.json
