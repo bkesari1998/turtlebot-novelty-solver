@@ -42,7 +42,6 @@ class StateConfirmer(object):
             polygon = Polygon(edges)
             self.boundaries[boundary_name] = polygon
 
-        rospy.loginfo("spinning")
         while not rospy.is_shutdown():
             rospy.spin()
 
@@ -51,22 +50,17 @@ class StateConfirmer(object):
         # Wait for apriltag detections msg
         tag_detections = []
         try:
-            rospy.loginfo("Trying to get tag detections")
             tag_detections = rospy.wait_for_message("/tag_detections", AprilTagDetectionArray, rospy.Duration(1))
         except rospy.ROSException:
             rospy.logwarn("Did not recieve 'tag_detections' message")
 
         # Wait for odom msg
-        try:
-            odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, rospy.Duration(1))
-            odom_pose = odom_pose.pose.pose
-        except rospy.ROSException:
-            rospy.logwarn("Did not recive pose")
-            return
+        odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, rospy.Duration(1))
+        odom_pose = odom_pose.pose.pose
 
         # Use boundaries to set agent "at"
         point = Point(odom_pose.position.x, odom_pose.position.y)
-        for boundary_name, boundary in self.boundaries:
+        for boundary_name, boundary in self.boundaries.items():
             if boundary.contains(point):
                 rospy.set_param("agents/turtlebot/at", boundary_name)
                 rospy.set_param("agents/turtlebot/facing", "%s_wall" % boundary_name)
