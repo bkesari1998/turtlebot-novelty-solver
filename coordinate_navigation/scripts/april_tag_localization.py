@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
+from queue import Empty
 import rospy
 import math
 
 from apriltag_ros.msg import AprilTagDetectionArray
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 import tf2_ros
 from tf.transformations import quaternion_multiply, quaternion_conjugate, euler_from_quaternion
@@ -43,6 +44,9 @@ class AprilTagLocalization(object):
         self.pose_pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1)
     
         self.rate = rospy.Rate(60)
+
+        # Create service proxy to state updater
+        self.confirm_state = rospy.ServiceProxy("confirm_state", Empty)
 
         # Subscribe to april tag detector topic
         self.tag_detections = rospy.Subscriber("/tag_detections", AprilTagDetectionArray,
@@ -137,7 +141,8 @@ class AprilTagLocalization(object):
         set_pose_flage = True
 
         # Get odometry position
-        odom_pose = rospy.wait_for_message("/odom/pose/pose", Pose)
+        odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped)
+        odom_pose = odom_pose.pose.pose.pose
 
         for detection in msg.detections:
 
@@ -201,6 +206,7 @@ class AprilTagLocalization(object):
                             yaw_diff -= (2 * math.pi)
                         if pose_diff > 2 and abs(yaw_diff) > self.reset_rot_thresh: 
                             self.pose_pub.publish(base_foot_pose)
+                            self.confirm_state()
 
         # Set tag_in_view to false for tags not seen in camera image            
         for tag_id in self.tags:

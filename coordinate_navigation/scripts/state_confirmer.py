@@ -46,7 +46,6 @@ class StateConfirmer(object):
             rospy.spin()
 
     def confirm_state(self, req):
-        rospy.loginfo("In handler")
         # Wait for apriltag detections msg
         tag_detections = AprilTagDetectionArray()
         try:
@@ -64,7 +63,6 @@ class StateConfirmer(object):
         point = Point(odom_pose.position.x, odom_pose.position.y)
         for boundary_name, boundary in self.boundaries.items():
             if boundary.contains(point):
-                rospy.loginfo("setting param")
                 rospy.set_param("agents/turtlebot/at", boundary_name)
                 rospy.set_param("agents/turtlebot/facing", "%s_wall" % boundary_name)
 
@@ -87,21 +85,14 @@ class StateConfirmer(object):
                         for key, value in state_value["state"]:
                             if key == "agent":
                                 continue
-                            rospy.loginfo("setting param")
                             rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
 
                 else:
-                    rospy.loginfo("In else")
-                    rospy.loginfo(dist)
-                    rospy.loginfo(state_value["range"]["distance"])
-                    rospy.loginfo(rot)
-                    rospy.loginfo(state_value["range"]["orientation"])
                     if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
                         rospy.loginfo("In if")
                         for key, value in state_value["state"].items():
                             if key == "agent":
                                 continue
-                            rospy.loginfo("setting param")
                             rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
 
 
