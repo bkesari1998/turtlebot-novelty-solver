@@ -91,7 +91,12 @@ class StateConfirmer(object):
                             rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
 
                 else:
-                     if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
+                    rospy.loginfo("In else")
+                    rospy.loginfo(dist)
+                    rospy.loginfo(state_value["range"]["distance"])
+                    rospy.loginfo(rot)
+                    rospy.loginfo(state_value["range"]["orientation"])
+                    if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
                         for key, value in state_value["state"]:
                             if key == "agent":
                                 continue
