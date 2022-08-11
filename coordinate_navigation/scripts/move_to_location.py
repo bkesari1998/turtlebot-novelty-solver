@@ -69,6 +69,7 @@ class MoveTB():
 
         # Assign the turtlebot's goal
         tb_goal = self.assign_goal(waypoint[0], waypoint[1])
+        rospy.loginfo(tb_goal)
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
 

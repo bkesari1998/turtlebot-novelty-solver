@@ -7,8 +7,8 @@
     <include file="$(find coordinate_navigation)/launch/tag_static_frames.launch"/>
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
-        <arg name="initial_pose_x" value="0.977" />
-        <arg name="initial_pose_y" value="-0.725" />
+        <arg name="initial_pose_x" value="1.518" />
+        <arg name="initial_pose_y" value="1.943" />
         <arg name="initial_pose_a" value="0.799" />
     </include>
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
