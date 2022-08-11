@@ -11,6 +11,7 @@
         <arg name="initial_pose_y" value="1.943" />
         <arg name="initial_pose_a" value="0.799" />
     </include>
+    <include file="$(find turtlebot_actions)/launch/server_turtlebot_move.launch" />
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="/camera/rgb" />
         <arg name="image_topic" value="image_raw" />
