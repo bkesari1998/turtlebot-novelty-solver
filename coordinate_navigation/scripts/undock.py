@@ -4,6 +4,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Trigger
 
+from kobuki_msgs.msg import PowerSystemEvent
 
 class Undock():
     def __init__(self):
@@ -24,6 +25,9 @@ class Undock():
         # Initialize service
         self.move_to_start_srv = rospy.Service("undock", Trigger, self.undock)
         rospy.loginfo("undock service active")
+        
+        self.power_systems_sub = rospy.Subscriber("/mobile_base/events/power_system", PowerSystemEvent, self.set_charge_status)
+
         self.charge_status = True
 
         while not rospy.is_shutdown():
@@ -46,12 +50,11 @@ class Undock():
         if self.charge_status:
             # reverse  the turtlebot
             self.reverse()
-            rospy.sleep(1)
 
         if not self.charge_status:
             return True, "Turtlebot successfully undocked"
 
-        return True, "Turtlebot failed to undock"
+        return False, "Turtlebot failed to undock"
 
     def reverse(self):
         """
