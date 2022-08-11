@@ -15,7 +15,7 @@ def dock_tb(req):
     """
 
     # Create simple action client 
-    client = actionlib.SimpleActionClient('dock_drive-action', AutoDockingAction)
+    client = actionlib.SimpleActionClient('dock_drive_action', AutoDockingAction)
     while not client.wait_for_server(rospy.Duration(5.0)):
         if rospy.is_shutdown(): return
         print('Action server is not connected yet. still waiting...')
