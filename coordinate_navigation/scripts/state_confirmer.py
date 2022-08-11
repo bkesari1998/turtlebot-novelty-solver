@@ -68,7 +68,7 @@ class StateConfirmer(object):
                 rospy.set_param("agents/turtlebot/facing", "%s_wall" % boundary_name)
 
         # Loop through tag_detections
-        for detection in tag_detections:
+        for detection in detections:
 
             # Get tag id
             tag_id = str(detection.id[0])
