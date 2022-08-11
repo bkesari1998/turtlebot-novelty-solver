@@ -58,7 +58,7 @@ class StateConfirmer(object):
 
         # Wait for odom msg
         try:
-            odom_pose = rospy.wait_for_message("/amcl_pose/pose/pose", Pose, rospy.Duration(1))
+            odom_pose = rospy.wait_for_message("/amcl_pose", Pose, rospy.Duration(1))
         except rospy.ROSException:
             rospy.logwarn("Did not recive pose")
             return
