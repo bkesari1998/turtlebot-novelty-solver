@@ -48,11 +48,13 @@ class StateConfirmer(object):
     def confirm_state(self, req):
         rospy.loginfo("In handler")
         # Wait for apriltag detections msg
-        tag_detections = []
+        tag_detections = AprilTagDetectionArray()
         try:
             tag_detections = rospy.wait_for_message("/tag_detections", AprilTagDetectionArray, rospy.Duration(1))
         except rospy.ROSException:
             rospy.logwarn("Did not recieve 'tag_detections' message")
+        
+        detections = tag_detections.detections
 
         # Wait for odom msg
         odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, rospy.Duration(1))
