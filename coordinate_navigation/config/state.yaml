@@ -7,7 +7,7 @@ objects : {
 
   kitchen: {},
 
-  door_1 : {connect : ["lab", "kitchen"], inside: ["lab", "kitchen"], open: [false]},
+  door_1 : {connect : ["lab", "kitchen"], inside: ["lab", "kitchen"]},
 
   charger_1: {inside: ["lab"]},
 
@@ -19,15 +19,14 @@ objects : {
 }
 
 agent_state_confirmation: {
-  "1": {state: {agent: "turtlebot", at: "lab", facing: "door_1"}, range: {distance: 2, orientation: 0.25}},
-  "2": {state: {agent: "turtlebot", at: "kitchen", facing: "door_1"}, range: {distance: 2, orientation: 0.25}},
-  "3": {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.25}},
-  "4": {state: {agent: "turtlebot", at: "lab", facing: "charger_1"}, range: {distance: 2, orientation: 0.25}} 
+  "5": {state: {agent: "turtlebot", at: "lab", facing: "door_1"}, range: {distance: 2, orientation: 0.25}},
+  "3": {state: {agent: "turtlebot", at: "kitchen", facing: "door_1"}, range: {distance: 2, orientation: 0.25}},
+  "6": {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.25}},
+  "1": {state: {agent: "turtlebot", at: "lab", facing: "charger_1"}, range: {distance: 2, orientation: 0.25}} 
 }
 
 object_state_confirmation: {
-  "5": {state: {object: "door_1", open: true}, range: {distance: [2, 4], orientation: 0.25}},
-  "6": {state: {object: "door_1", open: true}, range: {distance: [2, 4], orientation: 0.25}}
+
 }
 
 boundaries: {

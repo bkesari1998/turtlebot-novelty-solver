@@ -83,7 +83,7 @@ class StateConfirmer(object):
                         for key, value in state_value["state"]:
                             if key == "agent":
                                 continue
-
+                            rospy.loginfo("setting param")
                             rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
 
                 else:
@@ -91,7 +91,7 @@ class StateConfirmer(object):
                         for key, value in state_value["state"]:
                             if key == "agent":
                                 continue
-
+                            rospy.loginfo("setting param")
                             rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
 
 
