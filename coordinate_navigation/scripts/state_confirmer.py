@@ -5,7 +5,7 @@ import math
 from tf.transformations import euler_from_quaternion
 
 from apriltag_ros.msg import AprilTagDetectionArray
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped
 
 from std_srvs.srv import Empty
 
@@ -58,7 +58,7 @@ class StateConfirmer(object):
 
         # Wait for odom msg
         try:
-            odom_pose = rospy.wait_for_message("/amcl_pose", Pose, rospy.Duration(1))
+            odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, rospy.Duration(1))
         except rospy.ROSException:
             rospy.logwarn("Did not recive pose")
             return
