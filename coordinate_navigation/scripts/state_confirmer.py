@@ -29,7 +29,6 @@ class StateConfirmer(object):
         try:
             self.state_tags = rospy.get_param("state_tags")
             self.agent_state_confirmation = rospy.get_param("agent_state_confirmation")
-            self.object_state_confirmation = rospy.get_param("object_state_confirmation")
             self.param_boundaries = rospy.get_param("boundaries")
         except (KeyError, rospy.ROSException):
             rospy.logerr("Error getting parameters.")
