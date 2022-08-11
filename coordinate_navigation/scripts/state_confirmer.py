@@ -97,7 +97,8 @@ class StateConfirmer(object):
                     rospy.loginfo(rot)
                     rospy.loginfo(state_value["range"]["orientation"])
                     if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
-                        for key, value in state_value["state"]:
+                        rospy.loginfo("In if")
+                        for key, value in state_value["state"].items():
                             if key == "agent":
                                 continue
                             rospy.loginfo("setting param")
