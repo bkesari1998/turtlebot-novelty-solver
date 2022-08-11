@@ -42,21 +42,26 @@ class StateConfirmer(object):
             polygon = Polygon(edges)
             self.boundaries[boundary_name] = polygon
 
-
+        rospy.loginfo("spinning")
         while not rospy.is_shutdown():
             rospy.spin()
 
     def confirm_state(self, req):
-
+        rospy.loginfo("In handler")
         # Wait for apriltag detections msg
         tag_detections = []
         try:
+            rospy.loginfo("Trying to get tag detections")
             tag_detections = rospy.wait_for_message("/tag_detections", AprilTagDetectionArray, rospy.Duration(1))
         except rospy.ROSException:
             rospy.logwarn("Did not recieve 'tag_detections' message")
 
         # Wait for odom msg
-        odom_pose = rospy.wait_for_message("/odom/pose/pose", Pose)
+        try:
+            odom_pose = rospy.wait_for_message("/amcl_pose/pose/pose", Pose, rospy.Duration(1))
+        except rospy.ROSException:
+            rospy.logwarn("Did not recive pose")
+            return
 
         # Use boundaries to set agent "at"
         point = Point(odom_pose.position.x, odom_pose.position.y)
