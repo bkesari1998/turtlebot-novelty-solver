@@ -38,8 +38,8 @@ class PlanExecutor():
         rospy.wait_for_service("move")
         rospy.loginfo("Waiting for amcl")
         rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, timeout=10)
-        rospy.loginfo("Waiting for open_door service")
-        rospy.wait_for_service("open_door")
+        # rospy.loginfo("Waiting for open_door service")
+        # rospy.wait_for_service("open_door")
         rospy.loginfo("Waiting for primitive_move_actions service")
         rospy.wait_for_service("primitive_move_actions")
         rospy.loginfo("Waiting for confirm_state service")
@@ -56,6 +56,10 @@ class PlanExecutor():
         # Create state_confirmer service proxy
         self.state_conf_client = rospy.ServiceProxy("/confirm_state", Empty)
 
+        self.undock(["undock", "lab", "charger_1"])
+        self.approach(["approach", "charger_1", "door_1", "lab"])
+        self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"])
+        self.approach(["approach", "kitchen_wall", "sink_1"])
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -138,42 +142,42 @@ class PlanExecutor():
         except KeyError:
             return False, "Key error when looking up state."
 
-    def open_door(self, action):
+    # def open_door(self, action):
 
-        '''
-        open_door action executor. Checks pre and post conditions of action
-        Call open_door_action.
-        action: list of strings expressing the pddl open door action
-        returns: boolean representing success/failure of action
-        '''
+    #     '''
+    #     open_door action executor. Checks pre and post conditions of action
+    #     Call open_door_action.
+    #     action: list of strings expressing the pddl open door action
+    #     returns: boolean representing success/failure of action
+    #     '''
     
-        door_1 = action[1]
-        wall_1 = action[2]
+    #     door_1 = action[1]
+    #     wall_1 = action[2]
 
-        try:
-            if door_1 in self.agents["turtlebot"]["facing"] and \
-            wall_1 not in self.agents["turtlebot"]["facing"] and \
-            self.objects[door_1]["open"] == False:
+    #     try:
+    #         if door_1 in self.agents["turtlebot"]["facing"] and \
+    #         wall_1 not in self.agents["turtlebot"]["facing"] and \
+    #         self.objects[door_1]["open"] == False:
                 
-                # Call to open_door service
-                self.open_door_action(door_1)
+    #             # Call to open_door service
+    #             self.open_door_action(door_1)
 
-                # State update
-                self.update_state()
-                facing = self.agents["turtlebot"]["facing"]
-                door_open = self.objects[door_1]["open"]
+    #             # State update
+    #             self.update_state()
+    #             facing = self.agents["turtlebot"]["facing"]
+    #             door_open = self.objects[door_1]["open"]
                 
-                # Postcondition checking
-                if door_open == True and \
-                door_1 not in facing and wall_1 in facing:
-                    return True, "Action succeeded."
+    #             # Postcondition checking
+    #             if door_open == True and \
+    #             door_1 not in facing and wall_1 in facing:
+    #                 return True, "Action succeeded."
                 
-                return False, "Postconditions not met."
+    #             return False, "Postconditions not met."
             
-            return False, "Preconditions not met."
+    #         return False, "Preconditions not met."
 
-        except KeyError:
-            return False, "Key error when looking up state."
+    #     except KeyError:
+    #         return False, "Key error when looking up state."
 
     def pass_through_door(self, action):
 
@@ -191,8 +195,7 @@ class PlanExecutor():
         try:
             if room_1 in self.agents["turtlebot"]["at"] and \
             room_1 in self.objects[door_1]["connect"] and \
-            room_2 in self.objects[door_1]["connect"] and \
-            self.objects[door_1]["open"] == True:
+            room_2 in self.objects[door_1]["connect"]:
                 
                 waypoint = door_1 + "_" + room_2 + "_" + room_1
 
