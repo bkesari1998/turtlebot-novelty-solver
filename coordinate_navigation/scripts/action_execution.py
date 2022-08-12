@@ -1,16 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 # Utility
-import math
 import rospy
-
-# Global Vars
-import state.world_state as world_state
 
 # ROS Messages/Services
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from std_srvs.srv import Trigger
-from coffee_bot_srvs.srv import Move, Plan, Open_Door
+from coffee_bot_srvs.srv import Move, Open_Door, Action
 
 class PlanExecutor():
 
@@ -29,9 +25,9 @@ class PlanExecutor():
         self.cmd_vel = rospy.Publisher('mobile_base/commands/velocity', Twist, queue_size=10) 
         self.rate = rospy.Rate(10)
 
-        # Initialize service
-        self.plan_executor_srv = rospy.Service("/action_executor", Plan, self.execute_plan) 
-        rospy.loginfo("action_executor service active")
+        # Get state parameters
+        self.agents = rospy.get_param("agents")
+        self.objects = rospy.get_param("objects")
 
         # Wait for action services
         rospy.loginfo("Waiting for undock service")
@@ -42,131 +38,156 @@ class PlanExecutor():
         rospy.wait_for_service("move")
         rospy.loginfo("Waiting for amcl")
         rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, timeout=10)
-        rospy.loginfo("Waiting for open_door service")
-        rospy.wait_for_service("open_door")
-
+        # rospy.loginfo("Waiting for open_door service")
+        # rospy.wait_for_service("open_door")
+        rospy.loginfo("Waiting for primitive_move_actions service")
+        rospy.wait_for_service("primitive_move_actions")
+        rospy.loginfo("Waiting for confirm_state service")
+        rospy.wait_for_service("confirm_state")
         rospy.loginfo("All services running")
 
-        self.undock(["undock", "lab", "charger_1"])
-        self.approach_door(["approach_door", "lab_door", "lab", "kitchen"])
-        self.open_door(["open_door", "lab_door", "lab", "kitchen"])
-        self.go_through_door(["go_through_door", "lab", "kitchen", "lab_door"])
-        self.approach_desk_refill(["approach_desk_refill", "kitchen", "desk_refill"])
-        self.approach_door(["approach_door", "lab_door", "kitchen", "lab"])
-        self.go_through_door(["go_through_door", "kitchen", "lab", "lab_door"])
-        
+        # Initialize service
+        self.action_executor_srv = rospy.Service("/action_executor", Action, self.execute_action) 
+        rospy.loginfo("action_executor service active")
+    
+        # Create primitive move service proxy
+        self.prim_move_client = rospy.ServiceProxy("/primitive_move_actions", Action)
+
+        # Create state_confirmer service proxy
+        self.state_conf_client = rospy.ServiceProxy("/confirm_state", Trigger)
+
+        rospy.loginfo(self.undock(["undock", "charger_1", "lab"]))
+        rospy.loginfo("After undock")
+        rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
+        rospy.loginfo("After approach")
+        rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"]))
+        rospy.loginfo("After pass")
+        rospy.loginfo(self.approach(["approach", "kitchen_wall", "sink_1", "kitchen"]))
+        rospy.loginfo("After approach")
+        rospy.loginfo(self.approach(["approach", "sink_1", "door_1", "kitchen"]))
+        rospy.loginfo(self.pass_through_door(["pass_through_door","kitchen", "lab", "door_1"]))
+        rospy.loginfo(self.approach(["approach", "lab_wall", "charger_1", "lab"]))
+        rospy.loginfo(self.dock(["dock", "charger_1", "lab"]))
+
+
         while not rospy.is_shutdown():
             rospy.spin()
         
-    def execute_plan(self, req):
+    def execute_action(self, req):
 
         '''
-        Executes pddl plan.
-        req: Plan() object containing pddl plan as a list of strings
-        returns: None
+        Executes action, either symbolic or primitive.
+        req: Action() object containing list of strings
+        returns: Status of action (bool, string)
         '''
+
+        if req.action[0] == 'approach':
+           return self.approach(req.action)
+
+        if req.action[0] == 'open_door':
+            return self.open_door(req.action)
         
-        # Loop over actions 
-        for action in req.plan:
+        if req.action[0] == 'pass_through_door':
+            return self.pass_through_door(req.action)
+        
+        if req.action[0] == 'dock':
+            return self.dock(req.action)
+        
+        if req.action[0] == 'undock':
+            return self.undock(req.action)
+        
+        if req.action[0] == 'move':
+            return self.primitive_move(req.action[1])
 
-            # Split action by space 
-            action = action.split()
+        return False, "Unknown action provided"
 
-            if action[0] == 'approach_door':
-                self.approach_door(action)
-            elif action[0] == 'open_door':
-                self.open_door(action)
-            elif action[0] == 'exit_room':
-                self.go_through_door(action)
-            # elif action[0] == 'approach_desk':
-                # pass
-            # elif action[0] == 'make_coffee':
-                # pass
-            elif action[0] == 'approach_desk_refill':
-                self.approach_desk_refill(action)
-            # elif action[0] == 'refill':
-                # pass
-            elif action[0] == 'approach_charger':
-                self.approach_charger(action)
-            elif action[0] == 'dock':
-                self.dock(action)
-            elif action[0] == 'undock':
-                self.undock(action)
-            elif action[0] == 'charge':
-                pass
+    
 
 ##################### Symbolic Actions #####################
 
-    def approach_door(self, action):
-        global world_state
-
+    def approach(self, action):
         '''
-        approach_door action executor, checks pre and post conditions of action.
+        approach action executor, checks pre and post conditions of action.
         Calls move_action to move the turtlebot.
         action: list of strings expressing the pddl approach door action
         returns: boolean representing success/failure of action
         '''
-
-        rospy.loginfo("In approach door")
-        door = action[1]
-        room1 = action[2]
-        room2 = action[3]
+        object_1 = action[1]
+        object_2 = action[2]
+        room_1 = action[3]
 
         # Precondition checking
-        if (world_state.objects["door"].has_key(door) and 
-        room1 in world_state.objects["door"][door]["connect"] and room2 in world_state.objects["door"][door]["connect"] and 
-        world_state.agents["turtlebot"]["at"] == room1 and 
-        not world_state.agents["turtlebot"]["docked"]):
+        try:
+            if room_1 in self.objects[object_1]["inside"] and room_1 in self.objects[object_2]["inside"] \
+                and room_1 in self.agents["turtlebot"]["at"] and object_1 in self.agents["turtlebot"]["facing"]:
+                # Get waypoint
+                waypoint = ""
+                # If door, append room info
+                if "door" in object_2:
+                    waypoint = object_2 + "_" + room_1 +  "_" + room_1
+                else:
+                    waypoint = object_2
 
-            rospy.loginfo("Passed preconds")
+                # Call to move service
+                self.move_action(waypoint)
 
-            # Call move action
-            status = self.move_action(door + "_" + room1 + "_" + room1)
+                # State update
+                self.update_state()
+                facing = self.agents["turtlebot"]["facing"]
+                rospy.loginfo("Facing %s" % facing)
 
-            # Update world state
-            if status:
-                world_state.agents["turtlebot"]["facing"] = door
+                # Postcondition checking
+                if object_2 in facing and object_1 not in facing:
 
-            # Return status
-            return status
+                    return True, "Action succeeded."
+                
+                return False, "Postconditions not met."
 
-        return False
+            return False, "Preconditions not met." 
 
-    def open_door(self, action):
-        global world_state
 
-        '''
-        open_door action executor. Checks pre and post conditions of action
-        Call open_door_action.
-        action: list of strings expressing the pddl open door action
-        returns: boolean representing success/failure of action
-        '''
+        except KeyError as e:
+            rospy.loginfo(e)
+            return False, "Key error when looking up state."
+
+    # def open_door(self, action):
+
+    #     '''
+    #     open_door action executor. Checks pre and post conditions of action
+    #     Call open_door_action.
+    #     action: list of strings expressing the pddl open door action
+    #     returns: boolean representing success/failure of action
+    #     '''
     
-        door = action[1]
-        room1 = action[2]
-        room2 = action[3]
+    #     door_1 = action[1]
+    #     wall_1 = action[2]
 
-        # Precondition checking
-        if (world_state.objects["door"].has_key(door) and 
-        room1 in world_state.objects["door"][door]["connect"] and room2 in world_state.objects["door"][door]["connect"] and
-        not world_state.objects["door"][door]["open"] and 
-        world_state.agents["turtlebot"]["at"] == room1 and 
-        not world_state.agents["turtlebot"]["docked"]):
+    #     try:
+    #         if door_1 in self.agents["turtlebot"]["facing"] and \
+    #         wall_1 not in self.agents["turtlebot"]["facing"] and \
+    #         self.objects[door_1]["open"] == False:
+                
+    #             # Call to open_door service
+    #             self.open_door_action(door_1)
 
-        
-            # Call to service
-            status = self.open_door_action(door, room1)
-            # Update world state
-            if status:
-                world_state.objects["door"][door]["open"] = True
+    #             # State update
+    #             self.update_state()
+    #             facing = self.agents["turtlebot"]["facing"]
+    #             door_open = self.objects[door_1]["open"]
+                
+    #             # Postcondition checking
+    #             if door_open == True and \
+    #             door_1 not in facing and wall_1 in facing:
+    #                 return True, "Action succeeded."
+                
+    #             return False, "Postconditions not met."
             
-            return status
-        
-        rospy.loginfo("returning false")
-        return False
+    #         return False, "Preconditions not met."
 
-    def go_through_door(self, action):
-        global world_state
+    #     except KeyError:
+    #         return False, "Key error when looking up state."
+
+    def pass_through_door(self, action):
 
         '''
         go_through_door action executor, checks pre and post conditions of action.
@@ -175,61 +196,35 @@ class PlanExecutor():
         returns: boolean representing success/failure of action
         '''
 
-        room1 = action[1]
-        room2 = action[2]
-        door = action[3]
+        room_1 = action[1]
+        room_2 = action[2]
+        door_1 = action[3]
 
-        # Precondition checking
-        if (world_state.objects["door"].has_key(door) and 
-            room1 in world_state.objects["door"][door]["connect"] and room2 in world_state.objects["door"][door]["connect"] and
-            world_state.objects["door"][door]["open"] and 
-            world_state.agents["turtlebot"]["at"] == room1 and 
-            not world_state.agents["turtlebot"]["docked"]):
-
-                # Call move action
-                status = self.move_action(door + "_" + room2 + "_"+ room1)
-
-                # Update world state
-                if status:
-                    world_state.agents["turtlebot"]["at"] = room2
-                    print(world_state.agents["turtlebot"]["at"])
+        try:
+            if room_1 in self.agents["turtlebot"]["at"] and \
+            room_1 in self.objects[door_1]["connect"] and \
+            room_2 in self.objects[door_1]["connect"]:
                 
-                return status
+                waypoint = door_1 + "_" + room_2 + "_" + room_1
+
+                # Call to open_door service
+                self.move_action(waypoint)
+
+                # State update
+                self.update_state()
+                at = self.agents["turtlebot"]["at"]
+                
+                # Postcondition checking
+                if room_2 in at and room_1 not in at:
+                    return True, "Action succeeded."
+                
+                return False, "Postconditions not met."
             
-        return False
+            return False, "Preconditions not met."
 
-    def approach_desk_refill(self, action):
-        global world_state
+        except KeyError:
+            return False, "Key error when looking up state."
 
-        rospy.loginfo("In approach desk refill")
-
-        '''
-        approach_desk_refill action executor, checks pre and post conditions of action.
-        Calls move_action to move the turtlebot.
-        action: list of strings expressing the pddl approach door action
-        returns: boolean representing success/failure of action
-        '''
-
-        room1 = action[1]
-        desk1 = action[2]
-
-        # Precondition checking
-        if (world_state.objects["room"].has_key(room1) and 
-        world_state.objects["desk"].has_key(desk1)):
-            if (world_state.objects["desk"][desk1]["inside"] == room1 and 
-            world_state.agents["turtlebot"]["at"] == room1 and
-            not world_state.agents["turtlebot"]["docked"]):
-
-                # Call move action
-                status = self.move_action(desk1)
-                # Update world state
-                if status:
-                    world_state.agents["turtlebot"]["facing"] = desk1
-                
-                return status
-
-        rospy.loginfo('Returning false')
-        return False
 
     def dock(self, action):
 
@@ -240,26 +235,36 @@ class PlanExecutor():
         returns: boolean representing success/failure of action
         '''
 
-        room1 = action[1]
-        charger1 = action[2]
-  
-        # Precondition checking
-        rospy.loginfo("In dock")
-        if (world_state.objects["room"].has_key(room1) and 
-        world_state.objects["charger"].has_key(charger1)):
-            if (world_state.agents["turtlebot"]["facing"] == charger1 and
-            world_state.agents["turtlebot"]["at"] == room1 and 
-            world_state.objects["charger"][charger1]["inside"] == room1):
-                rospy.loginfo("passed preconds")
-                status = self.dock_action()
-                if status:
-                    world_state.agents["turtlebot"]["docked"] = True
-                    world_state.agents["turtlebot"]["facing"] = charger1
+        charger_1 = action[1]
+        room_1 = action[2]
 
-                return status
+        rospy.loginfo(room_1 in self.agents["turtlebot"]["at"])
 
-        rospy.loginfo("returning false")
-        return False
+        try:
+            if room_1 in self.agents["turtlebot"]["at"] and \
+            charger_1 in self.agents["turtlebot"]["facing"] and \
+            not self.agents["turtlebot"]["docked"] and \
+            room_1 in self.objects[charger_1]["inside"]:
+                rospy.loginfo("passed preconditions")
+
+                # Call to dock service
+                self.dock_action()
+
+                # State update
+                self.update_state()
+                docked = self.agents["turtlebot"]["docked"]
+                
+                # Postcondition checking
+                if docked:
+                    return True, "Action succeeded."
+                
+                return False, "Postconditions not met."
+            
+            return False, "Preconditions not met."
+
+        except KeyError as e:
+            rospy.loginfo(e)
+            return False, "Key error when looking up state."
 
     def undock(self, action):
 
@@ -270,51 +275,41 @@ class PlanExecutor():
         returns: boolean representing success/failure of action
         '''
 
-        room1 = action[1]
-        charger1 = action[2]
+        charger_1 = action[1]
+        room_1 = action[2]
 
-        if (world_state.objects["room"].has_key(room1) and 
-        world_state.objects["charger"].has_key(charger1)):
-            if (world_state.agents["turtlebot"]["facing"] == charger1 and
-            world_state.agents["turtlebot"]["at"] == room1 and 
-            world_state.objects["charger"][charger1]["inside"] == room1):
+  
+        try:
+            if room_1 in self.agents["turtlebot"]["at"] and \
+            self.agents["turtlebot"]["docked"] and \
+            room_1 in self.objects[charger_1]["inside"]:
 
-                status = self.undock_action()
+                # Call to dock service
+                self.undock_action()
 
-                if status:
-                    world_state.agents["turtlebot"]["docked"] = False
-                    world_state.agents["turtlebot"]["facing"] = charger1
-
-                return status
-    
-        return False
-    
-    def approach_charger(self, action):
-
-        '''
-        approach_charger action executor, checks pre and post conditions of action.
-        Calls move_action to move the turtlebot.
-        action: list of strings expressing the pddl approach door action
-        returns: boolean representing success/failure of action
-        '''
-        
-        room1 = action[1]
-        charger1 = action[2]
-
-        if (world_state.objects["room"].has_key(room1) and 
-        world_state.objects["charger"].has_key(charger1)):
-            if (world_state.agents["turtlebot"]["at"] == room1 and 
-            world_state.objects["charger"][charger1]["inside"] == room1):
-
-
-                status = self.move_action("dock_approach")
-
-                if status:
-                    world_state.agents["turtlebot"]["facing"] == charger1
-                    
-                return status
+                # State update
+                self.update_state()
+                docked = self.agents["turtlebot"]["docked"]
+                at = self.agents["turtlebot"]["at"]
+                facing = self.agents["turtlebot"]["facing"]
                 
-            return False
+                # Postcondition checking
+                if not docked and charger_1 in facing and room_1 in at:
+                    return True, "Action succeeded."
+                
+                rospy.loginfo(charger_1)
+                rospy.loginfo(room_1)
+                rospy.loginfo(docked)
+                rospy.loginfo(at)
+                rospy.loginfo(facing)
+                return False, "Postconditions not met."
+            
+            return False, "Preconditions not met."
+
+        except KeyError as e:
+            rospy.loginfo(e)
+            return False, "Key error when looking up state."
+    
 
 ##################### Service Callers #####################
 
@@ -397,157 +392,25 @@ class PlanExecutor():
 
 ##################### Primative Move Actions #####################
 
-    def move_forward_point_five(self):
+    def primitive_move(self, action):
+        """
+        Calls primitive move service.
+        action: String representing primitive move.
+        returns: Result of service call (bool, string)
+        """
 
-        '''
-        Primative move action. Moves forward 0.5 meters.
-        returns: none.
-        '''
+        # Make call to primitive move service
+        result = self.prim_move_client(action)
 
-        vel = Twist()
-        vel.linear.x = 0.25
+        return result
 
-        # Publish 20 times (2 seconds total)
-        for i in range(20):
-            self.cmd_vel.publish(vel)
-            self.rate.sleep()
+##################### State Update ####################
+
+    def update_state(self):
         
-        # Stop turtlebot
-        self.cmd_vel.publish(Twist())
-        self.rate.sleep()
-
-    def move_forward_one(self):
-
-        '''
-        Primative move action. Moves forward 1 meters.
-        returns: none.
-        '''
-
-        vel = Twist()
-        vel.linear.x = 0.25
-
-        # Publish 40 times (4 seconds total)
-        for i in range(40):
-            self.cmd_vel.publish(vel)
-            self.rate.sleep()
-        
-        # Stop turtlebot
-        self.cmd_vel.publish(Twist())
-        self.rate.sleep()
-
-    def move_backward_point_five(self):
-
-        '''
-        Primative move action. Moves backward 0.5 meters.
-        returns: none.
-        '''
-
-        vel = Twist()
-        vel.linear.x = -0.25
-
-        # Publish 20 times (2 seconds total)
-        for i in range(20):
-            self.cmd_vel.publish(vel)
-            self.rate.sleep()
-        
-        # Stop turtlebot
-        self.cmd_vel.publish(Twist())
-        self.rate.sleep()
-
-    def move_backward_one(self):
-
-        '''
-        Primative move action. Moves backward 1 meters.
-        returns: none.
-        '''
-
-        vel = Twist()
-        vel.linear.x = -0.25
-
-        # Publish 40 times (4 seconds total)
-        for i in range(40):
-            self.cmd_vel.publish(vel)
-            self.rate.sleep()
-        
-        # Stop turtlebot
-        self.cmd_vel.publish(Twist())
-        self.rate.sleep()
-
-    def turn_cc_pi_over_four(self):
-
-        '''
-        Primative turn action. Turns pi/4 meters counter clockwise.
-        returns: none.
-        '''
-
-        vel = Twist()
-        vel.angular.z = math.pi / 4
-
-        # Publish 10 times (1 second total)
-        for i in range(10):
-            self.cmd_vel.publish(vel)
-            self.rate.sleep()
-        
-        # Stop turtlebot
-        self.cmd_vel.publish(Twist())
-        self.rate.sleep()
-
-    def turn_cc_pi_over_two(self):
-
-        '''
-        Primative turn action. Turns pi/2 meters counter clockwise.
-        returns: none.
-        '''
-
-        vel = Twist()
-        vel.angular.z = math.pi / 4
-
-        # Publish 20 times (2 second total)
-        for i in range(20):
-            self.cmd_vel.publish(vel)
-            self.rate.sleep()
-        
-        # Stop turtlebot
-        self.cmd_vel.publish(Twist())
-        self.rate.sleep()
-
-    def turn_c_pi_over_four(self):
-
-        '''
-        Primative turn action. Turns pi/4 meters clockwise.
-        returns: none.
-        '''
-
-        vel = Twist()
-        vel.angular.z = - math.pi / 4
-
-        # Publish 10 times (1 second total)
-        for i in range(10):
-            self.cmd_vel.publish(vel)
-            self.rate.sleep()
-        
-        # Stop turtlebot
-        self.cmd_vel.publish(Twist())
-        self.rate.sleep()
-
-    def turn_cc_pi_over_two(self):
-
-        '''
-        Primative turn action. Turns pi/2 meters clockwise.
-        returns: none.
-        '''
-
-        vel = Twist()
-        vel.angular.z = - math.pi / 4
-
-        # Publish 20 times (2 second total)
-        for i in range(20):
-            self.cmd_vel.publish(vel)
-            self.rate.sleep()
-        
-        # Stop turtlebot
-        self.cmd_vel.publish(Twist())
-        self.rate.sleep()
+        self.state_conf_client()
+        self.agents = rospy.get_param("agents")
+        self.objects = rospy.get_param("objects")
 
 ##################### Shutdown #####################
 
@@ -564,9 +427,7 @@ class PlanExecutor():
         self.cmd_vel.publish(Twist())
         rospy.sleep(1)
 
+
+
 if __name__ == "__main__":
-    
-    try:
-        PlanExecutor()
-    except:
-        rospy.logerr("PlanExecutor failed")
+    PlanExecutor()

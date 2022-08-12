@@ -1,19 +1,9 @@
 waypoints: {
-    "lab_door_lab_lab": [[-0.484, -3.657, 0], [ 0, 0, -0.637, 0.771]],
-    "lab_door_lab_kitchen": [[-0.484, -3.657, 0], [ 0, 0, 0.765, 0.644]],
-    "lab_door_kitchen_kitchen": [[0.114, -5.891, 0], [ 0, 0, 0.765, 0.644]],
-    "lab_door_kitchen_lab": [[0.114, -5.891, 0], [ 0, 0, -0.637, 0.771]],
-    "desk_refill": [[-2.900, -8.369, 0], [0, 0, 0.769, 0.639]],
-    "dock_approach": [[-0.570, 1.119, 0], [ 0, 0, 0, 1]],
-}
-
-state_confirmation: {
-    "at_lab_door_lab_lab": {"tag": "at3", "distance": 3},
-    "at_lab_door_lab_kitchen": {"tag": "at8", "distance": 3},
-    "at_lab_door_kitchen_kitchen": {"tag": "at5", "distance": 1.5},
-    "at_lab_door_kitchen_lab": {"tag": "at4", "distance": 1.5},
-    "at_dock_approach": {"tag": "at0", "distance": 2},
-    "at_desk_refill": {"tag": "at9", "distance": 2},
-    "lab_door_lab_open": {"tag": "at4_view", "in_view": True},
-    "lab_door_kitchen_open": {"tag": "at15_view", "in_view": False},
+    door_1_lab_lab : [[2.834, -1.917, 0], [ 0, 0, -0.437, 0.899]],
+    door_1_lab_kitchen : [[2.797, -1.931, 0], [ 0, 0, 0.868, 0.497]],
+    door_1_kitchen_kitchen : [[4.206, -3.576, 0], [ 0, 0, 0.912, 0.411]],
+    door_1_kitchen_lab : [[4.300, -3.640, 0], [ 0, 0, -0.498, 0.867]],
+    sink_1 : [[0.174, -5.906, 0], [0, 0, -0.517, 0.856]],
+    charger_1 : [[-0.612, 0.868, 0], [ 0, 0, 0.257, 0.966]],
+    test : [[1, 0, 0], [0, 0, 0, 1]]
 }

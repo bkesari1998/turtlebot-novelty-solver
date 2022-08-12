@@ -1,0 +1,10 @@
+positional_tags : [6, 7, 9, 12, 13, 14, 15]
+
+state_tags : [1, 3, 5, 4]
+
+reset_dist_detect_min : 1.5
+reset_dist_detect_max : 3
+reset_rot_detect: 0.5
+
+reset_dist_thresh : 1.5
+reset_rot_thresh : 0.5

@@ -56,7 +56,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   Move.srv
-  Plan.srv
+  Action.srv
   Open_Door.srv
 )
 

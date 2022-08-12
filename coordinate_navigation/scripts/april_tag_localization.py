@@ -1,47 +1,52 @@
 #!/usr/bin/env python
 
-from state.waypoints import state_check
-
+from std_srvs.srv import Trigger
 import rospy
 import math
-from std_msgs.msg import Float64, String
+
 from apriltag_ros.msg import AprilTagDetectionArray
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf2_geometry_msgs import PoseStamped
 import tf2_ros
 from tf.transformations import quaternion_multiply, quaternion_conjugate, euler_from_quaternion
 
 
-class AprilTagHandler(object):
+class AprilTagLocalization(object):
 
     def __init__(self):
         # Initialize ROS node
-        rospy.init_node("tag_handler")
+        rospy.init_node("tag_localization")
         rospy.on_shutdown(self.shutdown)
 
         # Initialize tf transform listener
         self.buffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.buffer)
 
-        rospy.loginfo("tag_handler node active")
-
-        # Create a list to keep track if a tag is in the camera's view
-        self.tag_in_view = [False, False, False, False, False, False, False]
+        rospy.loginfo("tag_localization node active")
 
         # Create a list of active april tag ids.
-        self.tag_ids = [1, 3, 4, 6, 9, 13, 14] # Make this a rosparam later
+        try:
+            self.positional_tags = rospy.get_param("positional_tags")
+            self.reset_dist_detect_max = rospy.get_param("reset_dist_detect_max")
+            self.reset_dist_detect_min = rospy.get_param("reset_dist_detect_min")
+            self.reset_rot_detect = rospy.get_param("reset_rot_detect")
+            self.reset_dist_thresh = rospy.get_param("reset_dist_thresh")
+            self.reset_rot_thresh = rospy.get_param("reset_rot_thresh")
+        except (KeyError, rospy.ROSException):
+            rospy.logerr("Error getting tag parameters.")
 
-        # Initialize a topic/publisher for each april tag being used
-        # Store publishers in a list
-        self.tag_pubs = []
-        for id_num in self.tag_ids:
-            pub_name = "at%d" % id_num
-            self.tag_pubs.append(rospy.Publisher(pub_name, Float64, queue_size=1))
+        self.tags = {}
+        for id_num in self.positional_tags:
+            self.tags[id_num] = False
+
 
         # Initialize initial_pose publisher
         self.pose_pub = rospy.Publisher("/initialpose", PoseWithCovarianceStamped, queue_size=1)
     
         self.rate = rospy.Rate(60)
+
+        # Create service proxy to state updater
+        self.confirm_state = rospy.ServiceProxy("confirm_state", Trigger)
 
         # Subscribe to april tag detector topic
         self.tag_detections = rospy.Subscriber("/tag_detections", AprilTagDetectionArray,
@@ -132,46 +137,48 @@ class AprilTagHandler(object):
         """
 
         # List to keep track of tags seen
-        tags_seen_indecies = []
-
-        # Only set initial pose once per set of new detections
-        # Create flag to track
-        set_pose_flag = False
+        tags_seen = []
+        set_pose_flag = True
 
         # Get odometry position
-
         odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped)
         odom_pose = odom_pose.pose.pose
 
-        # Loop over detected april tags.
         for detection in msg.detections:
 
-            # Get index of tag in tag_id list
-            index = self.tag_ids.index(detection.id[0])
-            tags_seen_indecies.append(detection.id[0])
-            
-            # Publish distance to detected april_tag
-            distance = Float64()
-            distance.data = math.sqrt(detection.pose.pose.pose.position.x ** 2 +  detection.pose.pose.pose.position.y ** 2 +  detection.pose.pose.pose.position.z ** 2)
-            self.tag_pubs[index].publish(distance)
-            rospy.loginfo(distance)
+            tag_id = detection.id[0]
+
+            try:
+                self.positional_tags.index(tag_id)
+            except ValueError:
+                continue
+
+            tags_seen.append(tag_id)
+
+            tag_in_camera_frame = detection.pose.pose.pose
+            dist = math.sqrt(tag_in_camera_frame.position.x**2 + tag_in_camera_frame.position.y**2 + tag_in_camera_frame.position.z**2)
+            _, rot, _ = euler_from_quaternion([tag_in_camera_frame.orientation.x, tag_in_camera_frame.orientation.y, tag_in_camera_frame.orientation.z, tag_in_camera_frame.orientation.w])
+
+            if rot > math.pi:
+                rot -= (2*math.pi)
 
             # Only update if tag is in distance range
-            if distance.data <= 3 and distance.data >= 1.5:
+            if (dist <= self.reset_dist_detect_max and dist > self.reset_dist_detect_min) or \
+            abs(rot) > self.reset_rot_detect:
+
 
                 # Only update pose with tag previously out of view before
-                if not self.tag_in_view[index]:
+                if not self.tags[tag_id]:
 
                     # Update tag_in_view list
-                    self.tag_in_view[index] = True
+                    self.tags[tag_id] = True
                     
                     # Update pose only once per set of new detections
-                    if not set_pose_flag:
-
-                        set_pose_flag = True
+                    if set_pose_flag:
+                        
+                        set_pose_flag = False
                         
                         # Transform location of tag in camera's frame to position of camera in tag's frame
-                        tag_in_camera_frame = detection.pose.pose.pose
                         laser_in_tag_frame = self.transform_to_tag_frame(tag_in_camera_frame, detection.id[0])
 
                         # Transform location of camera to map's frame
@@ -202,25 +209,23 @@ class AprilTagHandler(object):
                         quaternion_conjugate([base_foot_pose.pose.pose.orientation.x, base_foot_pose.pose.pose.orientation.y, base_foot_pose.pose.pose.orientation.z, base_foot_pose.pose.pose.orientation.w]))
 
                         _, _, yaw_diff = euler_from_quaternion(quat_diff)
-                        if pose_diff > 2 and (yaw_diff > 1 and yaw_diff < 5): 
+                        rospy.loginfo(yaw_diff)
+                        if yaw_diff > math.pi:
+                            yaw_diff -= (2 * math.pi)
+                        if pose_diff > 2 and abs(yaw_diff) > self.reset_rot_thresh: 
                             self.pose_pub.publish(base_foot_pose)
+                            self.rate.sleep()
+                            self.confirm_state()
 
         # Set tag_in_view to false for tags not seen in camera image            
-        for tag_id in self.tag_ids:
+        for tag_id in self.tags:
 
             try:
-                tags_seen_indecies.index(tag_id)
+                tags_seen.index(tag_id)
             except ValueError:
-                self.tag_in_view[self.tag_ids.index(tag_id)] = False
-
-                # Publish that tag distance is -1
-                distance = Float64()
-                distance.data = -1
-                self.tag_pubs[self.tag_ids.index(tag_id)].publish(distance)
+                self.tags[tag_id] = False
                 
         self.rate.sleep()
-
-
 
     def shutdown(self):
         """
@@ -232,8 +237,4 @@ class AprilTagHandler(object):
 
 
 if __name__ == '__main__':
-
-    try:
-        AprilTagHandler()
-    except:
-        rospy.logerr("AprilTagHandler failed")
+    AprilTagLocalization()

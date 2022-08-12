@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-from turtle import clear
 import rospy
-import os
 
 from std_msgs.msg import Float64
+from sound_play.msg import SoundRequest
+
 from std_srvs.srv import Empty
 from coffee_bot_srvs.srv import Open_Door
-from state.waypoints import state_check
 
 class OpenDoor(object):
 
@@ -25,21 +24,17 @@ class OpenDoor(object):
         # Clear costmaps service
         self.clear_costmaps = rospy.ServiceProxy("/move_base/clear_costmaps", Empty)
 
-        self.door_open = False
+        # Robotsound publisher
+        self.robot_sound_pub = rospy.Publisher("robotsound", SoundRequest, queue_size=1)
+        self.rate = rospy.Rate(1)
+
+        # Create sound message
+        self.sound_msg = SoundRequest()
+        self.sound_msg.sound = SoundRequest.SAY
+        self.sound_msg.arg = "Please open the door."
 
         while not rospy.is_shutdown():
             rospy.spin()
-
-    def set_door_open(self, msg, in_view):
-        """
-        Setter for door_open
-        returns: none
-        """
-
-        if msg.data == -1:
-            self.door_open = not in_view
-        else:
-            self.door_open = in_view
 
     def open_door(self, req):
         """
@@ -47,39 +42,15 @@ class OpenDoor(object):
         req: Trigger object.
         returns: Service response.
         """
-
-        try:
-            state_confirmation = rospy.get_param('state_confirmation/%s_%s_open' % (req.door, req.room))
-        except (rospy.ROSException, KeyError):
-            return False, 'Door does not have entry in state_confirmation dictionary'
-
-        try:
-            april_tag = state_confirmation['tag']
-        except KeyError:
-            return False, 'Tag not set for door'
-
-        try:
-            in_view = state_confirmation['in_view']
-        except KeyError:
-            return False, 'In_view not set for door'    
         
-        door_sub = rospy.Subscriber(april_tag, Float64, self.set_door_open, callback_args=in_view)
-
-        while not self.door_open:
-
-            os.system("roslaunch coordinate_navigation open_door.launch")
-            # Sleep for 5 seconds after asking to open door
-            rospy.sleep(1)
-    
-        door_sub.unregister()
+        # Ask to open door, sleep 15 seconds
+        self.robot_sound_pub.publish(self.sound_msg)
+        rospy.sleep(15)
 
         # Clear costmaps
         self.clear_costmaps()
 
-        # Set door flag back to false for next use
-        self.door_open = False
-
-        return True, "Door is open"
+        return True, "Asked to open door"
 
     def shutdown(self):
         """
