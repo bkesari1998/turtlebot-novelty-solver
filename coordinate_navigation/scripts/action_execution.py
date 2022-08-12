@@ -56,7 +56,7 @@ class PlanExecutor():
         # Create state_confirmer service proxy
         self.state_conf_client = rospy.ServiceProxy("/confirm_state", Trigger)
 
-        rospy.loginfo(self.undock(["undock", "lab", "charger_1"]))
+        rospy.loginfo(self.undock(["undock", "charger_1", "lab"]))
         rospy.loginfo("After undock")
         rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
         rospy.loginfo("After approach")
@@ -138,8 +138,7 @@ class PlanExecutor():
             return False, "Preconditions not met." 
 
 
-        except KeyError as e:
-            rospy.loginfo("hello")
+        except KeyError:
             return False, "Key error when looking up state."
 
     # def open_door(self, action):
@@ -263,8 +262,9 @@ class PlanExecutor():
         returns: boolean representing success/failure of action
         '''
 
-        room_1 = action[1]
-        charger_1 = action[2]
+        charger_1 = action[1]
+        room_1 = action[2]
+
   
         try:
             if room_1 in self.agents["turtlebot"]["at"] and \

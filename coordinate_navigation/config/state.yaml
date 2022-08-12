@@ -21,7 +21,7 @@ objects : {
 agent_state_confirmation: {
   "5": {state: {agent: "turtlebot", at: "lab", facing: "door_1"}, range: {distance: 6, orientation: 0.25}},
   "3": {state: {agent: "turtlebot", at: "kitchen", facing: "door_1"}, range: {distance: 2, orientation: 0.25}},
-  "6": {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.25}},
+  "4": {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.25}},
   "1": {state: {agent: "turtlebot", at: "lab", facing: "charger_1"}, range: {distance: 2, orientation: 0.25}} 
 }
 
