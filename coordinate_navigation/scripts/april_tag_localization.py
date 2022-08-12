@@ -166,7 +166,7 @@ class AprilTagLocalization(object):
                 rot -= (2*math.pi)
 
             # Only update if tag is in distance range
-            if dist <= self.reset_dist_detect_max and dist > self.reset_dist_detect_min and \
+            if (dist <= self.reset_dist_detect_max and dist > self.reset_dist_detect_min) or \
             abs(rot) > self.reset_rot_detect:
 
                 rospy.loginfo("Tag in range")
