@@ -268,11 +268,11 @@ class PlanExecutor():
 
   
         try:
-            rospy.loginfo(self.agents["turtlebot"]["at"])
-            rospy.loginfo(room_1)
+            rospy.loginfo(type(self.agents["turtlebot"]["at"][0]))
+            rospy.loginfo(type(room_1))
             if room_1 in self.agents["turtlebot"]["at"] and \
             self.agents["turtlebot"]["docked"] and \
-            charger_1 in self.objects[room_1]:
+            room_1 in self.objects[charger_1]["inside"]:
 
                 # Call to dock service
                 self.undock_action()
