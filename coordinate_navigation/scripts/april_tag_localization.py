@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from queue import Empty
+from std_srvs.srv import Empty
 import rospy
 import math
 
