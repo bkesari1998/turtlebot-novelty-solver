@@ -58,10 +58,10 @@ class PlanExecutor():
 
         rospy.loginfo(self.undock(["undock", "charger_1", "lab"]))
         rospy.loginfo("After undock")
-        rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
-        rospy.loginfo("After approach")
-        rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"]))
-        rospy.loginfo(self.approach(["approach", "kitchen_wall", "sink_1", "kitchen"]))
+        # rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
+        # rospy.loginfo("After approach")
+        # rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"]))
+        # rospy.loginfo(self.approach(["approach", "kitchen_wall", "sink_1", "kitchen"]))
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -280,6 +280,10 @@ class PlanExecutor():
                 docked = self.agents["turtlebot"]["docked"]
                 at = self.agents["turtlebot"]["at"]
                 facing = self.agents["turtlebot"]["facing"]
+
+                rospy.loginfo(docked)
+                rospy.loginfo(at)
+                rospy.logdebug(facing)
                 
                 # Postcondition checking
                 if not docked and facing == charger_1 and at == room_1:

@@ -64,7 +64,7 @@ class Undock():
 
         # create msg to reverse turtlebot
         move_cmd = Twist()
-        move_cmd.linear.x = -0.1
+        move_cmd.linear.x = -0.2
         move_cmd.angular.z = 0
 
         for i in range(25):
