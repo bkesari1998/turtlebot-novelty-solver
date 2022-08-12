@@ -73,7 +73,7 @@ class MoveTB():
         self.simple_action_client.send_goal(tb_goal)
         self.simple_action_client.wait_for_result()
 
-        if (self.simple_action_client.get_state == GoalStatus.SUCCEEDED):
+        if (self.simple_action_client.get_state() == GoalStatus.SUCCEEDED):
             return True, "Turtlebot navigated to goal position"
         
         return False, "Turtlebot failed to navigate to goal position"

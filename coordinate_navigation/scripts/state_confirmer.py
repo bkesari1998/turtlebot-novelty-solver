@@ -69,6 +69,11 @@ class StateConfirmer(object):
         # Loop through tag_detections
         for detection in detections:
 
+            try:
+                self.state_tags.index(detection.id[0])
+            except KeyError:
+                continue
+
             # Get tag id
             tag_id = str(detection.id[0])
             rospy.loginfo(tag_id)

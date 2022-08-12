@@ -147,6 +147,12 @@ class AprilTagLocalization(object):
         for detection in msg.detections:
 
             tag_id = detection.id[0]
+
+            try:
+                self.positional_tags.index(tag_id)
+            except KeyError:
+                continue
+
             tags_seen.append(tag_id)
 
             tag_in_camera_frame = detection.pose.pose.pose
