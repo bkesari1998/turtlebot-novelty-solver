@@ -56,10 +56,10 @@ class PlanExecutor():
         # Create state_confirmer service proxy
         self.state_conf_client = rospy.ServiceProxy("/confirm_state", Empty)
 
-        self.undock(["undock", "lab", "charger_1"])
-        self.approach(["approach", "charger_1", "door_1", "lab"])
-        self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"])
-        self.approach(["approach", "kitchen_wall", "sink_1"])
+        rospy.loginfo(self.undock(["undock", "lab", "charger_1"]))
+        rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
+        rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"]))
+        rospy.loginfo(self.approach(["approach", "kitchen_wall", "sink_1", "kitchen"]))
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -116,10 +116,10 @@ class PlanExecutor():
                 # Get waypoint
                 waypoint = ""
                 # If door, append room info
-                if "door" in object_1:
-                    waypoint = object_2 + "_" + room_1 + "_" + "_" + room_1
+                if "door" in object_2:
+                    waypoint = object_2 + "_" + room_1 +  "_" + room_1
                 else:
-                    waypoint = object_1
+                    waypoint = object_2
 
 
                 # Call to move service
