@@ -13,16 +13,16 @@ objects : {
 
   sink_1: {inside: ["kitchen"]},
 
-  kitchen_wall : {},
+  kitchen_wall : {inside: ["kitchen"]},
   
-  lab_wall : {}
+  lab_wall : {inside: ["lab"]}
 }
 
 agent_state_confirmation: {
-  "5": {state: {agent: "turtlebot", at: "lab", facing: "door_1"}, range: {distance: 6, orientation: 0.25}},
-  "3": {state: {agent: "turtlebot", at: "kitchen", facing: "door_1"}, range: {distance: 2, orientation: 0.25}},
-  "4": {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.25}},
-  "1": {state: {agent: "turtlebot", at: "lab", facing: "charger_1"}, range: {distance: 2, orientation: 0.25}} 
+  "5": {state: {agent: "turtlebot", at: "lab", facing: "door_1"}, range: {distance: [3, 6], orientation: 0.5}},
+  "3": {state: {agent: "turtlebot", at: "kitchen", facing: "door_1"}, range: {distance: [3, 4], orientation: 0.5}},
+  "4": {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.5}},
+  "1": {state: {agent: "turtlebot", at: "lab", facing: "charger_1"}, range: {distance: 3, orientation: 0.5}} 
 }
 
 boundaries: {

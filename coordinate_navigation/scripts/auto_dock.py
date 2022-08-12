@@ -28,6 +28,7 @@ def dock_tb(req):
 
     # Check success or failure
     if (client.get_state() == GoalStatus.SUCCEEDED):
+        rospy.set_param("agents/turtlebot/docked", True)
         return True, "Turtlebot successfully docked."
     
     return False, "Turtlebot did not successfully dock."

@@ -58,10 +58,17 @@ class PlanExecutor():
 
         rospy.loginfo(self.undock(["undock", "charger_1", "lab"]))
         rospy.loginfo("After undock")
-        # rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
-        # rospy.loginfo("After approach")
-        # rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"]))
-        # rospy.loginfo(self.approach(["approach", "kitchen_wall", "sink_1", "kitchen"]))
+        rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
+        rospy.loginfo("After approach")
+        rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"]))
+        rospy.loginfo("After pass")
+        rospy.loginfo(self.approach(["approach", "kitchen_wall", "sink_1", "kitchen"]))
+        rospy.loginfo("After approach")
+        rospy.loginfo(self.approach(["approach", "sink_1", "door_1", "kitchen"]))
+        rospy.loginfo(self.pass_through_door(["pass_through_door","kitchen", "lab", "door_1"]))
+        rospy.loginfo(self.approach(["approach", "lab_wall", "charger_1", "lab"]))
+        rospy.loginfo(self.dock(["dock", "charger_1", "lab"]))
+
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -139,7 +146,8 @@ class PlanExecutor():
             return False, "Preconditions not met." 
 
 
-        except KeyError:
+        except KeyError as e:
+            rospy.loginfo(e)
             return False, "Key error when looking up state."
 
     # def open_door(self, action):
@@ -227,14 +235,17 @@ class PlanExecutor():
         returns: boolean representing success/failure of action
         '''
 
-        room_1 = action[1]
-        charger_1 = action[2]
-  
+        charger_1 = action[1]
+        room_1 = action[2]
+
+        rospy.loginfo(room_1 in self.agents["turtlebot"]["at"])
+
         try:
             if room_1 in self.agents["turtlebot"]["at"] and \
             charger_1 in self.agents["turtlebot"]["facing"] and \
             not self.agents["turtlebot"]["docked"] and \
-            charger_1 in self.objects[room_1]:
+            room_1 in self.objects[charger_1]["inside"]:
+                rospy.loginfo("passed preconditions")
 
                 # Call to dock service
                 self.dock_action()
@@ -251,7 +262,8 @@ class PlanExecutor():
             
             return False, "Preconditions not met."
 
-        except KeyError:
+        except KeyError as e:
+            rospy.loginfo(e)
             return False, "Key error when looking up state."
 
     def undock(self, action):
@@ -268,8 +280,6 @@ class PlanExecutor():
 
   
         try:
-            rospy.loginfo(type(self.agents["turtlebot"]["at"][0]))
-            rospy.loginfo(type(room_1))
             if room_1 in self.agents["turtlebot"]["at"] and \
             self.agents["turtlebot"]["docked"] and \
             room_1 in self.objects[charger_1]["inside"]:
@@ -282,15 +292,16 @@ class PlanExecutor():
                 docked = self.agents["turtlebot"]["docked"]
                 at = self.agents["turtlebot"]["at"]
                 facing = self.agents["turtlebot"]["facing"]
-
-                rospy.loginfo(docked)
-                rospy.loginfo(at)
-                rospy.logdebug(facing)
                 
                 # Postcondition checking
-                if not docked and facing == charger_1 and at == room_1:
+                if not docked and charger_1 in facing and room_1 in at:
                     return True, "Action succeeded."
                 
+                rospy.loginfo(charger_1)
+                rospy.loginfo(room_1)
+                rospy.loginfo(docked)
+                rospy.loginfo(at)
+                rospy.loginfo(facing)
                 return False, "Postconditions not met."
             
             return False, "Preconditions not met."

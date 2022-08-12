@@ -59,12 +59,7 @@ class StateConfirmer(object):
         odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped, rospy.Duration(1))
         odom_pose = odom_pose.pose.pose
 
-        # Use boundaries to set agent "at"
-        point = Point(odom_pose.position.x, odom_pose.position.y)
-        for boundary_name, boundary in self.boundaries.items():
-            if boundary.contains(point):
-                rospy.set_param("agents/turtlebot/at", boundary_name)
-                rospy.set_param("agents/turtlebot/facing", "%s_wall" % boundary_name)
+        use_amcl_flag = True
 
         # Loop through tag_detections
         for detection in detections:
@@ -76,7 +71,6 @@ class StateConfirmer(object):
 
             # Get tag id
             tag_id = str(detection.id[0])
-            rospy.loginfo(tag_id)
             tag_in_camera_frame = detection.pose.pose.pose
             dist = math.sqrt(tag_in_camera_frame.position.x**2 + tag_in_camera_frame.position.y**2 + tag_in_camera_frame.position.z**2)
             _, rot, _ = euler_from_quaternion([tag_in_camera_frame.orientation.x, tag_in_camera_frame.orientation.y, tag_in_camera_frame.orientation.z, tag_in_camera_frame.orientation.w])
@@ -84,26 +78,32 @@ class StateConfirmer(object):
             # Set agent state
             try:
                 state_value = self.agent_state_confirmation[tag_id]
-                rospy.loginfo(state_value)
                 if type(state_value["range"]["distance"]) == list:
                     if dist >= state_value["range"]["distance"][0] and dist < state_value["range"]["distance"][1] and abs(rot) < state_value["range"]["orientation"]:
-                        for key, value in state_value["state"]:
-                            if key == "agent":
-                                continue
-                            rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
-
-                else:
-                    if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
-                        rospy.loginfo("In if")
                         for key, value in state_value["state"].items():
                             if key == "agent":
                                 continue
                             rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
-
-
+                            use_amcl_flag = False
+                else:
+                    if dist < state_value["range"]["distance"] and abs(rot) < state_value["range"]["orientation"]:
+                        for key, value in state_value["state"].items():
+                            if key == "agent":
+                                continue
+                            rospy.set_param("agents/%s/%s" % (state_value["state"]["agent"], key), [value])
+                            use_amcl_flag = False
+                
             except ValueError:
                 pass
-        
+
+        # Use boundaries to set agent "at"
+        if use_amcl_flag:
+            point = Point(odom_pose.position.x, odom_pose.position.y)
+            for boundary_name, boundary in self.boundaries.items():
+                if boundary.contains(point):
+                    rospy.set_param("agents/turtlebot/at", boundary_name)
+                    rospy.set_param("agents/turtlebot/facing", ["%s_wall" % boundary_name])
+
         return True, "State confirmed"
         
 if __name__ == "__main__":
