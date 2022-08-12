@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from std_srvs.srv import Empty
+from std_srvs.srv import Trigger
 import rospy
 import math
 
@@ -46,7 +46,7 @@ class AprilTagLocalization(object):
         self.rate = rospy.Rate(60)
 
         # Create service proxy to state updater
-        self.confirm_state = rospy.ServiceProxy("confirm_state", Empty)
+        self.confirm_state = rospy.ServiceProxy("confirm_state", Trigger)
 
         # Subscribe to april tag detector topic
         self.tag_detections = rospy.Subscriber("/tag_detections", AprilTagDetectionArray,
@@ -221,7 +221,7 @@ class AprilTagLocalization(object):
                             rospy.loginfo("publishing initial pose")
                             self.pose_pub.publish(base_foot_pose)
                             self.rate.sleep()
-                            # self.confirm_state()
+                            self.confirm_state()
 
         # Set tag_in_view to false for tags not seen in camera image            
         for tag_id in self.tags:

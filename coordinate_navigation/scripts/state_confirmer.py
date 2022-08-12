@@ -7,7 +7,7 @@ from tf.transformations import euler_from_quaternion
 from apriltag_ros.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
-from std_srvs.srv import Empty
+from std_srvs.srv import Trigger
 
 from shapely.geometry import Point
 from shapely.geometry import Polygon
@@ -22,7 +22,7 @@ class StateConfirmer(object):
         rospy.loginfo("state_confirmer node active")
 
         # Initialize service
-        self.state_conf = rospy.Service("confirm_state", Empty, self.confirm_state)
+        self.state_conf = rospy.Service("confirm_state", Trigger, self.confirm_state)
         rospy.loginfo("confirm_state service active")
 
         # Get state_conf tag param
@@ -103,6 +103,8 @@ class StateConfirmer(object):
 
             except ValueError:
                 pass
+        
+        return True, "State confirmed"
         
 if __name__ == "__main__":
     StateConfirmer()
