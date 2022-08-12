@@ -57,7 +57,9 @@ class PlanExecutor():
         self.state_conf_client = rospy.ServiceProxy("/confirm_state", Empty)
 
         rospy.loginfo(self.undock(["undock", "lab", "charger_1"]))
+        rospy.loginfo("After undock")
         rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
+        rospy.loginfo("After approach")
         rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"]))
         rospy.loginfo(self.approach(["approach", "kitchen_wall", "sink_1", "kitchen"]))
 
@@ -103,7 +105,6 @@ class PlanExecutor():
         action: list of strings expressing the pddl approach door action
         returns: boolean representing success/failure of action
         '''
-
         object_1 = action[1]
         object_2 = action[2]
         room_1 = action[3]
@@ -112,7 +113,6 @@ class PlanExecutor():
         try:
             if room_1 in self.objects[object_1]["inside"] and room_1 in self.objects[object_2]["inside"] \
                 and room_1 in self.agents["turtlebot"]["at"] and object_1 in self.agents["turtlebot"]["facing"]:
-                
                 # Get waypoint
                 waypoint = ""
                 # If door, append room info
@@ -120,7 +120,6 @@ class PlanExecutor():
                     waypoint = object_2 + "_" + room_1 +  "_" + room_1
                 else:
                     waypoint = object_2
-
 
                 # Call to move service
                 self.move_action(waypoint)
@@ -139,7 +138,8 @@ class PlanExecutor():
             return False, "Preconditions not met." 
 
 
-        except KeyError:
+        except KeyError as e:
+            rospy.loginfo("hello")
             return False, "Key error when looking up state."
 
     # def open_door(self, action):
@@ -411,8 +411,4 @@ class PlanExecutor():
 
 
 if __name__ == "__main__":
-    
-    try:
-        PlanExecutor()
-    except:
-        rospy.logerr("PlanExecutor failed")
+    PlanExecutor()
