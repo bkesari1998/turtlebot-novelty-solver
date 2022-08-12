@@ -18,7 +18,7 @@ class PrimativeMoveAction(object):
         """
 
         # Initialize ROS node
-        rospy.init_node("primative_move_actions")
+        rospy.init_node("primitive_move_actions")
         rospy.on_shutdown(self.shutdown)
         rospy.loginfo("primitive_move_actions node active")
 
@@ -75,11 +75,11 @@ class PrimativeMoveAction(object):
 
         # Initialize service
         self.primative_move_srv = rospy.Service(
-            "/primative_move_actions",
+            "/primitive_move_actions",
             Action,
             self.move_action_srv_handler,
         )
-        rospy.loginfo("/primative_move_actions service active")
+        rospy.loginfo("/primitive_move_actions service active")
 
         # Initialize action client
         self.action_client = actionlib.SimpleActionClient(
