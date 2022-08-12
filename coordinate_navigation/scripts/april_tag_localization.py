@@ -228,8 +228,4 @@ class AprilTagLocalization(object):
 
 
 if __name__ == '__main__':
-
-    try:
-        AprilTagLocalization()
-    except:
-        rospy.logerr("AprilTagHandler failed")
+    AprilTagLocalization()
