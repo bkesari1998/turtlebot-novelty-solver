@@ -71,7 +71,7 @@ class StateConfirmer(object):
 
             try:
                 self.state_tags.index(detection.id[0])
-            except KeyError:
+            except ValueError:
                 continue
 
             # Get tag id

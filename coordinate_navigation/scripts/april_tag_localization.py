@@ -150,7 +150,7 @@ class AprilTagLocalization(object):
 
             try:
                 self.positional_tags.index(tag_id)
-            except KeyError:
+            except ValueError:
                 continue
 
             tags_seen.append(tag_id)
