@@ -159,12 +159,17 @@ class AprilTagLocalization(object):
             dist = math.sqrt(tag_in_camera_frame.position.x**2 + tag_in_camera_frame.position.y**2 + tag_in_camera_frame.position.z**2)
             _, rot, _ = euler_from_quaternion([tag_in_camera_frame.orientation.x, tag_in_camera_frame.orientation.y, tag_in_camera_frame.orientation.z, tag_in_camera_frame.orientation.w])
             
+            rospy.loginfo(dist)
+            rospy.loginfo(rot)
+
             if rot > math.pi:
                 rot -= (2*math.pi)
 
             # Only update if tag is in distance range
             if dist <= self.reset_dist_detect_max and dist > self.reset_dist_detect_min and \
             abs(rot) > self.reset_rot_detect:
+
+                rospy.loginfo("Tag in range")
 
                 # Only update pose with tag previously out of view before
                 if not self.tags[tag_id]:
@@ -174,7 +179,8 @@ class AprilTagLocalization(object):
                     
                     # Update pose only once per set of new detections
                     if set_pose_flag:
-
+                        
+                        rospy.loginfo("Set pose")
                         set_pose_flag = False
                         
                         # Transform location of tag in camera's frame to position of camera in tag's frame
@@ -208,9 +214,11 @@ class AprilTagLocalization(object):
                         quaternion_conjugate([base_foot_pose.pose.pose.orientation.x, base_foot_pose.pose.pose.orientation.y, base_foot_pose.pose.pose.orientation.z, base_foot_pose.pose.pose.orientation.w]))
 
                         _, _, yaw_diff = euler_from_quaternion(quat_diff)
+                        rospy.loginfo(yaw_diff)
                         if yaw_diff > math.pi:
                             yaw_diff -= (2 * math.pi)
                         if pose_diff > 2 and abs(yaw_diff) > self.reset_rot_thresh: 
+                            rospy.loginfo("publishing initial pose")
                             self.pose_pub.publish(base_foot_pose)
                             self.confirm_state()
 
