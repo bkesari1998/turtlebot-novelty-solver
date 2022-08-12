@@ -220,7 +220,8 @@ class AprilTagLocalization(object):
                         if pose_diff > 2 and abs(yaw_diff) > self.reset_rot_thresh: 
                             rospy.loginfo("publishing initial pose")
                             self.pose_pub.publish(base_foot_pose)
-                            self.confirm_state()
+                            self.rate.sleep()
+                            # self.confirm_state()
 
         # Set tag_in_view to false for tags not seen in camera image            
         for tag_id in self.tags:
