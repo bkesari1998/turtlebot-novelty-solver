@@ -268,6 +268,8 @@ class PlanExecutor():
 
   
         try:
+            rospy.loginfo(self.agents["turtlebot"]["at"])
+            rospy.loginfo(room_1)
             if room_1 in self.agents["turtlebot"]["at"] and \
             self.agents["turtlebot"]["docked"] and \
             charger_1 in self.objects[room_1]:
