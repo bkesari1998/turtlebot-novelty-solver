@@ -138,11 +138,11 @@ class AprilTagLocalization(object):
 
         # List to keep track of tags seen
         tags_seen = []
-        set_pose_flage = True
+        set_pose_flag = True
 
         # Get odometry position
         odom_pose = rospy.wait_for_message("/amcl_pose", PoseWithCovarianceStamped)
-        odom_pose = odom_pose.pose.pose.pose
+        odom_pose = odom_pose.pose.pose
 
         for detection in msg.detections:
 
