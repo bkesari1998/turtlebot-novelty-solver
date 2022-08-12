@@ -127,6 +127,7 @@ class PlanExecutor():
                 # State update
                 self.update_state()
                 facing = self.agents["turtlebot"]["facing"]
+                rospy.loginfo("Facing %s" % facing)
 
                 # Postcondition checking
                 if object_2 in facing and object_1 not in facing:
@@ -288,7 +289,8 @@ class PlanExecutor():
             
             return False, "Preconditions not met."
 
-        except KeyError:
+        except KeyError as e:
+            rospy.loginfo(e)
             return False, "Key error when looking up state."
     
 
