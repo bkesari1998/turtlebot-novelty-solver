@@ -5,7 +5,7 @@ import rospy
 
 # ROS Messages/Services
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
-from std_srvs.srv import Trigger, Empty
+from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move, Open_Door, Action
 
 class PlanExecutor():
@@ -54,7 +54,7 @@ class PlanExecutor():
         self.prim_move_client = rospy.ServiceProxy("/primitive_move_actions", Action)
 
         # Create state_confirmer service proxy
-        self.state_conf_client = rospy.ServiceProxy("/confirm_state", Empty)
+        self.state_conf_client = rospy.ServiceProxy("/confirm_state", Trigger)
 
         rospy.loginfo(self.undock(["undock", "lab", "charger_1"]))
         rospy.loginfo("After undock")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from std_srvs.srv import Empty
+from std_srvs.srv import Trigger
 import rospy
 import math
 
@@ -46,7 +46,7 @@ class AprilTagLocalization(object):
         self.rate = rospy.Rate(60)
 
         # Create service proxy to state updater
-        self.confirm_state = rospy.ServiceProxy("confirm_state", Empty)
+        self.confirm_state = rospy.ServiceProxy("confirm_state", Trigger)
 
         # Subscribe to april tag detector topic
         self.tag_detections = rospy.Subscriber("/tag_detections", AprilTagDetectionArray,
@@ -158,9 +158,6 @@ class AprilTagLocalization(object):
             tag_in_camera_frame = detection.pose.pose.pose
             dist = math.sqrt(tag_in_camera_frame.position.x**2 + tag_in_camera_frame.position.y**2 + tag_in_camera_frame.position.z**2)
             _, rot, _ = euler_from_quaternion([tag_in_camera_frame.orientation.x, tag_in_camera_frame.orientation.y, tag_in_camera_frame.orientation.z, tag_in_camera_frame.orientation.w])
-            
-            rospy.loginfo(dist)
-            rospy.loginfo(rot)
 
             if rot > math.pi:
                 rot -= (2*math.pi)
@@ -169,7 +166,6 @@ class AprilTagLocalization(object):
             if (dist <= self.reset_dist_detect_max and dist > self.reset_dist_detect_min) or \
             abs(rot) > self.reset_rot_detect:
 
-                rospy.loginfo("Tag in range")
 
                 # Only update pose with tag previously out of view before
                 if not self.tags[tag_id]:
@@ -180,7 +176,6 @@ class AprilTagLocalization(object):
                     # Update pose only once per set of new detections
                     if set_pose_flag:
                         
-                        rospy.loginfo("Set pose")
                         set_pose_flag = False
                         
                         # Transform location of tag in camera's frame to position of camera in tag's frame
@@ -218,10 +213,9 @@ class AprilTagLocalization(object):
                         if yaw_diff > math.pi:
                             yaw_diff -= (2 * math.pi)
                         if pose_diff > 2 and abs(yaw_diff) > self.reset_rot_thresh: 
-                            rospy.loginfo("publishing initial pose")
                             self.pose_pub.publish(base_foot_pose)
                             self.rate.sleep()
-                            # self.confirm_state()
+                            self.confirm_state()
 
         # Set tag_in_view to false for tags not seen in camera image            
         for tag_id in self.tags:
