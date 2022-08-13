@@ -1,4 +1,4 @@
-string[] action
+string action
 ---
 bool success
 string message

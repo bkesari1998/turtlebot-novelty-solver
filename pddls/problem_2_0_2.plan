@@ -3,7 +3,7 @@
 
 0.00100: (approach desk_1 doorway_1 hallway)
 0.00200: (pass_through_door hallway lab doorway_1)
-0.00300: (approach doorway_1 charger_1 lab)
+0.00300: (approach nothing charger_1 lab)
 0.00400: (dock charger_1 lab)
 
 ; Makespan: 0.004
