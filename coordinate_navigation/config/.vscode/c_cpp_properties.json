@@ -1,0 +1,35 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/mulip/catkin_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/mulip/catkin_ws/src/ros_astra_camera/include/**",
+        "/home/mulip/catkin_ws/src/depthimage_to_laserscan/include/**",
+        "/home/mulip/catkin_ws/src/kobuki/kobuki_auto_docking/include/**",
+        "/home/mulip/catkin_ws/src/kobuki_bumper2pc/include/**",
+        "/home/mulip/catkin_ws/src/kobuki/kobuki_controller_tutorial/include/**",
+        "/home/mulip/catkin_ws/src/kobuki_desktop/kobuki_gazebo_plugins/include/**",
+        "/home/mulip/catkin_ws/src/kobuki_keyop/include/**",
+        "/home/mulip/catkin_ws/src/kobuki_node/include/**",
+        "/home/mulip/catkin_ws/src/kobuki/kobuki_random_walker/include/**",
+        "/home/mulip/catkin_ws/src/kobuki_safety_controller/include/**",
+        "/home/mulip/catkin_ws/src/robot_pose_ekf/include/**",
+        "/home/mulip/catkin_ws/src/turtlebot_apps/turtlebot_actions/include/**",
+        "/home/mulip/catkin_ws/src/yocs_cmd_vel_mux/include/**",
+        "/home/mulip/catkin_ws/src/yocs_controllers/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
