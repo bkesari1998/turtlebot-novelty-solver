@@ -25,4 +25,5 @@
     <node name="power_systems_sub" pkg="coordinate_navigation" type="power_systems_state_confirmer.py"/>
     <node name="state_confirmer" pkg="coordinate_navigation" type="tag_amcl_state_confirmer.py"/>
     <node name="primitive_move_actions" pkg="coordinate_navigation" type="primitive_moves.py"/>
+    <node name="action_execution" pkg="coordinate_navigation" type="action_execution.py"/>
 </launch>
