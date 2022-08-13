@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from std_srvs.srv import Trigger
+from coffee_bot_srvs.srv import Goal
 
 
 class PddlProblemGen(object):
@@ -15,10 +15,13 @@ class PddlProblemGen(object):
         # Initialize ROS node
         rospy.init_node("pddl_problem_gen")
         rospy.loginfo("pddl_problem_gen node active")
-        rospy.on_shutdown(self.shutdown)
+
+        self.agents = rospy.get_param("/agents")
+        self.object_list = rospy.get_param("/object_list")
+        self.object_predicates = rospy.get_param("/object_predicates")
 
         # Initialize service
-        self.problem_gen_srv = rospy.Service("problem_gen", Trigger, self.generate_problem)
+        self.problem_gen_srv = rospy.Service("problem_gen", Goal, self.generate_problem)
         rospy.loginfo("problem_gen service active")
 
         # Counter for naming different problem files
@@ -27,10 +30,15 @@ class PddlProblemGen(object):
         while not rospy.is_shutdown():
             rospy.spin()
 
-    def generate_problem(self):
+    def generate_problem(self, req):
         """
         Handles service call. Generates pddl problem file from world_state.py
         """
+
+        # Load rosparams
+        self.agents = rospy.get_param("/agents")
+        self.object_list = rospy.get_param("/object_list")
+        self.object_predicates = rospy.get_param("/object_predicates")
 
         # Create/Open file
         path = "problem_%d.pddl" % self.prob_count
@@ -43,9 +51,9 @@ class PddlProblemGen(object):
         # Add objects to file
         fp.write("(:objects\n")
         # Parse dict
-        for object_type in world_state.objects:
+        for object_type, objects in self.object_list.items():
             object_line = ""
-            for obj in world_state.objects[object_type]:
+            for obj in objects:
                 # Append object to line
                 object_line += (obj + " ")
 
@@ -56,54 +64,55 @@ class PddlProblemGen(object):
 
         fp.write("(:init\n")
         # Add initial state of agent
-        for predicate, value in world_state.agents["turtlebot"].items():
+        for predicate_name, value in self.agents["turtlebot"].items():
 
             # Check if predicate is a boolean
             if type(value) == bool:
                 if not value:
-                    state_line = "(not(%s))\n" % predicate
+                    state_line = "(not(%s))\n" % predicate_name
                 else:
-                    state_line = "(%s)\n" % predicate
+                    state_line = "(%s)\n" % predicate_name
             # Predicate is not boolean
             else:
                 state_line = "(%s %s)\n" % (predicate, value)
             fp.write("\t%s" % state_line)
 
         # Add initial state of other objects
-        for object_type in world_state.objects:
-            # Parse dict
-            for obj in world_state.objects[object_type]:
-                # Parse dict
-                for predicate, value in world_state.objects[object_type][obj].items():
-                    other_objects = ""
-                    # Check if predicate is boolean
-                    if type(value) == bool:
-                        if not value:
-                            state_line = "(not(%s %s))\n" % (predicate, obj)
-                        else:
-                            state_line = "(%s %s)\n" % (predicate, obj)
-                    # Predicate is not boolean
+        for object, predicate_dict in self.object_predicates.items():
+            for predicate, value in predicate_dict.items():
+                other_objects = ""
+                # Check if predicate is boolean
+                if type(value) == bool:
+                    if not value:
+                        state_line = "(not(%s %s))\n" % (predicate, object)
                     else:
-                        # Check if value is a list
-                        if type(value) == list:
-                            # Parse list
-                            for val in value:
-                                if value.index(val) == len(value) - 1:
-                                    other_objects += val
-                                else:
-                                    other_objects += val + " "
-                        # Value is not a list 
-                        else:
-                            other_objects = value
+                        state_line = "(%s %s)\n" % (predicate, object)
+                # Predicate is not boolean
+                else:
+                    # Check if value is a list
+                    if type(value) == list:
+                        # Parse list
+                        for val in value:
+                            if value.index(val) == len(value) - 1:
+                                other_objects += val
+                            else:
+                                other_objects += val + " "
+                    # Value is not a list 
+                    else:
+                        other_objects = value
 
-                        state_line = "(%s %s %s)\n" % (predicate, other_objects, obj)
+                    state_line = "(%s %s %s)\n" % (predicate, other_objects, obj)
 
-                    fp.write("\t%s" % state_line)
+                fp.write("\t%s" % state_line)
 
         fp.write(")\n\n")
 
         # Write goal to file
-        fp.write("(:goal (and\n\t(facing desk_refill)\n))\n)")
+        fp.write("(:goal (and\n")
+        for state in req.goal:
+            fp.write("\t%s\n" % state)
+
+        fp.write("))\n)")
         fp.close()
         self.prob_count += 1
 

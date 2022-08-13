@@ -2,26 +2,30 @@ agents: {
   turtlebot: {at: ["lab"], facing: ["charger_1"], docked: [true]}
 }
 
+object_types : {
+  room : ["lab", "hallway"],
+  doorway: ["doorway_1"],
+  charger: ["charger_1"],
+  desk: ["desk_1"],
+  nothing: ["nothing"]
+}
+
 objects : {
   lab: {},
 
   kitchen: {},
 
-  door_1 : {connect : ["lab", "kitchen"], inside: ["lab", "kitchen"]},
+  doorway_1 : {connect : ["lab", "hallway"], inside: ["lab", "hallway"]},
 
   charger_1: {inside: ["lab"]},
 
-  sink_1: {inside: ["kitchen"]},
-
-  kitchen_wall : {inside: ["kitchen"]},
-  
-  lab_wall : {inside: ["lab"]}
+  desk_1: {inside: ["hallway"]},
 }
 
 agent_state_confirmation: {
-  "5": {state: {agent: "turtlebot", at: "lab", facing: "door_1"}, range: {distance: [3, 6], orientation: 0.5}},
-  "3": {state: {agent: "turtlebot", at: "kitchen", facing: "door_1"}, range: {distance: [3, 4], orientation: 0.5}},
-  "4": {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.5}},
+  "5": {state: {agent: "turtlebot", at: "lab", facing: "doorway_1"}, range: {distance: [3, 6], orientation: 0.5}},
+  "3": {state: {agent: "turtlebot", at: "hallway", facing: "doorway_1"}, range: {distance: [3, 4], orientation: 0.5}},
+  "4": {state: {agent: "turtlebot", at: "hallway", facing: "desk_1"}, range: {distance: 2, orientation: 0.5}},
   "1": {state: {agent: "turtlebot", at: "lab", facing: "charger_1"}, range: {distance: 3, orientation: 0.5}} 
 }
 
