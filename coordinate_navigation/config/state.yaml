@@ -1,5 +1,5 @@
 agents: {
-  turtlebot: {at: ["lab"], facing: ["charger_1"], docked: [true]}
+  turtlebot: {at: ["lab"], facing: ["charger_1"], docked: true}
 }
 
 object_types : {
@@ -20,6 +20,8 @@ objects : {
   charger_1: {inside: ["lab"]},
 
   desk_1: {inside: ["hallway"]},
+
+  nothing: {inside: ["lab", "hallway"]}
 }
 
 agent_state_confirmation: {
