@@ -6,7 +6,7 @@ import rospy
 # ROS Messages/Services
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from std_srvs.srv import Trigger
-from coffee_bot_srvs.srv import Move, Open_Door, Action
+from coffee_bot_srvs.srv import Move, Open_Door, Action, PrimitiveAction
 
 class PlanExecutor():
 
@@ -51,20 +51,10 @@ class PlanExecutor():
         rospy.loginfo("action_executor service active")
     
         # Create primitive move service proxy
-        self.prim_move_client = rospy.ServiceProxy("/primitive_move_actions", Action)
+        self.prim_move_client = rospy.ServiceProxy("/primitive_move_actions", PrimitiveAction)
 
         # Create state_confirmer service proxy
         self.state_conf_client = rospy.ServiceProxy("/confirm_state", Trigger)
-
-        rospy.loginfo(self.undock(["undock", "charger_1", "lab"]))
-        rospy.loginfo(self.approach(["approach", "charger_1", "doorway_1", "lab"]))
-        rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "hallway", "doorway_1"]))
-        rospy.loginfo(self.approach(["approach", "nothing", "desk_1", "hallway"]))
-        rospy.loginfo(self.approach(["approach", "desk_1", "doorway_1", "hallway"]))
-        rospy.loginfo(self.pass_through_door(["pass_through_door","hallway", "lab", "doorway_1"]))
-        rospy.loginfo(self.approach(["approach", "nothing", "charger_1", "lab"]))
-        rospy.loginfo(self.dock(["dock", "charger_1", "lab"]))
-
 
         while not rospy.is_shutdown():
             rospy.spin()

@@ -2,7 +2,7 @@
 
 import rospy
 
-from coffee_bot_srvs.srv import Action
+from coffee_bot_srvs.srv import PrimitiveAction
 
 from actionlib_msgs.msg import GoalStatus
 import actionlib
@@ -76,7 +76,7 @@ class PrimativeMoveAction(object):
         # Initialize service
         self.primative_move_srv = rospy.Service(
             "/primitive_move_actions",
-            Action,
+            PrimitiveAction,
             self.move_action_srv_handler,
         )
         rospy.loginfo("/primitive_move_actions service active")
