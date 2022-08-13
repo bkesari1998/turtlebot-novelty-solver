@@ -102,7 +102,7 @@ class StateConfirmer(object):
             for boundary_name, boundary in self.boundaries.items():
                 if boundary.contains(point):
                     rospy.set_param("agents/turtlebot/at", boundary_name)
-                    rospy.set_param("agents/turtlebot/facing", ["%s_wall" % boundary_name])
+                    rospy.set_param("agents/turtlebot/facing", ["nothing"])
 
         return True, "State confirmed"
         

@@ -52,7 +52,7 @@ class Undock():
             self.reverse()
 
         if not self.charge_status:
-            rospy.set_param("agents/turtlebot/docked", False)
+          
             return True, "Turtlebot successfully undocked"
 
         return False, "Turtlebot failed to undock"

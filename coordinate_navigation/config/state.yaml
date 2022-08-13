@@ -1,5 +1,13 @@
 agents: {
-  turtlebot: {at: ["lab"], facing: ["charger_1"], docked: [true]}
+  turtlebot: {at: ["lab"], facing: ["charger_1"], docked: true}
+}
+
+object_types : {
+  room : ["lab", "hallway"],
+  doorway: ["doorway_1"],
+  charger: ["charger_1"],
+  desk: ["desk_1"],
+  nothing: ["nothing"]
 }
 
 objects : {
@@ -7,25 +15,23 @@ objects : {
 
   kitchen: {},
 
-  door_1 : {connect : ["lab", "kitchen"], inside: ["lab", "kitchen"]},
+  doorway_1 : {connect : ["lab", "hallway"], inside: ["lab", "hallway"]},
 
   charger_1: {inside: ["lab"]},
 
-  sink_1: {inside: ["kitchen"]},
+  desk_1: {inside: ["hallway"]},
 
-  kitchen_wall : {inside: ["kitchen"]},
-  
-  lab_wall : {inside: ["lab"]}
+  nothing: {inside: ["lab", "hallway"]}
 }
 
 agent_state_confirmation: {
-  "5": {state: {agent: "turtlebot", at: "lab", facing: "door_1"}, range: {distance: [3, 6], orientation: 0.5}},
-  "3": {state: {agent: "turtlebot", at: "kitchen", facing: "door_1"}, range: {distance: [3, 4], orientation: 0.5}},
-  "4": {state: {agent: "turtlebot", at: "kitchen", facing: "sink_1"}, range: {distance: 2, orientation: 0.5}},
+  "5": {state: {agent: "turtlebot", at: "lab", facing: "doorway_1"}, range: {distance: [3, 6], orientation: 0.5}},
+  "3": {state: {agent: "turtlebot", at: "hallway", facing: "doorway_1"}, range: {distance: [3, 4], orientation: 0.5}},
+  "4": {state: {agent: "turtlebot", at: "hallway", facing: "desk_1"}, range: {distance: 2, orientation: 0.5}},
   "1": {state: {agent: "turtlebot", at: "lab", facing: "charger_1"}, range: {distance: 3, orientation: 0.5}} 
 }
 
 boundaries: {
   lab: [[0.641, 4.607], [-3.04, 2.856], [-2.180, 0.736], [-4.198, -0.235], [-2.140, -5.529], [4.172, -2.309]],
-  kitchen: [[8.465, -1.139], [9.042, -2.213], [7.014, -3.466], [7.268, -3.869], [5.860, -4.750], [5.201, -4.226], [4.823, -4.321], [4.966, -5.168], [-0.346, -7.544], [-1.355, -5.470]]
+  hallway: [[8.465, -1.139], [9.042, -2.213], [7.014, -3.466], [7.268, -3.869], [5.860, -4.750], [5.201, -4.226], [4.823, -4.321], [4.966, -5.168], [-0.346, -7.544], [-1.355, -5.470]]
 }
