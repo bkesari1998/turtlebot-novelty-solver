@@ -57,16 +57,12 @@ class PlanExecutor():
         self.state_conf_client = rospy.ServiceProxy("/confirm_state", Trigger)
 
         rospy.loginfo(self.undock(["undock", "charger_1", "lab"]))
-        rospy.loginfo("After undock")
-        rospy.loginfo(self.approach(["approach", "charger_1", "door_1", "lab"]))
-        rospy.loginfo("After approach")
-        rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "kitchen", "door_1"]))
-        rospy.loginfo("After pass")
-        rospy.loginfo(self.approach(["approach", "kitchen_wall", "sink_1", "kitchen"]))
-        rospy.loginfo("After approach")
-        rospy.loginfo(self.approach(["approach", "sink_1", "door_1", "kitchen"]))
-        rospy.loginfo(self.pass_through_door(["pass_through_door","kitchen", "lab", "door_1"]))
-        rospy.loginfo(self.approach(["approach", "lab_wall", "charger_1", "lab"]))
+        rospy.loginfo(self.approach(["approach", "charger_1", "doorway_1", "lab"]))
+        rospy.loginfo(self.pass_through_door(["pass_through_door","lab", "hallway", "doorway_1"]))
+        rospy.loginfo(self.approach(["approach", "nothing", "desk_1", "hallway"]))
+        rospy.loginfo(self.approach(["approach", "desk_1", "doorway_1", "hallway"]))
+        rospy.loginfo(self.pass_through_door(["pass_through_door","hallway", "lab", "doorway_1"]))
+        rospy.loginfo(self.approach(["approach", "nothing", "charger_1", "lab"]))
         rospy.loginfo(self.dock(["dock", "charger_1", "lab"]))
 
 
