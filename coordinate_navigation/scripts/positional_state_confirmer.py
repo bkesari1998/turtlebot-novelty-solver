@@ -116,9 +116,10 @@ class StateConfirmer(object):
                 if boundary_polygon.contains(point):
                     rospy.loginfo("Point in boundary %s", boundary_name)
                     try:
-                        rot_threshold = self.param_facing_boundaries["orientation_thresh"]
-                        orientation_boundary = self.param_facing_boundaries["orientation"]
-                    except KeyError:
+                        rot_threshold = self.param_facing_boundaries[boundary_name]["orientation_thresh"]
+                        orientation_boundary = self.param_facing_boundaries[boundary_name]["orientation"]
+                    except KeyError as e:
+                        rospy.loginfo("Key error: %s" % e)
                         continue
 
                     r, p, y = euler_from_quaternion(
