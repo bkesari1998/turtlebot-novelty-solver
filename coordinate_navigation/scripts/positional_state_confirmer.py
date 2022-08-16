@@ -81,7 +81,7 @@ class StateConfirmer(object):
 
         # Set facing
         facing = "nothing"
-        if len(detections > 0):
+        if len(detections) > 0:
             for detection in detections:
                 tag_id = str(detection.id[0])
 
