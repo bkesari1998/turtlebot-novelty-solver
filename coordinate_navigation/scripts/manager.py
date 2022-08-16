@@ -12,22 +12,25 @@ class Manager(object):
         rospy.wait_for_service("/action_executor")
         rospy.loginfo("action_executor service active")
 
-        self.plan_file_path = "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1.plan" # maybe make param?
-        self.goal_state = "facing desk_1"
+        self.plan_file_paths = ["/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1.plan", "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_2.plan"] # maybe make param?
 
-        plan = self.read_plan(self.plan_file_path)
+        plans = []
+        for plan_file in self.plan_file_paths:
+            plans.append(self.read_plan(plan_file))
 
         self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
 
         # Go until goal state reached
-        
-        for action in plan:
-            res = self.action_executor_client(action)
+        for i in range(20):
+            for plan in plans:
+                for action in plan:
+                    res = self.action_executor_client(action)
 
-            if not res.success:
-                rospy.loginfo(action[0])
-                rospy.loginfo(res.message)
-                break
+                    if not res.success:
+                        rospy.loginfo(action[0])
+                        rospy.loginfo(res.message)
+                        break
+                rospy.loginfo("Success: %d" % i)
 
     def read_plan(self, plan_file_path):
         rospy.loginfo("In read plan")
