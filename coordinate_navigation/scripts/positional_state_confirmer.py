@@ -80,6 +80,7 @@ class StateConfirmer(object):
         rospy.set_param("agents/turtlebot/at", at)
 
         # Set facing
+        rospy.loginfo("Pre setting facing")
         facing = "nothing"
         if len(detections) > 0:
             for detection in detections:
@@ -110,9 +111,10 @@ class StateConfirmer(object):
                 if tag_pose.position.z <= dist_threshold and abs(p) <= rot_threshold:
                     facing = facing_
         else:
+            rospy.loginfo("setting facing in amcl")
             for boundary_name, boundary_polygon in self.facing_boundaries.items():
                 if boundary_polygon.contains(point):
-
+                    rospy.loginfo("Point in boundary %s", boundary_name)
                     try:
                         rot_threshold = self.param_facing_boundaries["orientation_thresh"]
                         orientation_boundary = self.param_facing_boundaries["orientation"]
@@ -135,6 +137,7 @@ class StateConfirmer(object):
                     if y_b > math.pi:
                         y -= 2*math.pi
 
+                    rospy.loginfo(max(y, y_b) - min(y, y_b))
                     if (max(y, y_b) - min(y, y_b)) <= rot_threshold:
                         cutoff_index = boundary_name.find("__")
                         if cutoff_index != -1:
