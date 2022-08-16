@@ -114,7 +114,8 @@ class StateConfirmer(object):
                 if boundary_polygon.contains(point):
 
                     try:
-                        rot_threshold = self.param_facing_boundaries["orientation"]
+                        rot_threshold = self.param_facing_boundaries["orientation_thresh"]
+                        orientation_boundary = self.param_facing_boundaries["orientation"]
                     except KeyError:
                         continue
 
@@ -126,9 +127,15 @@ class StateConfirmer(object):
                             odom_pose.orientation.w,
                         ]
                     )
+
+                    r_b, p_b, y_b = euler_from_quaternion(orientation_boundary)
+
                     if y > math.pi:
                         y -= 2 * math.pi
-                    if abs(y) <= rot_threshold:
+                    if y_b > math.pi:
+                        y -= 2*math.pi
+
+                    if (max(y, y_b) - min(y, y_b)) <= rot_threshold:
                         cutoff_index = boundary_name.find("__")
                         if cutoff_index != -1:
                             boundary_name = boundary_name[:cutoff_index]
