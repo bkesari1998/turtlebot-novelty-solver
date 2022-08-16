@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="desk_1_broadcaster" args="1.457 -6.635 0.245 3.665 0 4.721 map desk_1" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="doorway_1" args="3.153 -3.288 0.245 3.665 0 4.721 map doorway_1" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="desk_1_broadcaster" args="3.688 -2.993 0 0 0 map desk_1" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="doorway_1" args="0.562 -6.571 0 0 0 0 map doorway_1" />
 </launch>
