@@ -77,7 +77,7 @@ class StateConfirmer(object):
             if boundary_polygon.contains(point):
                 at = boundary_name
 
-        rospy.set_param("agents/turtlebot/at", at)
+        rospy.set_param("agents/turtlebot/at", [at])
 
         # Set facing
         rospy.loginfo("Pre setting facing")
@@ -146,7 +146,7 @@ class StateConfirmer(object):
 
                         facing = boundary_name
 
-        rospy.set_param("agents/turtlebot/facing", facing)
+        rospy.set_param("agents/turtlebot/facing", [facing])
 
         return True, "State confirmed"
 
