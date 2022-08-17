@@ -2,6 +2,8 @@ agents: {
   turtlebot: {at: ["lab"], facing: ["charger_1"], docked: true}
 }
 
+object_list : ["doorway_1", "charger_1", "desk_1", "novel_object", "nothing"]
+
 object_types : {
   room : ["lab", "hallway"],
   doorway: ["doorway_1"],
@@ -30,7 +32,6 @@ at_boundaries: {
 }
 
 facing_boundaries: {
-  desk_1: {boundary: [[-0.005, -6.69], [1.057, -6.339], [0.586, -5.352], [-0.398, -5.789]], orientation: [0, 0, -0.534, 0.846], orientation_thresh: 0.524},
   doorway_1__lab: {boundary: [[2.399, -2.177], [3.374, -1.698], [3.908, -2.648], [3.223, -3.115]], orientation: [ 0, 0, -0.437, 0.899], orientation_thresh: 0.524},
   doorway_1__hallway: {boundary: [[3.369, -3.478], [3.922, -4.303], [5.045, -3.819], [4.148, -2.696]], orientation: [0, 0, 0.907, 0.422], orientation_thresh: 0.524}
 }
