@@ -138,6 +138,7 @@ class Manager(object):
 
     def pose_with_covariance_stamed_to_pose_stamped(self, pose):
         if not isinstance(pose, PoseWithCovarianceStamped):
+            rospy.loginfo("Not pose with cov stamped")
             return PoseStamped()
         
         pose_stamped = PoseStamped()
@@ -148,6 +149,7 @@ class Manager(object):
 
     def waypoint_to_pose_stamped(self, waypoint):
         if not isinstance(waypoint, list):
+            rospy.loginfo("Not list")
             return PoseStamped()
         
         pose_stamped = PoseStamped()
@@ -159,6 +161,8 @@ class Manager(object):
 
         pose_stamped.pose.orientation.z = waypoint[1][2]
         pose_stamped.pose.orientation.w = waypoint[1][3]
+
+        return pose_stamped
 
     def generate_plan(self, ):
 
