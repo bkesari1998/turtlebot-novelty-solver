@@ -28,7 +28,7 @@ class Manager(object):
         plan = self.read_plan(self.plan_file_path)
 
         self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
-        self.make_plan_client = rospy.ServiceProxy("move_base/make_plan", )
+        self.make_plan_client = rospy.ServiceProxy("move_base/make_plan", GetPlan)
 
         # Go until goal state reached
         plan_success = [False, ""]
