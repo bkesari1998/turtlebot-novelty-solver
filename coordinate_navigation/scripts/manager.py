@@ -37,8 +37,9 @@ class Manager(object):
             plan_success = self.execute_plan(plan)
 
             if not plan_success[0]:
+                learner_state = self.build_learner_state()
+                rospy.loginfo(learner_state)
                 return
-                # learner_state = self.build_learner_state()
                 # learner = self.instantiate_learner(learner_state, plan_success[1])
 
 
