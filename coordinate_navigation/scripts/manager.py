@@ -127,7 +127,7 @@ class Manager(object):
             waypoint_pose_stamped = self.waypoint_to_pose_stamped(waypoint)
 
             plan = self.make_plan_client(odom_pose_stamped, waypoint_pose_stamped, 0.25)
-
+            rospy.loginfo(plan.plan.poses)
             if len(plan.plan.poses) > 0:
                 learner_state.append(1)
             else:
