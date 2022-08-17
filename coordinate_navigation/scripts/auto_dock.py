@@ -24,7 +24,7 @@ def dock_tb(req):
     goal = AutoDockingGoal()
     client.send_goal(goal)
     rospy.on_shutdown(client.cancel_goal)
-    client.wait_for_result(timeout=rospy.Duration(30))
+    client.wait_for_result(timeout=rospy.Duration(90))
 
     # Check success or failure
     if (client.get_state() == GoalStatus.SUCCEEDED):
