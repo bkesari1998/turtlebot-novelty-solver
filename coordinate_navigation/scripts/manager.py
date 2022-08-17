@@ -124,7 +124,7 @@ class Manager(object):
             learner_state = learner_state + rot
 
             odom_pose_stamped = self.pose_with_covariance_stamed_to_pose_stamped(odom_pose_with_cov_stamped)
-            waypoint_pose_stamped = self.waypoint_to_pose_stamped(waypoint)
+            waypoint_pose_stamped = self.waypoint_to_pose_stamped(pose)
 
             plan = self.make_plan_client(odom_pose_stamped, waypoint_pose_stamped, 0.25)
             rospy.loginfo(plan.plan.poses)
@@ -148,10 +148,7 @@ class Manager(object):
         return pose_stamped
 
     def waypoint_to_pose_stamped(self, waypoint):
-        if not isinstance(waypoint, list):
-            rospy.loginfo("Not list")
-            return PoseStamped()
-        
+    
         pose_stamped = PoseStamped()
         pose_stamped.header.frame_id = "map"
         pose_stamped.header.stamp = rospy.Time.now()
