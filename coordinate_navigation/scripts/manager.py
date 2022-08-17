@@ -23,26 +23,37 @@ class Manager(object):
         self.waypoint_list = rospy.get_param("waypoint_list")
         self.waypoint_loc = rospy.get_param("waypoints")
 
-        self.plan_file_paths = ["/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1.plan", "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_2.plan"] # maybe make param?
-
-        plans = []
-        for plan_file in self.plan_file_paths:
-            plans.append(self.read_plan(plan_file))
+        self.plan_file_path = "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1.plan" # maybe make param?
+        
+        plan = self.read_plan(self.plan_file_path)
 
         self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
         self.make_plan_client = rospy.ServiceProxy("move_base/make_plan", )
 
         # Go until goal state reached
-        for i in range(20):
-            for plan in plans:
-                for action in plan:
-                    res = self.action_executor_client(action)
+        plan_success = [False, ""]
+        while not plan_success[0]:
 
-                    if not res.success:
-                        rospy.loginfo(action[0])
-                        rospy.loginfo(res.message)
-                        break
-                rospy.loginfo("Success: %d" % i)
+            plan_success = self.execute_plan(plan)
+
+            if not plan_success[0]:
+                return
+                # learner_state = self.build_learner_state()
+                # learner = self.instantiate_learner(learner_state, plan_success[1])
+
+
+
+    def execute_plan(self, plan):
+
+        for action in plan:
+            res = self.action_executor_client(action)
+
+            if not res.success:
+                rospy.loginfo(action[0])
+                rospy.loginfo(res.message)
+                return [False, action]
+        
+        return [True, ""]
 
     def read_plan(self, plan_file_path):
 
@@ -121,6 +132,8 @@ class Manager(object):
             else:
                 learner_state.append(0)
 
+        return learner_state
+
 
     def pose_with_covariance_stamed_to_pose_stamped(self, pose):
         if not isinstance(pose, PoseWithCovarianceStamped):
@@ -150,7 +163,7 @@ class Manager(object):
 
         pass
 
-    def instantiate_learner(self, ):
+    def instantiate_learner(self, learner_state, action):
 
         pass
 
