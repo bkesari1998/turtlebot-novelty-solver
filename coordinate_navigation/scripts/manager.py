@@ -100,8 +100,8 @@ class Manager(object):
         learner_state = learner_state + facing_state
 
         # Add distances and orientation to all static objects, add true false for 
-        odom_pose = rospy.wait_for_message("amcl_pose", PoseWithCovarianceStamped, rospy.Duration(1))
-        odom_pose = odom_pose.pose.pose
+        odom_pose_with_cov_stamped = rospy.wait_for_message("amcl_pose", PoseWithCovarianceStamped, rospy.Duration(1))
+        odom_pose = odom_pose_with_cov_stamped.pose.pose
 
         for waypoint in self.waypoint_list:
             pose = self.waypoint_loc[waypoint]
@@ -123,7 +123,7 @@ class Manager(object):
             learner_state = learner_state + dxdy
             learner_state = learner_state + rot
 
-            odom_pose_stamped = self.pose_with_covariance_stamed_to_pose_stamped(odom_pose)
+            odom_pose_stamped = self.pose_with_covariance_stamed_to_pose_stamped(odom_pose_with_cov_stamped)
             waypoint_pose_stamped = self.waypoint_to_pose_stamped(waypoint)
 
             plan = self.make_plan_client(odom_pose_stamped, waypoint_pose_stamped, 0.25)
