@@ -1,4 +1,4 @@
-waypoint_list: ["doorway_1_lab_lab", " doorway_1_lab_hallway", "doorway_1_hallway_hallway", "doorway_1_hallway_lab", "desk_1", "charger_1", "novel_object"]
+waypoint_list: ["doorway_1_lab_lab", "doorway_1_lab_hallway", "doorway_1_hallway_hallway", "doorway_1_hallway_lab", "desk_1", "charger_1", "novel_object"]
 
 
 waypoints: {
