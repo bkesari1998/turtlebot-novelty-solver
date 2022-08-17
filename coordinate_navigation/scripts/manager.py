@@ -114,7 +114,7 @@ class Manager(object):
             rot = []
             # append orientation info
             q_1_inverse = quaternion_inverse(pose[1])
-            q_0 = [odom_pose.oreintation.x, odom_pose.orientation.y, odom_pose.oreintation.z, odom_pose.orientation.w]
+            q_0 = [odom_pose.orientation.x, odom_pose.orientation.y, odom_pose.oreintation.z, odom_pose.orientation.w]
             rel_orientation = quaternion_multiply(q_0, q_1_inverse)
             rot.append(rel_orientation[2])
             rot.append(rel_orientation[3])
