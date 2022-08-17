@@ -23,7 +23,7 @@ class Manager(object):
         self.waypoint_list = rospy.get_param("waypoint_list")
         self.waypoint_loc = rospy.get_param("waypoints")
 
-        self.plan_file_path = "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1.plan" # maybe make param?
+        self.plan_file_path = "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_2.plan" # maybe make param?
         
         plan = self.read_plan(self.plan_file_path)
 
@@ -127,7 +127,6 @@ class Manager(object):
             waypoint_pose_stamped = self.waypoint_to_pose_stamped(pose)
 
             plan = self.make_plan_client(odom_pose_stamped, waypoint_pose_stamped, 0.25)
-            rospy.loginfo(plan.plan.poses)
             if len(plan.plan.poses) > 0:
                 learner_state.append(1)
             else:
@@ -138,7 +137,6 @@ class Manager(object):
 
     def pose_with_covariance_stamed_to_pose_stamped(self, pose):
         if not isinstance(pose, PoseWithCovarianceStamped):
-            rospy.loginfo("Not pose with cov stamped")
             return PoseStamped()
         
         pose_stamped = PoseStamped()
