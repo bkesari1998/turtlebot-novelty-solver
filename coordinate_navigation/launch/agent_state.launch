@@ -1,0 +1,1 @@
+<rosparam file="$(find coordinate_navigation)/config/state.yaml" />

@@ -41,6 +41,7 @@ class Manager(object):
                 rospy.loginfo(learner_state)
                 return
                 # learner = self.instantiate_learner(learner_state, plan_success[1])
+                # plan = self.read_plan(new_plan_file)
 
 
 
@@ -120,8 +121,7 @@ class Manager(object):
             rot.append(rel_orientation[3])
 
             # Add dxdy and rot to learner state
-            learner_state = learner_state + dxdy
-            learner_state = learner_state + rot
+            learner_state = learner_state + dxdy + rot
 
             odom_pose_stamped = self.pose_with_covariance_stamed_to_pose_stamped(odom_pose_with_cov_stamped)
             waypoint_pose_stamped = self.waypoint_to_pose_stamped(pose)
@@ -159,13 +159,17 @@ class Manager(object):
 
         return pose_stamped
 
-    def generate_plan(self, ):
+    def generate_plan(self, goal_state):
 
         pass
 
     def instantiate_learner(self, learner_state, action):
 
+
         pass
+
+
+
 
 
 
