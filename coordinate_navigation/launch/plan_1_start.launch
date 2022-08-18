@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <arg name="waypoints_file" default="/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/config/pre_novelty_waypoints.yaml"/>
+    <arg name="waypoints_file" default="pre_novelty_waypoints.yaml"/>
     <rosparam file="$(find coordinate_navigation)/config/$(arg waypoints_file)" />
     <rosparam file="$(find coordinate_navigation)/config/object_state.yaml" />
     <rosparam file="$(find coordinate_navigation)/config/plan_1_start_agent_state.yaml" />
