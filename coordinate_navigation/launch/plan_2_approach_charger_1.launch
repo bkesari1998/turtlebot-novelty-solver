@@ -9,7 +9,7 @@
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
         <arg name="initial_pose_x" value="-1.670" />
         <arg name="initial_pose_y" value="-2.901" />
-        <arg name="initial_pose_a" value="2.671" />
+        <arg name="initial_pose_a" value="-2.671" />
     </include>
     <include file="$(find coordinate_navigation)/launch/nav_bot.launch" />
 </launch>
