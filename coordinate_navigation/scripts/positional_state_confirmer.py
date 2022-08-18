@@ -4,6 +4,8 @@ import math
 
 from tf.transformations import euler_from_quaternion
 
+from std_msgs.msg import Bool
+
 from apriltag_ros.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
@@ -23,6 +25,10 @@ class StateConfirmer(object):
         # Initialize service
         self.state_conf = rospy.Service("confirm_state", Trigger, self.confirm_state)
         rospy.loginfo("confirm_state service active")
+
+        # Initialize Update State Publisher
+        self.update_state_pub = rospy.Publisher("update_state", Bool, queue_size=1)
+        self.rate = rospy.Rate(10)
 
         # Get state_conf tag param
         try:

@@ -1,7 +1,3 @@
-agents: {
-  turtlebot: {at: ["lab"], facing: ["charger_1"], docked: true}
-}
-
 object_list : ["doorway_1", "charger_1", "desk_1", "novel_object", "nothing"]
 
 object_types : {
