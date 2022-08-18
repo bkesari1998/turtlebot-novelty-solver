@@ -13,7 +13,7 @@ from tf.transformations import quaternion_multiply, quaternion_inverse
 class Manager(object):
     
     def __init__(self):
-
+        
         rospy.init_node("manager")
         
         rospy.wait_for_service("/action_executor")
@@ -88,18 +88,19 @@ class Manager(object):
         return plan
 
     def build_learner_state(self):
+
+        # Update State
+        self.update_state_handler(Bool(True))
+
         learner_state = []
 
-        # Add agent high level state information
-        agent_state = rospy.get_param("agents/turtlebot")
-
-        if agent_state["at"] == "lab":
+        if self.agent_state["at"] == "lab":
             learner_state.append(0)
         else:
             learner_state.append(1)
         
         facing_indecies = dict(zip(self.object_list, np.arange(len(self.object_list))))
-        facing_index = facing_indecies[agent_state["facing"]]
+        facing_index = facing_indecies[self.agent_state["facing"]]
         facing_state = [0] * len(self.object_list)
         facing_state[facing_index] = 1
 
