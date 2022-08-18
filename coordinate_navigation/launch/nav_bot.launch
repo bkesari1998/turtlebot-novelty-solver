@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>  
+    <include file="$(find kobuki_auto_docking)/launch/minimal.launch" />
+    <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
+    <node name="undock" pkg="coordinate_navigation" type="undock.py" />
+    <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
+    <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
+    <node name="power_systems_sub" pkg="coordinate_navigation" type="power_systems_state_confirmer.py"/>
+    <node name="state_confirmer" pkg="coordinate_navigation" type="positional_state_confirmer.py"/>
+    <node name="primitive_move_actions" pkg="coordinate_navigation" type="primitive_moves.py"/>
+    <node name="action_execution" pkg="coordinate_navigation" type="action_execution.py"/>
+</launch>
