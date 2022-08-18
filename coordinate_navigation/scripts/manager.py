@@ -6,6 +6,7 @@ from coffee_bot_srvs.srv import Action
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 
 from nav_msgs.srv import GetPlan
+from std_msgs.msg import Bool
 
 from tf.transformations import quaternion_multiply, quaternion_inverse
 
@@ -23,8 +24,12 @@ class Manager(object):
         self.waypoint_list = rospy.get_param("waypoint_list")
         self.waypoint_loc = rospy.get_param("waypoints")
 
-        self.plan_file_path = rospy.get_param("plan_file") # maybe make param?
-        
+        # Get agent high level state information
+        self.agent_state = rospy.get_param("agents/turtlebot")
+        self.update_state_subscriber = rospy.Subscriber("update_state", Bool, self.update_state_handler)
+
+        # Get plan from plan file
+        self.plan_file_path = rospy.get_param("plan_file")
         plan = self.read_plan(self.plan_file_path)
 
         self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
@@ -39,10 +44,10 @@ class Manager(object):
             if not plan_success[0]:
                 learner_state = self.build_learner_state()
                 rospy.loginfo(learner_state)
-                return
                 # learner = self.instantiate_learner(learner_state, plan_success[1])
                 # plan = self.read_plan(new_plan_file)
 
+                return
 
 
     def execute_plan(self, plan):
@@ -83,18 +88,19 @@ class Manager(object):
         return plan
 
     def build_learner_state(self):
+
+        # Update State
+        self.update_state_handler(Bool(True))
+
         learner_state = []
 
-        # Add agent high level state information
-        agent_state = rospy.get_param("agents/turtlebot")
-
-        if agent_state["at"] == "lab":
+        if self.agent_state["at"] == "lab":
             learner_state.append(0)
         else:
             learner_state.append(1)
         
         facing_indecies = dict(zip(self.object_list, np.arange(len(self.object_list))))
-        facing_index = facing_indecies[agent_state["facing"]]
+        facing_index = facing_indecies[self.agent_state["facing"]]
         facing_state = [0] * len(self.object_list)
         facing_state[facing_index] = 1
 
@@ -165,9 +171,11 @@ class Manager(object):
 
     def instantiate_learner(self, learner_state, action):
 
-
         pass
-
+        
+    def update_state_handler(self, msg):
+        if msg.data == True:
+            self.agent_state = rospy.get_param("agents/turtlebot")
 
 
 
