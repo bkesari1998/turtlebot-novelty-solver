@@ -1,0 +1,7 @@
+;;!domain: navbot
+;;!problem: delivery
+
+0.00100: (approach nothing desk_1 hallway)
+
+; Makespan: 0.004
+; Metric: 0.004

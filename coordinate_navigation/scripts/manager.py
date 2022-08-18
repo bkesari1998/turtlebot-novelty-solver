@@ -23,7 +23,7 @@ class Manager(object):
         self.waypoint_list = rospy.get_param("waypoint_list")
         self.waypoint_loc = rospy.get_param("waypoints")
 
-        self.plan_file_path = "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_2.plan" # maybe make param?
+        self.plan_file_path = rospy.get_param("plan_file") # maybe make param?
         
         plan = self.read_plan(self.plan_file_path)
 
