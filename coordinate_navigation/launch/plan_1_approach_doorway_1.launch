@@ -7,9 +7,9 @@
     <rosparam param="plan_file">/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1_approach_doorway_1.plan</rosparam>
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
-        <arg name="initial_pose_x" value="2.633" />
-        <arg name="initial_pose_y" value="-1.766" />
-        <arg name="initial_pose_a" value="-0.624" />
+        <arg name="initial_pose_x" value="2.718" />
+        <arg name="initial_pose_y" value="-1.750" />
+        <arg name="initial_pose_a" value="-0.858" />
     </include>
     <include file="$(find coordinate_navigation)/launch/nav_bot.launch" />
 </launch>

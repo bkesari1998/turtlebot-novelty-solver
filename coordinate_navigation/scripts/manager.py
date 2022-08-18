@@ -100,7 +100,7 @@ class Manager(object):
             learner_state.append(1)
         
         facing_indecies = dict(zip(self.object_list, np.arange(len(self.object_list))))
-        facing_index = facing_indecies[self.agent_state["facing"]]
+        facing_index = facing_indecies[self.agent_state["facing"][0]]
         facing_state = [0] * len(self.object_list)
         facing_state[facing_index] = 1
 
