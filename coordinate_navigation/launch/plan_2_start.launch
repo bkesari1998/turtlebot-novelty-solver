@@ -7,7 +7,7 @@
     <rosparam param="plan_file">/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_2.plan</rosparam>
     <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
 	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
-        <arg name="initial_pose_x" value="0.223" />
+        <arg name="initial_pose_x" value="0.185" />
         <arg name="initial_pose_y" value="-5.923" />
         <arg name="initial_pose_a" value="-1.268" />
     </include>
