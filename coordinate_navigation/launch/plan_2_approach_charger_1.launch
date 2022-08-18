@@ -11,4 +11,5 @@
         <arg name="initial_pose_y" value="-2.631" />
         <arg name="initial_pose_a" value="3.941" />
     </include>
+    <include file="$(find coordinate_navigation)/launch/nav_bot.launch" />
 </launch>
