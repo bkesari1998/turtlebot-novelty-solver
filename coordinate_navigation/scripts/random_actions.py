@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 import numpy as np
 from coffee_bot_srvs.srv import PrimitiveAction
