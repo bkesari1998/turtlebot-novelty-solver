@@ -26,7 +26,7 @@ class RegularPolicyGradient(object):
     
     
     # constructor
-    def __init__(self, num_actions, input_size, hidden_layer_size, learning_rate, gamma, decay_rate, greedy_e_epsilon, actions_id, random_seed, actions_to_be_bumped = None, guided_policy = None, exploration_mode = None, guided_action = None):
+    def __init__(self, num_actions, input_size, hidden_layer_size, learning_rate, gamma, decay_rate, greedy_e_epsilon, actions_id, random_seed = 1, actions_to_be_bumped = None, guided_policy = None, exploration_mode = None, guided_action = None):
         # store hyper-params
         self._A = num_actions
         self._D = input_size
@@ -37,6 +37,8 @@ class RegularPolicyGradient(object):
         
         # some temp variables
         self._xs,self._hs,self._dlogps,self._drs = [],[],[],[]
+
+        self.init_model(random_seed)
 
         # variables governing exploration
         self._exploration = True # should be set to false when evaluating
@@ -49,7 +51,7 @@ class RegularPolicyGradient(object):
         self.exploration_mode = exploration_mode
         # self.exploration_mode = 'ucb' # For UCB, 'ucb', and for uniform, 'uniform'
         self.c = 0.0005
-        os.makedirs(self.log_dir, exist_ok = True)
+        # os.makedirs(self.log_dir, exist_ok = True)
 
     def init_model(self,random_seed):
         # create model

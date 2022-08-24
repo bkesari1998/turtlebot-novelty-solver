@@ -389,8 +389,8 @@ class PlanExecutor():
 
         # Make call to primitive move service
         result = self.prim_move_client(action)
-
-        return result
+        
+        return result.success, result.message
 
 ##################### State Update ####################
 

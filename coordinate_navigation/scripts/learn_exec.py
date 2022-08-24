@@ -6,7 +6,6 @@ import params
 from manager import Manager
 from regular_policy_gradient import RegularPolicyGradient
 
-
 class Learner:
     def __init__(self, failed_operator_name, init_obs, init_actions):
         

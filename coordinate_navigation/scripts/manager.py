@@ -10,7 +10,7 @@ from std_msgs.msg import Bool
 
 from tf.transformations import quaternion_multiply, quaternion_inverse
 
-from learner import Learner
+from learn_exec import *
 
 class Manager(object):
     
@@ -41,21 +41,23 @@ class Manager(object):
         self.primitive_moves_list = [["move", "forward"], ["move", "backward"], ["move", "turn_cc"], ["move", "turn_c"]]
 
         # Go until goal state reached
-        plan_success = [False, ""]
-        while not plan_success[0]:
+        # plan_success = [False, ""]
+        # while not plan_success[0]:
 
-            plan_success = self.execute_plan(plan)
+        #     plan_success = self.execute_plan(plan)
 
-            if not plan_success[0]:
-                init_obs = self.build_learner_state()
-                
-                failed_operator_name = plan_success[1]
-                learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
+        #     if not plan_success[0]:
+        init_obs = np.array(self.build_learner_state())
+        
+        failed_operator_name = "approach charger_1 doorway_1 lab"
+        learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
 
-                while True:
-                    action_index = learner.get_action()
-                    self.action_executor_client(self.primitive_moves_list[action_index])                
-
+        while True:
+            obs = np.array(self.build_learner_state())
+            action_index = learner.get_action(obs, False)
+            rospy.loginfo(action_index)
+            self.action_executor_client(self.primitive_moves_list[action_index])                
+            rospy.loginfo("Executed primitive action")
 
     def execute_plan(self, plan):
 

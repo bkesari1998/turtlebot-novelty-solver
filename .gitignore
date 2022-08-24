@@ -12,3 +12,7 @@ coordinate_navigation/launch/.vscode/c_cpp_properties.json
 coordinate_navigation/output.avi
 coordinate_navigation/plan_1_pre.avi
 coordinate_navigation/plan_2_pre.avi
+coordinate_navigation/scripts/params.pyc
+coordinate_navigation/scripts/manager.pyc
+coordinate_navigation/scripts/regular_policy_gradient.pyc
+coordinate_navigation/scripts/learn_exec.pyc
