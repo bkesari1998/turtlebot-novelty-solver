@@ -8,13 +8,13 @@ from regular_policy_gradient import RegularPolicyGradient
 
 
 class Learner:
-    def __init__(self, failed_operator_name, plan, env, init_obs, init_actions) -> None:
+    def __init__(self, failed_operator_name, init_obs, init_actions) -> None:
         
         seed = np.random.randint(0, 100)
         obs_size = init_obs.shape[0]
         action_size = len(init_actions)
-        self.env = env # environment
-        self.plan = plan # plan
+        # self.env = env # environment
+        # self.plan = plan # plan
         self.timestep = 0
         self.episode = 0
         self.failed_operator_name = failed_operator_name

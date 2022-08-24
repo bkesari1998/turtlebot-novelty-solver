@@ -10,6 +10,8 @@ from std_msgs.msg import Bool
 
 from tf.transformations import quaternion_multiply, quaternion_inverse
 
+from learner import Learner
+
 class Manager(object):
     
     def __init__(self):
@@ -35,6 +37,9 @@ class Manager(object):
         self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
         self.make_plan_client = rospy.ServiceProxy("move_base/make_plan", GetPlan)
 
+        self.primitive_moves = {"forward": 0, "backward": 1, "turn_cc": 2, "turn_c": 3}
+        self.primitive_moves_list = [["move", "forward"], ["move", "backward"], ["move", "turn_cc"], ["move", "turn_c"]]
+
         # Go until goal state reached
         plan_success = [False, ""]
         while not plan_success[0]:
@@ -42,13 +47,14 @@ class Manager(object):
             plan_success = self.execute_plan(plan)
 
             if not plan_success[0]:
-                learner_state = self.build_learner_state()
-                rospy.loginfo(learner_state)
+                init_obs = self.build_learner_state()
                 
-                # learner = self.instantiate_learner(learner_state, plan_success[1])
-                # plan = self.read_plan(new_plan_file)
+                failed_operator_name = plan_success[1]
+                learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
 
-                return
+                while True:
+                    action_index = learner.get_action()
+                    self.action_executor_client(self.primitive_moves_list[action_index])                
 
 
     def execute_plan(self, plan):
