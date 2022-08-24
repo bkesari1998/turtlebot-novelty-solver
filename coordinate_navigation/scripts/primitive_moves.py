@@ -104,7 +104,7 @@ class PrimativeMoveAction(object):
         # Send goal
         if (
             self.action_client.send_goal_and_wait(
-                action_goal, rospy.Duration(2), rospy.Duration(2)
+                action_goal, rospy.Duration(5), rospy.Duration(5)
             )
             == GoalStatus.SUCCEEDED
         ):
