@@ -8,7 +8,7 @@ from regular_policy_gradient import RegularPolicyGradient
 
 
 class Learner:
-    def __init__(self, failed_operator_name, init_obs, init_actions) -> None:
+    def __init__(self, failed_operator_name, init_obs, init_actions):
         
         seed = np.random.randint(0, 100)
         obs_size = init_obs.shape[0]
