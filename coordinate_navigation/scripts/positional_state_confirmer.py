@@ -86,8 +86,9 @@ class StateConfirmer(object):
         rospy.set_param("agents/turtlebot/at", [at])
 
         # Set facing
-        rospy.loginfo("Pre setting facing")
         facing = "nothing"
+        
+        # Set facing with april tag
         if len(detections) > 0:
             for detection in detections:
                 tag_id = str(detection.id[0])
@@ -117,7 +118,6 @@ class StateConfirmer(object):
                 if tag_pose.position.z <= dist_threshold and abs(p) <= rot_threshold:
                     facing = facing_
         else:
-            rospy.loginfo("setting facing in amcl")
             for boundary_name, boundary_polygon in self.facing_boundaries.items():
                 if boundary_polygon.contains(point):
                     rospy.loginfo("Point in boundary %s", boundary_name)
