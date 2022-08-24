@@ -16,3 +16,7 @@ coordinate_navigation/scripts/params.pyc
 coordinate_navigation/scripts/manager.pyc
 coordinate_navigation/scripts/regular_policy_gradient.pyc
 coordinate_navigation/scripts/learn_exec.pyc
+coordinate_navigation/scripts/pddl_problem_gen.py
+coffee_bot_srvs/srv/.vscode/settings.json
+.gitignore
+coffee_bot_srvs/srv/.vscode/c_cpp_properties.json

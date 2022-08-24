@@ -2,6 +2,7 @@
 
 import rospy
 from coffee_bot_srvs.srv import Goal
+import os
 
 
 class PddlProblemGen(object):
@@ -24,9 +25,6 @@ class PddlProblemGen(object):
         self.problem_gen_srv = rospy.Service("problem_gen", Goal, self.generate_problem)
         rospy.loginfo("problem_gen service active")
 
-        # Counter for naming different problem files
-        self.prob_count = 0
-
         while not rospy.is_shutdown():
             rospy.spin()
 
@@ -41,15 +39,12 @@ class PddlProblemGen(object):
         self.object_predicates = rospy.get_param("/objects")
 
         # Create/Open file
-        path = "problem_%d.pddl" % self.prob_count
+        path = "gen_pddls/problem_exploration.pddl"
         fp = open(path, "w")
 
         # Add problem definition to file
-        problem_def = "(define (problem problem_%d) (:domain coffee_bot)\n" % self.prob_count
+        problem_def = "(define (problem problem_exploration) (:domain coffee_bot)\n"
         fp.write(problem_def)
-
-        # Add objects to file
-        fp.write("(:objects\n")
         # Parse dict
         for object_type, objects in self.object_list.items():
             object_line = ""
@@ -114,7 +109,6 @@ class PddlProblemGen(object):
 
         fp.write("))\n)")
         fp.close()
-        self.prob_count += 1
 
         return True
         

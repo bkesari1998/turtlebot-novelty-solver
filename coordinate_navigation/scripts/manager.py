@@ -2,7 +2,7 @@
 
 import rospy
 import numpy as np
-from coffee_bot_srvs.srv import Action
+from coffee_bot_srvs.srv import Action, Goal
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 
 from nav_msgs.srv import GetPlan
@@ -11,6 +11,8 @@ from std_msgs.msg import Bool
 from tf.transformations import quaternion_multiply, quaternion_inverse
 
 from learn_exec import *
+
+import os, subprocess, re
 
 class Manager(object):
     
@@ -35,29 +37,51 @@ class Manager(object):
         plan = self.read_plan(self.plan_file_path)
 
         self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
+        self.pddl_problem_gen_client = rospy.ServiceProxy("problem_gen", Goal)
+        self.pddl_goal = ["facing desk_1"]
         self.make_plan_client = rospy.ServiceProxy("move_base/make_plan", GetPlan)
 
         self.primitive_moves = {"forward": 0, "backward": 1, "turn_cc": 2, "turn_c": 3}
         self.primitive_moves_list = [["move", "forward"], ["move", "backward"], ["move", "turn_cc"], ["move", "turn_c"]]
 
         # Go until goal state reached
-        # plan_success = [False, ""]
-        # while not plan_success[0]:
+        plan_success = [False, ""]
+        while not plan_success[0]:
 
-        #     plan_success = self.execute_plan(plan)
+            plan_success = self.execute_plan(plan)
 
-        #     if not plan_success[0]:
-        init_obs = np.array(self.build_learner_state())
-        
-        failed_operator_name = "approach charger_1 doorway_1 lab"
-        learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
+            if not plan_success[0]:
+                init_obs = np.array(self.build_learner_state())
+                
+                failed_operator_name = "approach charger_1 doorway_1 lab"
+                learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
 
-        while True:
-            obs = np.array(self.build_learner_state())
-            action_index = learner.get_action(obs, False)
-            rospy.loginfo(action_index)
-            self.action_executor_client(self.primitive_moves_list[action_index])                
-            rospy.loginfo("Executed primitive action")
+                while True:
+                    obs = np.array(self.build_learner_state())
+
+                    # if "lab" in self.agent_state["at"]:
+                    #     learner.agent.give_reward(1000)
+                    #     learner.agent.finish_episode()
+                    #     self.pddl_problem_gen_client(self.pddl_goal)
+                    #     # run the planner to generate the plan.
+                    #     run_script = "Metric-FF-v2.1/./ff -o "+"pddls/domain_2_0"+".pddl -f "+"gen_pddls/problem_exploration"+".pddl -s 0"
+                    #     output = subprocess.getoutput(run_script)
+                    #     plan, self.game_action_set = self._output_to_plan(output, env)
+
+                    #     self.plan_file_path =_file_path)
+                
+                    action_index = learner.get_action(obs, False)
+                    rospy.loginfo(action_index)
+                    self.action_executor_client(self.primitive_moves_list[action_index])                
+                    rospy.loginfo("Executed primitive action")
+
+    
+    def _parse_planner_output(self, planner_output):
+        ff_plan = re.findall(r"\d+?: (.+)", planner_output.lower()) # matches the string to find the plan bit from the ffmetric output.
+
+
+
+
 
     def execute_plan(self, plan):
 
