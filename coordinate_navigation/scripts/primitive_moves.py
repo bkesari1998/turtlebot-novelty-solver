@@ -28,18 +28,8 @@ class PrimativeMoveAction(object):
         self.primative_action_values = {
             "forward": 0.1,
             "backward": -0.1,
-            "turn_cc_60": math.pi / 3,
-            "turn_cc_120": 2 * math.pi / 3,
-            "turn_cc_180": math.pi,
-            "turn_cc_240": 4 * math.pi / 3,
-            "turn_cc_300": 5 * math.pi / 3,
-            "turn_cc_360": 2 * math.pi,
-            "turn_c_60": -math.pi / 3,
-            "turn_c_120": -2 * math.pi / 3,
-            "turn_c_180": -math.pi,
-            "turn_c_240": -4 * math.pi / 3,
-            "turn_c_300": -5 * math.pi / 3,
-            "turn_c_360": -2 * math.pi,
+            "turn_cc": math.pi / 3,
+            "turn_c": - 3 * math.pi / 3,
         }
 
         # try:
@@ -114,7 +104,7 @@ class PrimativeMoveAction(object):
         # Send goal
         if (
             self.action_client.send_goal_and_wait(
-                action_goal, rospy.Duration(2), rospy.Duration(2)
+                action_goal, rospy.Duration(5), rospy.Duration(5)
             )
             == GoalStatus.SUCCEEDED
         ):

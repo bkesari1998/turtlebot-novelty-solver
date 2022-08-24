@@ -4,6 +4,8 @@ import math
 
 from tf.transformations import euler_from_quaternion
 
+from std_msgs.msg import Bool
+
 from apriltag_ros.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
@@ -23,6 +25,10 @@ class StateConfirmer(object):
         # Initialize service
         self.state_conf = rospy.Service("confirm_state", Trigger, self.confirm_state)
         rospy.loginfo("confirm_state service active")
+
+        # Initialize Update State Publisher
+        self.update_state_pub = rospy.Publisher("update_state", Bool, queue_size=1)
+        self.rate = rospy.Rate(10)
 
         # Get state_conf tag param
         try:
@@ -80,8 +86,9 @@ class StateConfirmer(object):
         rospy.set_param("agents/turtlebot/at", [at])
 
         # Set facing
-        rospy.loginfo("Pre setting facing")
         facing = "nothing"
+        
+        # Set facing with april tag
         if len(detections) > 0:
             for detection in detections:
                 tag_id = str(detection.id[0])
@@ -111,7 +118,6 @@ class StateConfirmer(object):
                 if tag_pose.position.z <= dist_threshold and abs(p) <= rot_threshold:
                     facing = facing_
         else:
-            rospy.loginfo("setting facing in amcl")
             for boundary_name, boundary_polygon in self.facing_boundaries.items():
                 if boundary_polygon.contains(point):
                     rospy.loginfo("Point in boundary %s", boundary_name)

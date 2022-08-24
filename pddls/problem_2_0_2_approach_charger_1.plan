@@ -1,0 +1,7 @@
+;;!domain: navbot
+;;!problem: delivery
+
+0.00100: (dock charger_1 lab)
+
+; Makespan: 0.004
+; Metric: 0.004
