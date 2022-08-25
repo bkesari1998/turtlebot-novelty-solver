@@ -59,6 +59,8 @@ class Manager(object):
             plan_success = self.execute_plan(plan)
 
             if not plan_success[0]:
+                # Update State
+                self.update_state_handler(Bool(True))
                 init_obs = np.array(self.build_learner_state())
                 
                 failed_operator_name = "_".join(plan_success[1])
@@ -73,10 +75,17 @@ class Manager(object):
                     rospy.loginfo("step num: %d" % self.steps)
                     obs = np.array(self.build_learner_state())
 
-                    if self.episodes == 3:
-                        self.agent_state["at"] = ["hallway"]
+                
+                    action_index = learner.get_action(obs, False)
+                    rospy.loginfo(action_index)
+                    self.action_executor_client(self.primitive_moves_list[action_index])
+                    # Update State
+                    self.update_state_handler(Bool(True))
 
-                    if "hallway" in self.agent_state["at"]:
+                    # if self.episodes == 2:
+                    #     self.agent_state["at"] = ["hallway"]
+
+                    if self.episodes == 2:
                         learner.agent.give_reward(1000)
                         learner.agent.finish_episode()
                         learner.agent.update_parameters()
@@ -84,9 +93,17 @@ class Manager(object):
                         rospy.loginfo("Steps = %d" % self.steps)
                         bumper_listner.unregister()
                         self.episodes += 1
+                        rospy.loginfo("episode: %d" % self.episodes)
                         return
 
-                    elif self.steps == 10:
+                    # Checking for
+                    if obs[-1] == 1:
+                        learner.agent.give_reward(-10)
+                    else:
+                        learner.agent.give_reward(-1)   
+
+
+                    if self.steps == 5:
                         learner.agent.finish_episode()
                         learner.agent.update_parameters()
                         rospy.loginfo("Steps = %d" % self.steps)
@@ -94,18 +111,9 @@ class Manager(object):
                         self.move_client("exploration_reset")
                         self.steps = 0
                         self.episodes += 1
+                        rospy.loginfo("episode: %d" % self.episodes)
                         continue
 
-                
-                    action_index = learner.get_action(obs, False)
-                    rospy.loginfo(action_index)
-                    self.action_executor_client(self.primitive_moves_list[action_index])
-
-                    # Checking for
-                    if obs[-1] == 1:
-                        learner.agent.give_reward(-10)
-                    else:
-                        learner.agent.give_reward(-1)                
                     rospy.loginfo("Executed primitive action")
 
                 bumper_listner.unregister()
@@ -161,9 +169,6 @@ class Manager(object):
         return plan
 
     def build_learner_state(self):
-
-        # Update State
-        self.update_state_handler(Bool(True))
 
         learner_state = []
 

@@ -146,8 +146,10 @@ class RegularPolicyGradient(object):
     # output: action index
     def process_step(self, x, exploring, timestep = None, action = None):
 
+        
         # feed input through network and get output action distribution and hidden layer
         aprob, h = self.policy_forward(x)
+        print ("observation inside process step = ",x)
 
         # if exploring
         if exploring == True and action is None:
@@ -196,6 +198,7 @@ class RegularPolicyGradient(object):
         t = time.time()
         self._xs.append(x) # observation
         self._hs.append(h)
+        print ("self._xs = ", self._xs)
 
         #softmax loss gradient
         dlogsoftmax = aprob.copy()
