@@ -87,7 +87,6 @@ class Manager(object):
                         return
 
                     elif self.steps == 10:
-                        learner.agent.give_reward(-1)
                         learner.agent.finish_episode()
                         learner.agent.update_parameters()
                         rospy.loginfo("Steps = %d" % self.steps)
