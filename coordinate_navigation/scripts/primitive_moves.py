@@ -29,7 +29,7 @@ class PrimativeMoveAction(object):
             "forward": 0.1,
             "backward": -0.1,
             "turn_cc": math.pi / 3,
-            "turn_c": - 3 * math.pi / 3,
+            "turn_c": -3*math.pi / 3,
         }
 
         # try:
@@ -93,6 +93,7 @@ class PrimativeMoveAction(object):
         if req.action in self.primative_action_values.keys():
             if "turn" in req.action:
                 action_goal.forward_distance = 0
+                rospy.loginfo(self.primative_action_values[req.action])
                 action_goal.turn_distance = self.primative_action_values[req.action]
             else:
                 action_goal.turn_distance = 0
