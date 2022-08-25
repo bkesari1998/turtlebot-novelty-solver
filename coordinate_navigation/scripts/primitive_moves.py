@@ -29,7 +29,7 @@ class PrimativeMoveAction(object):
             "forward": 0.1,
             "backward": -0.1,
             "turn_cc": math.pi / 3,
-            "turn_c": -3*math.pi / 3,
+            "turn_c": -math.pi / 3,
         }
 
         # try:
