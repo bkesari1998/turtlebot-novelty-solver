@@ -1,4 +1,5 @@
 import json
+import os
 import numpy as np
 from random import random
 import params
@@ -24,6 +25,12 @@ class Learner:
                                             greedy_e_epsilon=params.MAX_EPSILON, actions_id=init_actions, 
                                             random_seed=seed)
 
+        filename = "models"+os.sep+failed_operator_name+".npz"
+        if os.path.isfile(filename):
+            print ("File exist")
+            self.agent.load_model(failed_operator_name)
+
+
     def get_action(self, obs, done):
         '''
         This function returns action for given observation
@@ -32,17 +39,18 @@ class Learner:
             action = self.agent.process_step(obs, exploring=True)
             self.timestep += 1
             
-            if done == True:
-                self.episode += 1
-                self.agent.give_reward(1000)
-                self.agent.finish_episode()
-                self.agent.update_parameters()
-                if self.episode > params.MAX_EPISODES:
-                    if self.check_convergence():
-                        self.learning_agent.save_model(self.failed_operator_name)
-                break
+            # if done == True:
+            #     self.episode += 1
+            #     self.agent.give_reward(1000)
+            #     self.agent.finish_episode()
+            #     self.agent.update_parameters()
+            #     if self.episode > params.MAX_EPISODES:
+            #         if self.check_convergence():
+            #             model_name = self.failed_operator_name+"_converged"
+            #             self.learning_agent.save_model(self.failed_operator_name)
+            #     break
 
-            self.agent.give_reward(-1)
+            # self.agent.give_reward(-1)
             
             return action
 

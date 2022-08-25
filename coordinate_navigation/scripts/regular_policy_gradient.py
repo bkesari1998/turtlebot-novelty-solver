@@ -51,6 +51,7 @@ class RegularPolicyGradient(object):
         self.exploration_mode = exploration_mode
         # self.exploration_mode = 'ucb' # For UCB, 'ucb', and for uniform, 'uniform'
         self.c = 0.0005
+        self.log_dir = "models"+os.sep
         # os.makedirs(self.log_dir, exist_ok = True)
 
     def init_model(self,random_seed):
@@ -254,7 +255,7 @@ class RegularPolicyGradient(object):
     def save_model(self, operator_name, path_to_save= None):
 
         if not path_to_save:
-            path_to_save = self.log_dir + os.sep + self.env_id + '_' + operator_name + '.npz'
+            path_to_save = self.log_dir + os.sep + operator_name + '.npz'
 
         np.savez(path_to_save, layer1 = self._model['W1'], layer2 = self._model['W2'])
         print("saved to: ", path_to_save)
@@ -265,7 +266,7 @@ class RegularPolicyGradient(object):
             return False
 
         if not path_to_load:
-            path_to_load = self.log_dir + os.sep + self.env_id + '_' + operator_name + '.npz'
+            path_to_load = self.log_dir + os.sep + operator_name + '.npz'
         data = np.load(path_to_load)
         self._model['W1'] = data['layer1']
         self._model['W2'] = data['layer2']

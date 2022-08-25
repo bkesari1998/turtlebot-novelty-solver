@@ -2,8 +2,10 @@
 
 import rospy
 import numpy as np
-from coffee_bot_srvs.srv import Action, Goal
+from coffee_bot_srvs.srv import Action, Goal, Move, PrimitiveAction
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
+
+from kobuki_msgs.msg import BumperEvent
 
 from nav_msgs.srv import GetPlan
 from std_msgs.msg import Bool
@@ -11,8 +13,6 @@ from std_msgs.msg import Bool
 from tf.transformations import quaternion_multiply, quaternion_inverse
 
 from learn_exec import *
-
-import os, subprocess, re
 
 class Manager(object):
     
@@ -40,12 +40,20 @@ class Manager(object):
         self.pddl_problem_gen_client = rospy.ServiceProxy("problem_gen", Goal)
         self.pddl_goal = ["facing desk_1"]
         self.make_plan_client = rospy.ServiceProxy("move_base/make_plan", GetPlan)
+        self.move_client = rospy.ServiceProxy("move", Move)
+        self.primitive_move_client = rospy.ServiceProxy("primitive_move_actions", PrimitiveAction)
 
         self.primitive_moves = {"forward": 0, "backward": 1, "turn_cc": 2, "turn_c": 3}
         self.primitive_moves_list = [["move", "forward"], ["move", "backward"], ["move", "turn_cc"], ["move", "turn_c"]]
+        
+        # Bumper
+        self.bumper_pressed = 0
+
+        self.episodes = 0
+        self.steps = 0
 
         # Go until goal state reached
-        plan_success = [False, ""]
+        plan_success = [False, []]
         while not plan_success[0]:
 
             plan_success = self.execute_plan(plan)
@@ -53,34 +61,67 @@ class Manager(object):
             if not plan_success[0]:
                 init_obs = np.array(self.build_learner_state())
                 
-                failed_operator_name = "approach charger_1 doorway_1 lab"
+                failed_operator_name = "_".join(plan_success[1])
                 learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
+                learner.agent.set_explore_epsilon(0.2)
+
+                # Instantiate bumper listner
+                bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)
 
                 while True:
+                    self.steps += 1
+                    rospy.loginfo("step num: %d" % self.steps)
                     obs = np.array(self.build_learner_state())
 
-                    # if "lab" in self.agent_state["at"]:
-                    #     learner.agent.give_reward(1000)
-                    #     learner.agent.finish_episode()
-                    #     self.pddl_problem_gen_client(self.pddl_goal)
-                    #     # run the planner to generate the plan.
-                    #     run_script = "Metric-FF-v2.1/./ff -o "+"pddls/domain_2_0"+".pddl -f "+"gen_pddls/problem_exploration"+".pddl -s 0"
-                    #     output = subprocess.getoutput(run_script)
-                    #     plan, self.game_action_set = self._output_to_plan(output, env)
+                    if self.episodes == 3:
+                        self.agent_state["at"] = ["hallway"]
 
-                    #     self.plan_file_path =_file_path)
+                    if "hallway" in self.agent_state["at"]:
+                        learner.agent.give_reward(1000)
+                        learner.agent.finish_episode()
+                        learner.agent.update_parameters()
+                        learner.agent.save_model(failed_operator_name)
+                        rospy.loginfo("Steps = %d" % self.steps)
+                        bumper_listner.unregister()
+                        self.episodes += 1
+                        return
+
+                    elif self.steps == 10:
+                        learner.agent.give_reward(-1)
+                        learner.agent.finish_episode()
+                        learner.agent.update_parameters()
+                        rospy.loginfo("Steps = %d" % self.steps)
+
+                        self.move_client("exploration_reset")
+                        self.steps = 0
+                        self.episodes += 1
+                        continue
+
                 
                     action_index = learner.get_action(obs, False)
                     rospy.loginfo(action_index)
-                    self.action_executor_client(self.primitive_moves_list[action_index])                
+                    self.action_executor_client(self.primitive_moves_list[action_index])
+
+                    # Checking for
+                    if obs[-1] == 1:
+                        learner.agent.give_reward(-10)
+                    else:
+                        learner.agent.give_reward(-1)                
                     rospy.loginfo("Executed primitive action")
 
+                bumper_listner.unregister()
     
-    def _parse_planner_output(self, planner_output):
-        ff_plan = re.findall(r"\d+?: (.+)", planner_output.lower()) # matches the string to find the plan bit from the ffmetric output.
+    # def _parse_planner_output(self, planner_output):
+    #     ff_plan = re.findall(r"\d+?: (.+)", planner_output.lower()) # matches the string to find the plan bit from the ffmetric output.
 
 
+    def bumper_handler(self, msg):
 
+        if msg.state == BumperEvent.PRESSED:
+            self.bumper_pressed = 1
+            self.primitive_move_client("backward")
+        elif msg.state == BumperEvent.RELEASED:
+            self.bumper_pressed = 0
 
 
     def execute_plan(self, plan):
@@ -93,7 +134,7 @@ class Manager(object):
                 rospy.loginfo(res.message)
                 return [False, action]
         
-        return [True, ""]
+        return [True, []]
 
     def read_plan(self, plan_file_path):
 
@@ -170,6 +211,8 @@ class Manager(object):
                 learner_state.append(1)
             else:
                 learner_state.append(0)
+
+        learner_state.append(self.bumper_pressed)
 
         return learner_state
 
