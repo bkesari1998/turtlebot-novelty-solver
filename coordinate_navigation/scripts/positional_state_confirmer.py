@@ -82,6 +82,8 @@ class StateConfirmer(object):
         for boundary_name, boundary_polygon in self.at_boundaries.items():
             if boundary_polygon.contains(point):
                 at = boundary_name
+                if boundary_name == "none":
+                    break
 
         rospy.set_param("agents/turtlebot/at", [at])
 

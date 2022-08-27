@@ -12,6 +12,7 @@ import time
 import os
 import math
 #from chainer import cuda
+# import pathlib
 
 #import cupy as cp
 
@@ -26,7 +27,7 @@ class RegularPolicyGradient(object):
     
     
     # constructor
-    def __init__(self, num_actions, input_size, hidden_layer_size, learning_rate, gamma, decay_rate, greedy_e_epsilon, actions_id, random_seed = 1, actions_to_be_bumped = None, guided_policy = None, exploration_mode = None, guided_action = None):
+    def __init__(self, num_actions, input_size, hidden_layer_size, learning_rate, gamma, decay_rate, greedy_e_epsilon, actions_id, random_seed = 1, actions_to_be_bumped = None, guided_policy = None, exploration_mode = None, guided_action = None,  load_model_flag = False, failed_operator_name=None):
         # store hyper-params
         self._A = num_actions
         self._D = input_size
@@ -51,8 +52,17 @@ class RegularPolicyGradient(object):
         self.exploration_mode = exploration_mode
         # self.exploration_mode = 'ucb' # For UCB, 'ucb', and for uniform, 'uniform'
         self.c = 0.0005
-        self.log_dir = "models"+os.sep
-        # os.makedirs(self.log_dir, exist_ok = True)
+        # self.log_dir =  str(pathlib.Path(__file__).parent.resolve() / 'models')
+        
+        # logistics variables
+        self.log_dir = "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models"
+        self.load_model_flag = load_model_flag
+        self.failed_operator_name = failed_operator_name
+
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir)
+        if self.load_model_flag:
+            self.load_model(self.failed_operator_name)
 
     def init_model(self,random_seed):
         # create model
@@ -149,7 +159,8 @@ class RegularPolicyGradient(object):
         
         # feed input through network and get output action distribution and hidden layer
         aprob, h = self.policy_forward(x)
-        print ("observation inside process step = ",x)
+        # print ("observation inside process step = ",x)
+
 
         # if exploring
         if exploring == True and action is None:
@@ -178,8 +189,9 @@ class RegularPolicyGradient(object):
                         else:
                             aprob[0] = [ 1.0/len(aprob[0]) for i in range(len(aprob[0]))]
         elif action is not None:
-            aprob[0] = [0 for i in range(len(aprob[0]))]
-            aprob[0][action] = 1
+            print ("Performing LfD")
+            aprob[0] = [0.01 for i in range(len(aprob[0]))]
+            aprob[0][action] = 0.98
         
         
         if np.isnan(np.sum(aprob)):
@@ -198,7 +210,7 @@ class RegularPolicyGradient(object):
         t = time.time()
         self._xs.append(x) # observation
         self._hs.append(h)
-        print ("self._xs = ", self._xs)
+        # print ("self._xs = ", self._xs)
 
         #softmax loss gradient
         dlogsoftmax = aprob.copy()
@@ -208,6 +220,7 @@ class RegularPolicyGradient(object):
         t  = time.time()
         # update the action counter
         self.action_counter[a]+=1
+        print ("Action to take = ", a)
         return a
         
     # after process_step, this function needs to be called to set the reward
@@ -258,7 +271,8 @@ class RegularPolicyGradient(object):
     def save_model(self, operator_name, path_to_save= None):
 
         if not path_to_save:
-            path_to_save = self.log_dir + os.sep + operator_name + '.npz'
+            path_to_save = self.log_dir + os.sep+ operator_name + '.npz'
+        print ("path_to_save = ", path_to_save)
 
         np.savez(path_to_save, layer1 = self._model['W1'], layer2 = self._model['W2'])
         print("saved to: ", path_to_save)

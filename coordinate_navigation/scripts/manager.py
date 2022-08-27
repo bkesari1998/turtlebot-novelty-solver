@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+# ON TURTLEBOT
+# roslaunch coordinate_navigation turtlebot.launch
+# roslaunch coordinate_navigation plan_1_start.launch waypoints_file:=plan_1_curtain_novelty_waypoints.yaml
+
+# ON REMOTE
+# roslaunch coordinate_navigation remote.launch
+
+# ON TURTLEBOT
+# rosrun coordinate_navigation manager.py
+
+import pickle
 import rospy
 import numpy as np
 from coffee_bot_srvs.srv import Action, Goal, Move, PrimitiveAction
@@ -43,93 +54,133 @@ class Manager(object):
         self.move_client = rospy.ServiceProxy("move", Move)
         self.primitive_move_client = rospy.ServiceProxy("primitive_move_actions", PrimitiveAction)
 
-        self.primitive_moves = {"forward": 0, "backward": 1, "turn_cc": 2, "turn_c": 3}
-        self.primitive_moves_list = [["move", "forward"], ["move", "backward"], ["move", "turn_cc"], ["move", "turn_c"]]
+        self.primitive_moves = {"forward": 0, "turn_cc": 1, "turn_c": 2}
+        self.primitive_moves_list = [["move", "forward"], ["move", "turn_cc"], ["move", "turn_c"]]
         
-        # Bumper
-        self.bumper_pressed = 0
+        # # Bumper
+        # self.bumper_pressed = 0
+        # self.bumper_time = rospy.Time.now()
 
         self.episodes = 0
         self.steps = 0
+        actions_list = []
+        states_list = []
+        rospy.set_param("/agents/turtlebot/facing", ["novel_object"])
+        failed_operator_name = "approach_charger_1_doorway_1_lab"
+        init_obs = np.array(self.build_learner_state())
+        learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
+        learner.agent.set_explore_epsilon(params.MAX_EPSILON)
+        for episode in range(params.MAX_EPISODES):
+            action_list = []
+            state_list = []
+            obs = init_obs
+            while True:
+                action_ = raw_input("Action number: ")
+                print(action_)
+                while action_ not in ["0", "1", "2"]:
+                    action_ = raw_input("Action number: ")
+                learner_action = learner.get_action(obs, False, int(action_))
+                print("Learner action:" + str(learner_action))
+                self.action_executor_client(self.primitive_moves_list[learner_action])
+                self.update_state_handler((Bool(True)))
+                obs = np.array(self.build_learner_state())
+                state_list.append(obs)
+                print ("obs = ", obs)
+                action_list.append(learner_action)
 
-        # Go until goal state reached
-        plan_success = [False, []]
-        while not plan_success[0]:
+                if "hallway" in self.agent_state["at"] and "nothing" in self.agent_state["facing"]: # done is True
+                    print ("Goal state reached!")
+                    learner.agent.give_reward(1000)
+                    learner.agent.finish_episode()
+                    learner.agent.update_parameters()
+                    self.move_client("exploration_reset") # reset to begin state
+                    rospy.set_param("/agents/turtlebot/facing", ["novel_object"])
+                    break
+                learner.agent.give_reward(-1)
+            actions_list += action_list
+            states_list += state_list
+        actions_list = np.array(actions_list)
+        states_list = np.array(states_list)
+        print ("actions_list shape ", actions_list.shape)
+        print ("states_list shape ", states_list.shape)
+        learner.agent.save_model(failed_operator_name)
+        
+        path = "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/data/data.pickle"
+        memory = {'states': states_list, 'actions': actions_list}
+        f = open(path, 'wb')
+        pickle.dump(memory, f)
+        f.close()
 
-            plan_success = self.execute_plan(plan)
+        # # Go until goal state reached
+        # plan_success = [False, []]
+        # while not plan_success[0]:
 
-            if not plan_success[0]:
-                # Update State
-                self.update_state_handler(Bool(True))
-                init_obs = np.array(self.build_learner_state())
+        #     plan_success = self.execute_plan(plan)
+
+        #     if not plan_success[0]:
+        #         # Update State
+        #         self.update_state_handler(Bool(True))
+        #         init_obs = np.array(self.build_learner_state())
                 
-                failed_operator_name = "_".join(plan_success[1])
-                learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
-                learner.agent.set_explore_epsilon(0.2)
+        #         failed_operator_name = "_".join(plan_success[1])
+        #         learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
+        #         learner.agent.set_explore_epsilon(0.2)
 
-                # Instantiate bumper listner
-                bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)
+        #         # Instantiate bumper listner
+        #         bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)
 
-                while True:
-                    self.steps += 1
-                    rospy.loginfo("step num: %d" % self.steps)
-                    obs = np.array(self.build_learner_state())
+        #         while True:
+        #             self.steps += 1
+        #             rospy.loginfo("step num: %d" % self.steps)
+        #             obs = np.array(self.build_learner_state())
+        #             action_index = learner.get_action(obs, False)
+        #             rospy.loginfo(action_index)
+        #             self.action_executor_client(self.primitive_moves_list[action_index])
+        #             # Update State
+        #             self.update_state_handler(Bool(True))
 
-                
-                    action_index = learner.get_action(obs, False)
-                    rospy.loginfo(action_index)
-                    self.action_executor_client(self.primitive_moves_list[action_index])
-                    # Update State
-                    self.update_state_handler(Bool(True))
+        #             # if self.episodes == 2:
+        #             #     self.agent_state["at"] = ["hallway"]
 
-                    # if self.episodes == 2:
-                    #     self.agent_state["at"] = ["hallway"]
+        #             if "hallway" in self.agent_state["at"]:
+        #                 rospy.loginfo("Succesful Trial")
+        #                 learner.agent.give_reward(1000)
+        #                 learner.agent.finish_episode()
+        #                 learner.agent.update_parameters()
+        #                 learner.agent.save_model(failed_operator_name)
+        #                 # rospy.loginfo("Steps = %d" % self.steps)
+        #                 bumper_listner.unregister()
+        #                 self.episodes += 1
+        #                 rospy.loginfo("episode: %d" % self.episodes)
+        #                 return
 
-                    if self.episodes == 2:
-                        learner.agent.give_reward(1000)
-                        learner.agent.finish_episode()
-                        learner.agent.update_parameters()
-                        learner.agent.save_model(failed_operator_name)
-                        rospy.loginfo("Steps = %d" % self.steps)
-                        bumper_listner.unregister()
-                        self.episodes += 1
-                        rospy.loginfo("episode: %d" % self.episodes)
-                        return
-
-                    # Checking for
-                    if obs[-1] == 1:
-                        learner.agent.give_reward(-10)
-                    else:
-                        learner.agent.give_reward(-1)   
+                    
+        #             learner.agent.give_reward(-1)   
 
 
-                    if self.steps == 5:
-                        learner.agent.finish_episode()
-                        learner.agent.update_parameters()
-                        rospy.loginfo("Steps = %d" % self.steps)
+        #             if self.steps == params.MAX_TIMESTEPS: # reset episode
+        #                 rospy.loginfo("MAX STEPS Reached. Resetting Episode")
+        #                 learner.agent.finish_episode()
+        #                 learner.agent.update_parameters()
+        #                 # rospy.loginfo("Steps = %d" % self.steps)
 
-                        self.move_client("exploration_reset")
-                        self.steps = 0
-                        self.episodes += 1
-                        rospy.loginfo("episode: %d" % self.episodes)
-                        continue
+        #                 self.move_client("exploration_reset")
+        #                 self.steps = 0
+        #                 self.episodes += 1
+        #                 rospy.loginfo("episode: %d" % self.episodes)
+        #                 continue
 
-                    rospy.loginfo("Executed primitive action")
+        #             rospy.loginfo("Executed primitive action")
 
-                bumper_listner.unregister()
+        #         bumper_listner.unregister()
     
     # def _parse_planner_output(self, planner_output):
     #     ff_plan = re.findall(r"\d+?: (.+)", planner_output.lower()) # matches the string to find the plan bit from the ffmetric output.
 
 
     def bumper_handler(self, msg):
-
         if msg.state == BumperEvent.PRESSED:
-            self.bumper_pressed = 1
             self.primitive_move_client("backward")
-        elif msg.state == BumperEvent.RELEASED:
-            self.bumper_pressed = 0
-
 
     def execute_plan(self, plan):
 
@@ -170,12 +221,14 @@ class Manager(object):
 
     def build_learner_state(self):
 
-        learner_state = []
+        learner_state = [0] * 3
 
-        if self.agent_state["at"] == "lab":
-            learner_state.append(0)
+        if "lab" in self.agent_state["at"]:
+            learner_state[0] = 1
+        elif "hallway" in self.agent_state["at"]:
+            learner_state[1] = 1
         else:
-            learner_state.append(1)
+            learner_state[2] = 1
         
         facing_indecies = dict(zip(self.object_list, np.arange(len(self.object_list))))
         facing_index = facing_indecies[self.agent_state["facing"][0]]
@@ -206,17 +259,16 @@ class Manager(object):
 
             # Add dxdy and rot to learner state
             learner_state = learner_state + dxdy + rot
+            if waypoint != "novel_object": # Don't need plan_exists to novel object
+                odom_pose_stamped = self.pose_with_covariance_stamed_to_pose_stamped(odom_pose_with_cov_stamped)
+                waypoint_pose_stamped = self.waypoint_to_pose_stamped(pose)
 
-            odom_pose_stamped = self.pose_with_covariance_stamed_to_pose_stamped(odom_pose_with_cov_stamped)
-            waypoint_pose_stamped = self.waypoint_to_pose_stamped(pose)
-
-            plan = self.make_plan_client(odom_pose_stamped, waypoint_pose_stamped, 0.25)
-            if len(plan.plan.poses) > 0:
-                learner_state.append(1)
-            else:
-                learner_state.append(0)
-
-        learner_state.append(self.bumper_pressed)
+                plan = self.make_plan_client(odom_pose_stamped, waypoint_pose_stamped, 0.25)
+                
+                if len(plan.plan.poses) > 0:
+                    learner_state.append(1)
+                else:
+                    learner_state.append(0)
 
         return learner_state
 
@@ -256,7 +308,8 @@ class Manager(object):
     def update_state_handler(self, msg):
         if msg.data == True:
             self.agent_state = rospy.get_param("agents/turtlebot")
-
+            rospy.loginfo(self.agent_state["at"])
+            rospy.loginfo(self.agent_state["facing"])
 
 
 

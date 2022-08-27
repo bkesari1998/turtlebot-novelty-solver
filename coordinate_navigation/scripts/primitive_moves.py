@@ -27,9 +27,8 @@ class PrimativeMoveAction(object):
 
         self.primative_action_values = {
             "forward": 0.1,
-            "backward": -0.1,
-            "turn_cc": math.pi / 3,
-            "turn_c": -math.pi / 3,
+            "turn_cc": math.pi / 12,
+            "turn_c": -math.pi / 12,
         }
 
         # try:

@@ -31,12 +31,12 @@ class Learner:
             self.agent.load_model(failed_operator_name)
 
 
-    def get_action(self, obs, done):
+    def get_action(self, obs, done, action):
         '''
         This function returns action for given observation
         '''
         while True:
-            action = self.agent.process_step(obs, exploring=True)
+            action = self.agent.process_step(x = obs, exploring = True, action = action)
             self.timestep += 1
             
             # if done == True:
