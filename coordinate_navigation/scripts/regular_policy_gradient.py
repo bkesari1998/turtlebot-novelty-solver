@@ -25,9 +25,12 @@ be = "cpu"
 
 class RegularPolicyGradient(object):
     
-    
     # constructor
-    def __init__(self, num_actions, input_size, hidden_layer_size, learning_rate, gamma, decay_rate, greedy_e_epsilon, actions_id, random_seed = 1, actions_to_be_bumped = None, guided_policy = None, exploration_mode = None, guided_action = None,  load_model_flag = False, failed_operator_name=None):
+    def __init__(self, num_actions, input_size, hidden_layer_size,
+     learning_rate, gamma, decay_rate, greedy_e_epsilon, actions_id,
+      episode_num, random_seed = 1, actions_to_be_bumped = None,
+       guided_policy = None, exploration_mode = None, guided_action = None,
+         load_model_flag = False, failed_operator_name=None):
         # store hyper-params
         self._A = num_actions
         self._D = input_size
@@ -62,7 +65,8 @@ class RegularPolicyGradient(object):
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
         if self.load_model_flag:
-            self.load_model(self.failed_operator_name)
+            # print (episode_num)
+            self.load_model(self.failed_operator_name, episode_num=episode_num)
 
     def init_model(self,random_seed):
         # create model
@@ -268,23 +272,25 @@ class RegularPolicyGradient(object):
             self._model[k] -= self._learning_rate * g / (np.sqrt(self._rmsprop_cache[k]) + 1e-5)
             self._grad_buffer[k] = np.zeros_like(v) # reset batch gradient buffer
 
-    def save_model(self, operator_name, path_to_save= None):
+    def save_model(self, operator_name, episode_num, path_to_save= None):
 
         if not path_to_save:
-            path_to_save = self.log_dir + os.sep+ operator_name + '.npz'
+            path_to_save = self.log_dir + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
         print ("path_to_save = ", path_to_save)
 
         np.savez(path_to_save, layer1 = self._model['W1'], layer2 = self._model['W2'])
         print("saved to: ", path_to_save)
 
-    def load_model(self, operator_name):
+    def load_model(self, operator_name, episode_num):
+        # print (operator_name)
+        # print (episode_num)
+        # if not os.path.exists(operator_name):
+        #     return False
 
-        if not os.path.exists(operator_name):
-            return False
-
-        if not path_to_load:
-            path_to_load = self.log_dir + os.sep + operator_name + '.npz'
+        # if not path_to_load:
+        path_to_load = self.log_dir + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
         data = np.load(path_to_load)
+        print ("Loaded model from", path_to_load)
         self._model['W1'] = data['layer1']
         self._model['W2'] = data['layer2']
         return True

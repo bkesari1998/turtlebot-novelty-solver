@@ -8,7 +8,7 @@ from manager import Manager
 from regular_policy_gradient import RegularPolicyGradient
 
 class Learner:
-    def __init__(self, failed_operator_name, init_obs, init_actions):
+    def __init__(self, failed_operator_name, init_obs, init_actions, episode_num, load_model_flag):
         
         seed = np.random.randint(0, 100)
         obs_size = init_obs.shape[0]
@@ -23,15 +23,15 @@ class Learner:
                                             input_size=obs_size, hidden_layer_size=params.NUM_HIDDEN,
                                             learning_rate=params.LEARNING_RATE, gamma=params.GAMMA, decay_rate=params.DECAY_RATE,
                                             greedy_e_epsilon=params.MAX_EPSILON, actions_id=init_actions, 
-                                            random_seed=seed)
+                                            random_seed=seed, load_model_flag=load_model_flag, episode_num=episode_num, failed_operator_name=failed_operator_name)
 
-        filename = "models"+os.sep+failed_operator_name+".npz"
-        if os.path.isfile(filename):
-            print ("File exist")
-            self.agent.load_model(failed_operator_name)
+        # filename = "models"+os.sep+failed_operator_name+"_"+ str(episode_number)+".npz"
+        # if os.path.isfile(filename):
+        #     print ("File exist")
+        #     self.agent.load_model(failed_operator_name, episode_number)
 
 
-    def get_action(self, obs, done, action):
+    def get_action(self, obs, done=False, action=None):
         '''
         This function returns action for given observation
         '''

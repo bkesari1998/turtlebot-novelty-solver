@@ -26,9 +26,9 @@ class PrimativeMoveAction(object):
         # Get values for move actions from ros param
 
         self.primative_action_values = {
-            "forward": 0.1,
-            "turn_cc": math.pi / 12,
-            "turn_c": -math.pi / 12,
+            "forward": 0.25,
+            "turn_cc": math.pi / 50,
+            "turn_c": -math.pi / 50,
         }
 
         # try:
