@@ -45,12 +45,7 @@ class Manager(object):
         self.agent_state = rospy.get_param("agents/turtlebot")
         self.update_state_subscriber = rospy.Subscriber("update_state", Bool, self.update_state_handler)
 
-        # Get plan from plan file
-        self.plan_file_path = rospy.get_param("plan_file")
-        plan = self.read_plan(self.plan_file_path)
-
-        self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
-        self.pddl_problem_gen_client = rospy.ServiceProxy("problem_gen", Goal)
+        # Get plan from plan file(arg waypoints_file)ceProxy("problem_gen", Goal)
         self.pddl_goal = ["facing desk_1"]
         self.make_plan_client = rospy.ServiceProxy("move_base/make_plan", GetPlan)
         self.move_client = rospy.ServiceProxy("move", Move)
@@ -60,9 +55,13 @@ class Manager(object):
         self.primitive_moves = {"forward": 0, "turn_cc": 1, "turn_c": 2}
         self.primitive_moves_list = [["move", "forward"], ["move", "turn_cc"], ["move", "turn_c"]]
         
+        # get the MDP stuff
+        self.reward_function = rospy.get_param("reward_function/reward") # list of reward states for all the failed operator.
         # # Bumper
          # Instantiate bumper listner
         bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)
+        self.bump_counter = 0
+        self.last_bump_time = rospy.Time.now()
         # self.bumper_pressed = 0
         # self.bumper_time = rospy.Time.now()
         # find the file for loading
@@ -89,6 +88,7 @@ class Manager(object):
         for episode in range(params.MAX_EPISODES):
             # action_list = []
             # state_list = []
+            self.update_state_handler((Bool(True)))
             obs = np.array(self.build_learner_state())
             # obs = init_obs
             self.episodes+=1
@@ -100,6 +100,16 @@ class Manager(object):
                 # while action_ not in ["0", "1", "2"]:
                 #     action_ = raw_input("Action number: ")
                 # learner_action = learner.get_action(obs, False, int(action_))
+
+                # Check for bumper press
+                if self.bumper_count > 4:
+                    print ("Turtlebot has run into an object too many times consecutively.  Resetting...")
+                    learner.agent.give_reward(-5)
+                    learner.agent.finish_episode()
+                    learner.agent.update_parameters()
+                    self.move_client("exploration_reset") # reset to begin state
+                    break
+
                 learner_action = learner.get_action(obs)
                 print("Learner action:" + str(learner_action))
                 self.action_executor_client(self.primitive_moves_list[learner_action])
@@ -111,14 +121,14 @@ class Manager(object):
                 # state_list.append(obs)
                 # print ("obs = ", obs)
                 # action_list.append(learner_action)
-
-                if "hallway" in self.agent_state["at"] and "nothing" in self.agent_state["facing"]: # done is True
+                rospy.loginfo("Reward: " + str(self.reward_function[failed_operator_name]))
+                if self.agent_state["at"] == self.reward_function[failed_operator_name]["at"] and self.agent_state["facing"] == self.reward_function[failed_operator_name]["facing"]:
+                # if "hallway" in self.agent_state["at"] and "nothing" in self.agent_state["facing"]: # done is True
                     print ("Goal state reached!")
                     learner.agent.give_reward(1000)
                     learner.agent.finish_episode()
                     learner.agent.update_parameters()
                     self.move_client("exploration_reset") # reset to begin state
-                    rospy.set_param("/agents/turtlebot/facing", ["novel_object"])
                     break
                 learner.agent.give_reward(-1)
                 if self.timesteps > params.MAX_TIMESTEPS:
@@ -127,7 +137,6 @@ class Manager(object):
                     learner.agent.update_parameters()
                     learner.agent.update_parameters()
                     self.move_client("exploration_reset") # reset to begin state
-                    rospy.set_param("/agents/turtlebot/facing", ["novel_object"])
                     break
         # learner.agent.save_model()
         
@@ -200,6 +209,13 @@ class Manager(object):
     def bumper_handler(self, msg):
         if msg.state == BumperEvent.PRESSED:
             self.primitive_move_client("backward")
+            if rospy.Time.now() - self.last_bumper_time < rospy.Duration(2.0):
+                self.last_bump_time = rospy.Time.now()
+                self.bumper_count += 1
+            else:
+                self.last_bumper_time = rospy.Time.now()
+                self.bumper_count = 0
+            
 
     def execute_plan(self, plan):
 
