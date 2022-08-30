@@ -11,6 +11,7 @@
 # rosrun coordinate_navigation manager.py
 
 import pickle
+import math
 import rospy
 import os
 import numpy as np
@@ -44,169 +45,155 @@ class Manager(object):
         # Get agent high level state information
         self.agent_state = rospy.get_param("agents/turtlebot")
         self.update_state_subscriber = rospy.Subscriber("update_state", Bool, self.update_state_handler)
+        self.state_confirmer = rospy.ServiceProxy("confirm_state", Trigger)
 
-        # Get plan from plan file(arg waypoints_file)ceProxy("problem_gen", Goal)
+        # Get plan from plan file
+        # TODO
+
+        # PDDL problem generator
         self.pddl_goal = ["facing desk_1"]
         self.make_plan_client = rospy.ServiceProxy("move_base/make_plan", GetPlan)
+
+        # Action clients
         self.move_client = rospy.ServiceProxy("move", Move)
         self.primitive_move_client = rospy.ServiceProxy("primitive_move_actions", PrimitiveAction)
-        self.state_confirmer = rospy.ServiceProxy("confirm_state", Trigger)
         self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
 
+        # Assign primitive move actions
         self.primitive_moves = {"forward": 0, "turn_cc": 1, "turn_c": 2}
         self.primitive_moves_list = [["move", "forward"], ["move", "turn_cc"], ["move", "turn_c"]]
         
-        # get the MDP stuff
+        # Get the goal state
         self.reward_function = rospy.get_param("reward") # list of reward states for all the failed operator.
-        # # Bumper
-         # Instantiate bumper listner
+
+        # Instantiate bumper listner
         bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)
         self.bumper_counter = 0
         self.last_bumper_time = rospy.Time.now()
-        # self.bumper_pressed = 0
-        # self.bumper_time = rospy.Time.now()
-        # find the file for loading
-        self.load_model_flag = False
+
+        # Get model information
+        self.load_model_flag = rospy.get_param("load_model_flag")
+        self.failed_operator_name = rospy.get_param("failed_operator_name")
+
+        # Other class info
         self.episodes = 0
+        self.learner = None
+        self.R = [] # storing rewards per episode
+        self.Dones = [] # storing goal completion per episode
+        self.Steps = [] # storing the number of steps in each episode
+        self.Eps = [] # storing the epsilons in the list for each episode
+        self.data = [self.R, self.Done, self.Steps, self.Eps]
+        
+        # Load model if flag is true
+        if self.load_model_flag:
+            self.load_model()
+        
+    def main(self):
+        
+        # Get initial observation
+        self.update_state_handler((Bool(True)))
+        init_obs = np.array(self.build_learner_state())
+        
+        # Instantiate learner
+        self.learner = Learner(self.failed_operator_name, init_obs, 
+                                self.primitive_moves, 
+                                episode_num = self.episodes, 
+                                load_model_flag = self.load_model_flag)
+        self.learner.agent.set_explore_epsilon(params.MAX_EPSILON)
+        
+        
+        for episode in range(params.MAX_EPISODES):
+            
+            # Episode counters
+            self.episodes+=1
+            self.timesteps = 0
+            self.reward = 0
+            self.done = 0
+
+            # set the explore epsilon
+            self.epsilon = params.MIN_EPSILON + (params.MAX_EPSILON - params.MIN_EPSILON) * \
+                        math.exp(-params.LAMBDA * episode)
+            self.learner.agent._explore_eps = self.epsilon
+
+            # Build starting state for episode
+            self.update_state_handler((Bool(True)))
+            obs = np.array(self.build_learner_state())
+
+            # Running timesteps for episode
+            while True:
+                self.reward_counter = 0
+                # Check for bumper press
+                if self.bumper_counter >= 7:
+                    rospy.loginfo ("Turtlebot has run into an object too many times consecutively.  Resetting...")
+                    self.learner.agent._drs.pop() # hack since we might have given a reward already before
+                    self.end_episode(reward = -5)
+                    break # out of while loop
+
+                # Get the action from the network and execute
+                learner_action = self.learner.get_action(obs)
+                self.action_executor_client(self.primitive_moves_list[learner_action])
+                
+                # Update state 
+                self.update_state_handler((Bool(True)))
+                self.timesteps += 1
+                obs = np.array(self.build_learner_state())
+
+                # Check for goal state
+                if self.agent_state["at"] == self.reward_function[self.failed_operator_name]["at"] and self.agent_state["facing"] == self.reward_function[failed_operator_name]["facing"]:
+                    rospy.loginfo("Goal state reached! Resetting")
+                    self.done = 1
+                    self.end_episode(reward = 1000)
+                    break
+                
+                # Negative reward for each step
+                self.learner.agent.give_reward(-1)
+                self.reward -= 1
+                
+                # Max steps reached
+                if self.timesteps >= params.MAX_TIMESTEPS:
+                    rospy.loginfo ("Max quota reached. Resetting.")
+                    self.end_episode()
+                    break
+
+            self.save_logger()
+            self.print_stuff()
+        
+        # Save model and data
+        self.learner.agent.save_model(self.failed_operator_name, self.episodes)
+        self.save_data(self.data)
+
+    def load_model(self):
         file_names = os.listdir("/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models")
         ep_nums = []
         if file_names:
             for file_name in file_names:
                 ep_num = int(file_name.split(".")[0].split("_")[-1]) # episode number
                 ep_nums.append(ep_num)
-            self.episodes = 0 + max(ep_nums)
-            self.load_model_flag = True
-        self.steps = 0
-        actions_list = []
-        states_list = []
-        rospy.set_param("/agents/turtlebot/facing", ["novel_object"])
-        failed_operator_name = "approach_charger_1_doorway_1_lab"
-        self.update_state_handler((Bool(True)))
-        init_obs = np.array(self.build_learner_state())
-        print ("self.episodes = ", self.episodes)
-        learner = Learner(failed_operator_name, init_obs, self.primitive_moves, episode_num = self.episodes, load_model_flag= self.load_model_flag)
-        learner.agent.set_explore_epsilon(params.MAX_EPSILON)
-        for episode in range(params.MAX_EPISODES):
-            # action_list = []
-            # state_list = []
-            self.update_state_handler((Bool(True)))
-            obs = np.array(self.build_learner_state())
-            # obs = init_obs
-            self.episodes+=1
-            print ("Episodes -->>", self.episodes)
-            self.timesteps = 0
-            while True:
-                # action_ = raw_input("Action number: ")
-                # print(action_)
-                # while action_ not in ["0", "1", "2"]:
-                #     action_ = raw_input("Action number: ")
-                # learner_action = learner.get_action(obs, False, int(action_))
+            self.episodes = max(ep_nums)
 
-                # Check for bumper press
-                if self.bumper_counter >= 7:
-                    print ("Turtlebot has run into an object too many times consecutively.  Resetting...")
-                    learner.agent._drs.pop()
-                    learner.agent.give_reward(-5)
-                    learner.agent.finish_episode()
-                    learner.agent.update_parameters()
-                    self.move_client("exploration_reset") # reset to begin state
-                    break
+    def end_episode(self, reward=None):
+        if reward != None:
+            self.learner.agent.give_reward(reward)
+            self.reward += reward
+        self.learner.agent.finish_episode()
+        self.learner.agent.update_parameters()
+        self.move_client("exploration_reset") # reset to begin state
 
-                learner_action = learner.get_action(obs)
-                print("Learner action:" + str(learner_action))
-                self.action_executor_client(self.primitive_moves_list[learner_action])
-                self.timesteps += 1
-                print ("timestep -->>", self.timesteps)
-                self.update_state_handler((Bool(True)))
-                obs = np.array(self.build_learner_state())
-                print (obs.shape)
-                # state_list.append(obs)
-                # print ("obs = ", obs)
-                # action_list.append(learner_action)
-                rospy.loginfo("Reward: " + str(self.reward_function[failed_operator_name]))
-                if self.agent_state["at"] == self.reward_function[failed_operator_name]["at"] and self.agent_state["facing"] == self.reward_function[failed_operator_name]["facing"]:
-                # if "hallway" in self.agent_state["at"] and "nothing" in self.agent_state["facing"]: # done is True
-                    print ("Goal state reached!")
-                    learner.agent.give_reward(1000)
-                    learner.agent.finish_episode()
-                    learner.agent.update_parameters()
-                    self.move_client("exploration_reset") # reset to begin state
-                    break
-                learner.agent.give_reward(-1)
-                if self.timesteps > params.MAX_TIMESTEPS:
-                    print ("Max quota reached. Resetting.")
-                    learner.agent.finish_episode()
-                    learner.agent.update_parameters()
-                    learner.agent.update_parameters()
-                    self.move_client("exploration_reset") # reset to begin state
-                    break
-        # learner.agent.save_model()
-        
-            # actions_list += action_list
-            # states_list += state_list
-        # actions_list = np.array(actions_list)
-        # states_list = np.array(states_list)
-        # print ("actions_list shape ", actions_list.shape)
-        # print ("states_list  # Instantiate bumper listner
-        #         bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)te
-        #         self.update_state_handler(Bool(True))
-        #         init_obs = np.array(self.build_learner_state())
-                
-        #         failed_operator_name = "_".join(plan_success[1])
-        #         learner = Learner(failed_operator_name, init_obs, self.primitive_moves)
-        #         learner.agent.set_explore_epsilon(0.2)
+    def print_stuff(self):
+        rospy.loginfo("Episode--> %s Reward-->> %s Steps--> %s", self.episodes, self.reward, self.timesteps)
 
-        #         # Instantiate bumper listner
-        #         bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)
-
-        #         while True:
-        #             self.steps += 1
-        #             rospy.loginfo("step num: %d" % self.steps)
-        #             obs = np.array(self.build_learner_state())
-        #             action_index = learner.get_action(obs, False)
-        #             rospy.loginfo(action_index)
-        #             self.action_executor_client(self.primitive_moves_list[action_index])
-        #             # Update State
-        #             self.update_state_handler(Bool(True))
-
-        #             # if self.episodes == 2:
-        #             #     self.agent_state["at"] = ["hallway"]
-
-        #             if "hallway" in self.agent_state["at"]:
-        #                 rospy.loginfo("Succesful Trial")
-        #                 learner.agent.give_reward(1000)
-        #                 learner.agent.finish_episode()
-        #                 learner.agent.update_parameters()
-        #                 learner.agent.save_model(failed_operator_name)
-        #                 # rospy.loginfo("Steps = %d" % self.steps)
-        #                 bumper_listner.unregister()
-        #                 self.episodes += 1
-        #                 rospy.loginfo("episode: %d" % self.episodes)
-        #                 return
-
-                    
-        #             learner.agent.give_reward(-1)   
-
-
-        #             if self.steps == params.MAX_TIMESTEPS: # reset episode
-        #                 rospy.loginfo("MAX STEPS Reached. Resetting Episode")
-        #                 learner.agent.finish_episode()
-        #                 learner.agent.update_parameters()
-        #                 # rospy.loginfo("Steps = %d" % self.steps)
-
-        #                 self.move_client("exploration_reset")
-        #                 self.steps = 0
-        #                 self.episodes += 1
-        #                 rospy.loginfo("episode: %d" % self.episodes)
-        #                 continue
-
-        #             rospy.loginfo("Executed primitive action")
-
-        #         bumper_listner.unregister()
+    def save_data(self):
+        path = "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/data/data" +str(self.episodes)+ ".pickle"
+        memory = {'data': self.data}
+        f = open(path, 'wb')
+        pickle.dump(memory, f)
+        f.close()
     
-    # def _parse_planner_output(self, planner_output):
-    #     ff_plan = re.findall(r"\d+?: (.+)", planner_output.lower()) # matches the string to find the plan bit from the ffmetric output.
-
+    def save_logger(self):
+        self.Steps.append(self.timesteps)
+        self.R.append(self.reward)
+        self.Eps.append(self.epsilon)
+        self.Dones.append(self.done)
 
     def bumper_handler(self, msg):
         if msg.state == BumperEvent.PRESSED:
@@ -237,7 +224,6 @@ class Manager(object):
 
         # Get lines of file
         lines = f.readlines()
-
 
         # Only get plan lines
         plan_lines = lines[3: -3]
@@ -309,7 +295,6 @@ class Manager(object):
 
         return learner_state
 
-
     def pose_with_covariance_stamed_to_pose_stamped(self, pose):
         if not isinstance(pose, PoseWithCovarianceStamped):
             return PoseStamped()
@@ -348,10 +333,6 @@ class Manager(object):
             rospy.loginfo(self.agent_state["at"])
             rospy.loginfo(self.agent_state["facing"])
 
-
-
-
-
-
 if __name__ == "__main__":
-    Manager()
+    manager = Manager()
+    manager.main()

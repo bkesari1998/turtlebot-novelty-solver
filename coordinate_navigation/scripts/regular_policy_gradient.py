@@ -281,7 +281,7 @@ class RegularPolicyGradient(object):
         np.savez(path_to_save, layer1 = self._model['W1'], layer2 = self._model['W2'])
         print("saved to: ", path_to_save)
 
-    def load_model(self, operator_name, episode_num):
+    def load_model(self, operator_name, episode_num, lfd = False):
         # print (operator_name)
         # print (episode_num)
         # if not os.path.exists(operator_name):
@@ -289,6 +289,8 @@ class RegularPolicyGradient(object):
 
         # if not path_to_load:
         path_to_load = self.log_dir + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
+        if lfd:
+            path_to_load = self.log_dir + os.sep + operator_name + "_lfd_"+ str(episode_num) + '.npz'
         data = np.load(path_to_load)
         print ("Loaded model from", path_to_load)
         self._model['W1'] = data['layer1']

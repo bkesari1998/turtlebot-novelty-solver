@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>  
     <include file="$(find kobuki_auto_docking)/launch/minimal.launch" />
-    <rosparam file="$(find coordinate_navigation)/config/reward_function.yaml" />
+    <rosparam file="$(find coordinate_navigation)/config/learner.yaml" />
     <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
     <node name="undock" pkg="coordinate_navigation" type="undock.py" />
     <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>

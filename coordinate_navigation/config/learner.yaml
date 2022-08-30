@@ -1,3 +1,7 @@
 reward: {approach_charger_1_doorway_1_lab : {at: ["hallway"], facing: ["nothing"]},
     approach_doorway_1_desk_1_hallway : {at: ["hallway"], facing: ["desk_1"]},
     approach_doorway_1_charger_1_lab: {at: ["lab"], facing: ["charger_1"]}}
+
+failed_operator_name: "approach_charger_1_doorway_1_lab"
+
+load_model_flag: true
