@@ -51,17 +51,18 @@ class Manager(object):
         self.move_client = rospy.ServiceProxy("move", Move)
         self.primitive_move_client = rospy.ServiceProxy("primitive_move_actions", PrimitiveAction)
         self.state_confirmer = rospy.ServiceProxy("confirm_state", Trigger)
+        self.action_executor_client = rospy.ServiceProxy("action_executor", Action)
 
         self.primitive_moves = {"forward": 0, "turn_cc": 1, "turn_c": 2}
         self.primitive_moves_list = [["move", "forward"], ["move", "turn_cc"], ["move", "turn_c"]]
         
         # get the MDP stuff
-        self.reward_function = rospy.get_param("reward_function/reward") # list of reward states for all the failed operator.
+        self.reward_function = rospy.get_param("reward") # list of reward states for all the failed operator.
         # # Bumper
          # Instantiate bumper listner
         bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)
-        self.bump_counter = 0
-        self.last_bump_time = rospy.Time.now()
+        self.bumper_counter = 0
+        self.last_bumper_time = rospy.Time.now()
         # self.bumper_pressed = 0
         # self.bumper_time = rospy.Time.now()
         # find the file for loading
@@ -102,8 +103,9 @@ class Manager(object):
                 # learner_action = learner.get_action(obs, False, int(action_))
 
                 # Check for bumper press
-                if self.bumper_count > 4:
+                if self.bumper_counter >= 7:
                     print ("Turtlebot has run into an object too many times consecutively.  Resetting...")
+                    learner.agent._drs.pop()
                     learner.agent.give_reward(-5)
                     learner.agent.finish_episode()
                     learner.agent.update_parameters()
@@ -211,10 +213,10 @@ class Manager(object):
             self.primitive_move_client("backward")
             if rospy.Time.now() - self.last_bumper_time < rospy.Duration(2.0):
                 self.last_bump_time = rospy.Time.now()
-                self.bumper_count += 1
+                self.bumper_counter += 1
             else:
                 self.last_bumper_time = rospy.Time.now()
-                self.bumper_count = 0
+                self.bumper_counter = 0
             
 
     def execute_plan(self, plan):
