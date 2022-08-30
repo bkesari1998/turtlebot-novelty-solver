@@ -77,7 +77,7 @@ class StateConfirmer(object):
         odom_pose = odom_pose.pose.pose
 
         # Set at
-        at = ""
+        at = "none"
         point = Point(odom_pose.position.x, odom_pose.position.y)
         for boundary_name, boundary_polygon in self.at_boundaries.items():
             if boundary_polygon.contains(point):
