@@ -224,7 +224,6 @@ class RegularPolicyGradient(object):
         t  = time.time()
         # update the action counter
         self.action_counter[a]+=1
-        print ("Action to take = ", a)
         return a
         
     # after process_step, this function needs to be called to set the reward

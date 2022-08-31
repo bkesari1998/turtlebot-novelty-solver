@@ -3,7 +3,7 @@ import random
 
 # #Epsilon-greedy
 MAX_EPSILON = 0.2
-MAX_TIMESTEPS = 100
+MAX_TIMESTEPS = 20
 MAX_RHO = 0.3
 MIN_RHO = 0.05
 EXPLORATION_STOP = 30
@@ -12,7 +12,7 @@ NO_OF_SUCCESSFUL_DONE = 96
 
 # remains same always
 UPDATE_RATE = 10 # network weights update rate
-MAX_EPISODES = 15
+MAX_EPISODES = 2
 EPS_TO_EVAL = 10
 EVAL_INTERVAL = 10
 NUM_HIDDEN = 18

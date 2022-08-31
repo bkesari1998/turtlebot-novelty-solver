@@ -15,14 +15,18 @@ import math
 import rospy
 import os
 import numpy as np
-from coffee_bot_srvs.srv import Action, Goal, Move, PrimitiveAction
+from coffee_bot_srvs.srv import Action, Move, PrimitiveAction
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 
 from kobuki_msgs.msg import BumperEvent
 
+import actionlib
+from turtlebot_actions.msg import TurtlebotMoveAction, TurtlebotMoveGoal
+
+
 from nav_msgs.srv import GetPlan
 from std_msgs.msg import Bool
-from std_srvs.srv import Trigger
+from std_srvs.srv import Trigger, Empty
 
 from tf.transformations import quaternion_multiply, quaternion_inverse
 
@@ -63,6 +67,9 @@ class Manager(object):
         self.primitive_moves = {"forward": 0, "turn_cc": 1, "turn_c": 2}
         self.primitive_moves_list = [["move", "forward"], ["move", "turn_cc"], ["move", "turn_c"]]
         
+        # Clear costmaps service
+        self.clear_costmaps = rospy.ServiceProxy("/move_base/clear_costmaps", Empty)
+
         # Get the goal state
         self.reward_function = rospy.get_param("reward") # list of reward states for all the failed operator.
 
@@ -70,6 +77,12 @@ class Manager(object):
         bumper_listner = rospy.Subscriber("/mobile_base/events/bumper", BumperEvent, self.bumper_handler)
         self.bumper_counter = 0
         self.last_bumper_time = rospy.Time.now()
+        
+        # Initialize action client
+        self.move_action_client = actionlib.SimpleActionClient(
+            "turtlebot_move", TurtlebotMoveAction
+        )
+        self.move_action_client.wait_for_server()
 
         # Get model information
         self.load_model_flag = rospy.get_param("load_model_flag")
@@ -82,7 +95,7 @@ class Manager(object):
         self.Dones = [] # storing goal completion per episode
         self.Steps = [] # storing the number of steps in each episode
         self.Eps = [] # storing the epsilons in the list for each episode
-        self.data = [self.R, self.Done, self.Steps, self.Eps]
+        self.data = [self.R, self.Dones, self.Steps, self.Eps]
         
         # Load model if flag is true
         if self.load_model_flag:
@@ -123,9 +136,12 @@ class Manager(object):
             while True:
                 self.reward_counter = 0
                 # Check for bumper press
-                if self.bumper_counter >= 7:
+                if self.bumper_counter >= 5:
                     rospy.loginfo ("Turtlebot has run into an object too many times consecutively.  Resetting...")
-                    self.learner.agent._drs.pop() # hack since we might have given a reward already before
+                    if len(self.learner.agent._drs) > 0: 
+                        self.learner.agent._drs.pop() # hack since we might have given a reward already before
+                        # TODO
+                        # Handle situation where _drs is 0
                     self.end_episode(reward = -5)
                     break # out of while loop
 
@@ -139,7 +155,7 @@ class Manager(object):
                 obs = np.array(self.build_learner_state())
 
                 # Check for goal state
-                if self.agent_state["at"] == self.reward_function[self.failed_operator_name]["at"] and self.agent_state["facing"] == self.reward_function[failed_operator_name]["facing"]:
+                if self.agent_state["at"] == self.reward_function[self.failed_operator_name]["at"] and self.agent_state["facing"] == self.reward_function[self.failed_operator_name]["facing"]:
                     rospy.loginfo("Goal state reached! Resetting")
                     self.done = 1
                     self.end_episode(reward = 1000)
@@ -160,7 +176,7 @@ class Manager(object):
         
         # Save model and data
         self.learner.agent.save_model(self.failed_operator_name, self.episodes)
-        self.save_data(self.data)
+        self.save_data()
 
     def load_model(self):
         file_names = os.listdir("/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models")
@@ -177,6 +193,12 @@ class Manager(object):
             self.reward += reward
         self.learner.agent.finish_episode()
         self.learner.agent.update_parameters()
+        
+        episode_reset = "n"
+        while episode_reset != "y":
+            episode_reset = raw_input("Reset to starting position? ")
+
+        self.clear_costmaps()
         self.move_client("exploration_reset") # reset to begin state
 
     def print_stuff(self):
@@ -197,7 +219,7 @@ class Manager(object):
 
     def bumper_handler(self, msg):
         if msg.state == BumperEvent.PRESSED:
-            self.primitive_move_client("backward")
+            self.move_action_client.cancel_all_goals()
             if rospy.Time.now() - self.last_bumper_time < rospy.Duration(2.0):
                 self.last_bump_time = rospy.Time.now()
                 self.bumper_counter += 1
@@ -330,8 +352,6 @@ class Manager(object):
     def update_state_handler(self, msg):
         if msg.data == True:
             self.agent_state = rospy.get_param("agents/turtlebot")
-            rospy.loginfo(self.agent_state["at"])
-            rospy.loginfo(self.agent_state["facing"])
 
 if __name__ == "__main__":
     manager = Manager()
