@@ -2,8 +2,12 @@ reward: {approach_charger_1_doorway_1_lab : {at: ["hallway"], facing: ["nothing"
     approach_doorway_1_desk_1_hallway : {at: ["hallway"], facing: ["desk_1"]},
     approach_doorway_1_charger_1_lab: {at: ["lab"], facing: ["charger_1"]}}
 
-failed_operator_name: "approach_charger_1_doorway_1_lab"
+failed_operator_name: "approach_doorway_1_charger_1_lab"
 
 load_model_flag: true
 
-lfd_flag: false
+lfd_flag: true
+
+model_path: "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models"
+
+data_path: "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/data"

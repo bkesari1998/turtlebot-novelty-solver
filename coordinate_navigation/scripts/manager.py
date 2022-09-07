@@ -100,6 +100,8 @@ class Manager(object):
         self.load_model_flag = rospy.get_param("load_model_flag")
         self.failed_operator_name = rospy.get_param("failed_operator_name")
         self.lfd_flag = rospy.get_param("lfd_flag")
+        self.path_to_save = rospy.get_param("model_path")
+        self.data_path = rospy.get_param("data_path")
 
         # Other class info
         self.episodes = 0
@@ -216,12 +218,12 @@ class Manager(object):
             self.print_stuff()
 
         # Save model and data
-        self.learner.agent.save_model(self.failed_operator_name, self.episodes)
+        self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save=self.path_to_save + "/%s" % self.failed_operator_name)
         self.save_data()
 
     def load_model(self):
         file_names = os.listdir(
-            "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models"
+            "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models/%s" % self.failed_operator_name
         )
         ep_nums = []
         if file_names:
@@ -254,9 +256,10 @@ class Manager(object):
 
     def save_data(self):
         path = (
-            "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/data/data"
+            self.data_path +
+            "/%s/data" % self.failed_operator_name
             + str(self.episodes)
-            + ".pickle"
+            + ".pickle" 
         )
         memory = {"data": self.data}
         f = open(path, "wb")

@@ -58,9 +58,11 @@ class RegularPolicyGradient(object):
         # self.log_dir =  str(pathlib.Path(__file__).parent.resolve() / 'models')
         
         # logistics variables
-        self.log_dir = "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models"
         self.load_model_flag = load_model_flag
         self.failed_operator_name = failed_operator_name
+
+        # TODO dont hardcode path
+        self.log_dir = "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models/%s" % self.failed_operator_name
 
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
@@ -193,7 +195,7 @@ class RegularPolicyGradient(object):
                         else:
                             aprob[0] = [ 1.0/len(aprob[0]) for i in range(len(aprob[0]))]
         elif action is not None:
-            print ("Performing LfD")
+            
             aprob[0] = [0.01 for i in range(len(aprob[0]))]
             aprob[0][action] = 0.98
         
@@ -275,6 +277,8 @@ class RegularPolicyGradient(object):
 
         if not path_to_save:
             path_to_save = self.log_dir + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
+        else:
+            path_to_save = path_to_save + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
         print ("path_to_save = ", path_to_save)
 
         np.savez(path_to_save, layer1 = self._model['W1'], layer2 = self._model['W2'])
