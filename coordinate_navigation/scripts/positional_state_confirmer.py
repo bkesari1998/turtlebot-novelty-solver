@@ -89,7 +89,7 @@ class StateConfirmer(object):
 
         # Set facing
         facing = "nothing"
-        
+        set_flag = False
         # Set facing with april tag
         if len(detections) > 0:
             for detection in detections:
@@ -118,11 +118,13 @@ class StateConfirmer(object):
                     p -= 2 * math.pi
 
                 if tag_pose.position.z <= dist_threshold and abs(p) <= rot_threshold:
+                    set_flag = True
                     facing = facing_
-        else:
+        if not set_flag:
+           
             for boundary_name, boundary_polygon in self.facing_boundaries.items():
+                rospy.loginfo(boundary_name)
                 if boundary_polygon.contains(point):
-                    rospy.loginfo("Point in boundary %s", boundary_name)
                     try:
                         rot_threshold = self.param_facing_boundaries[boundary_name]["orientation_thresh"]
                         orientation_boundary = self.param_facing_boundaries[boundary_name]["orientation"]

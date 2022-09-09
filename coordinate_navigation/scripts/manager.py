@@ -12,6 +12,7 @@
 
 import pickle
 import math
+from turtle import right
 import rospy
 import os
 import numpy as np
@@ -40,7 +41,6 @@ class Manager(object):
 
         rospy.wait_for_service("/action_executor")
         rospy.wait_for_service("/move_base/make_plan")
-        rospy.loginfo("action_executor service active")
 
         self.object_list = rospy.get_param("object_list")
         self.waypoint_list = rospy.get_param("waypoint_list")
@@ -84,17 +84,17 @@ class Manager(object):
         )  # list of reward states for all the failed operator.
 
         # Instantiate bumper listner
-        bumper_listner = rospy.Subscriber(
-            "/mobile_base/events/bumper", BumperEvent, self.bumper_handler
-        )
+        # bumper_listner = rospy.Subscriber(
+        #     "/mobile_base/events/bumper", BumperEvent, self.bumper_handler
+        # )
         self.bumper_counter = 0
         self.last_bumper_time = rospy.Time.now()
 
-        # Initialize action client
-        self.move_action_client = actionlib.SimpleActionClient(
-            "turtlebot_move", TurtlebotMoveAction
-        )
-        self.move_action_client.wait_for_server()
+        # # Initialize action client
+        # self.move_action_client = actionlib.SimpleActionClient(
+        #     "turtlebot_move", TurtlebotMoveAction
+        # )
+        # self.move_action_client.wait_for_server()
 
         # Get model information
         self.load_model_flag = rospy.get_param("load_model_flag")
@@ -114,10 +114,12 @@ class Manager(object):
 
         # Load model if flag is true
         if self.load_model_flag:
+            rospy.loginfo("loading model")
             self.load_model()
+        rospy.loginfo("after init")
 
     def main(self):
-
+        rospy.loginfo("In main")
         # Get initial observation
         self.update_state_handler((Bool(True)))
         init_obs = np.array(self.build_learner_state())
@@ -152,7 +154,7 @@ class Manager(object):
 
             # Running timesteps for episode
             while True:
-                self.reward_counter = 0
+               
                 # Check for bumper press
                 if self.bumper_counter >= 5:
                     rospy.loginfo(
@@ -182,17 +184,19 @@ class Manager(object):
                 )
 
                 # Action executor client will return False if bumper is pressed to indicate failed action
-                if status:
+                rospy.loginfo("Action status: " + str(status))
+                if status.success:
                     self.bumper_counter = 0
                 else:
                     self.bumper_counter += 1
+                    rospy.loginfo("Bumper counter" + str(self.bumper_counter))
 
                 # Update state
                 self.update_state_handler((Bool(True)))
                 self.timesteps += 1
                 obs = np.array(self.build_learner_state())
 
-                # Check for goal state
+                 # Check for goal state
                 if (
                     self.agent_state["at"]
                     == self.reward_function[self.failed_operator_name]["at"]
@@ -204,15 +208,23 @@ class Manager(object):
                     self.end_episode(reward=1000)
                     break
 
-                # Negative reward for each step
+
+                # reward for each timestep otherwise
                 self.learner.agent.give_reward(-1)
                 self.reward -= 1
+            
 
-                # Max steps reached
+                # Check for goal sload_model_flaged
                 if self.timesteps >= params.MAX_TIMESTEPS:
                     rospy.loginfo("Max quota reached. Resetting.")
                     self.end_episode()
                     break
+                
+            if episode % params.SAVE_EVERY == 0:
+
+                 # Save model and data
+                self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save=self.path_to_save + "/%s" % self.failed_operator_name)
+                self.save_data()
 
             self.save_logger()
             self.print_stuff()
@@ -274,7 +286,6 @@ class Manager(object):
 
     def bumper_handler(self, msg):
         if msg.state == BumperEvent.PRESSED:
-            self.move_action_client.cancel_all_goals()
             if rospy.Time.now() - self.last_bumper_time < rospy.Duration(2.0):
                 self.last_bump_time = rospy.Time.now()
                 self.bumper_counter += 1
