@@ -4,7 +4,7 @@ reward: {approach_charger_1_doorway_1_lab : {at: ["hallway"], facing: ["nothing"
 
 failed_operator_name: "approach_charger_1_doorway_1_lab"
 
-load_model_flag: false
+load_model_flag: true
 
 lfd_flag: false
 
