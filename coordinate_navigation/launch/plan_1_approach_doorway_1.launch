@@ -10,6 +10,8 @@
         <arg name="initial_pose_x" value="-0.677" />
         <arg name="initial_pose_y" value="0.676" />
         <arg name="initial_pose_a" value="-0.378" />
+        <arg name="initial_cov_xx" value="0.15"/>
+        <arg name="initial_cov_yy" value="0.15"/>
     </include>
     <include file="$(find coordinate_navigation)/launch/nav_bot.launch" />
 </launch>

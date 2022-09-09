@@ -203,7 +203,7 @@ class RegularPolicyGradient(object):
         if np.isnan(np.sum(aprob)):
             # print("Nan found at timestep: ", timestep)
             # time.sleep(3)
-            print(aprob)
+            # print(aprob)
             aprob[0] = [ 1.0/len(aprob[0]) for i in range(len(aprob[0]))]
             print(aprob)
             #input()
@@ -245,13 +245,14 @@ class RegularPolicyGradient(object):
     def finish_episode(self):
         # stack together all inputs, hidden states, action gradients, and rewards for this episode
         
+        # print ("self.xs = ", self._xs)
         self._epx = np.vstack(self._xs)
-        print("self._epx = ", self._epx)
+        # print("self._epx = ", self._epx)
         eph = np.vstack(self._hs)
-        print ("self._hs = ", self._hs)
+        # print ("self._hs = ", self._hs)
         epdlogp = np.vstack(self._dlogps)
-        print ("self._dlogps = ", self._dlogps)
-        print ("self._drs = ", self._drs)
+        # print ("self._dlogps = ", self._dlogps)
+        # print ("self._drs = ", self._drs)
         epr = np.vstack(self._drs)
 
         
