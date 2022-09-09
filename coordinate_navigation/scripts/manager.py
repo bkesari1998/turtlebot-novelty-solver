@@ -18,8 +18,6 @@ import numpy as np
 from coffee_bot_srvs.srv import Action, Move, PrimitiveAction
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 
-from kobuki_msgs.msg import BumperEvent
-
 from nav_msgs.srv import GetPlan
 from std_msgs.msg import Bool
 from std_srvs.srv import Trigger, Empty
@@ -81,6 +79,12 @@ class Manager(object):
         self.bumper_counter = 0
         self.last_bumper_time = rospy.Time.now()
 
+        self.use_plan = rospy.get_param("use_plan_flag")
+        self.continue_from = rospy.get_param("continue_from")
+        self.plan = None
+        if self.use_plan:
+            plan_path = rospy.get_param("plan_path")
+            self.plan = self.read_plan(plan_path)
 
         # Get model information
         self.load_model_flag = rospy.get_param("load_model_flag")
@@ -98,11 +102,58 @@ class Manager(object):
         self.Eps = []  # storing the epsilons in the list for each episode
         self.data = [self.R, self.Dones, self.Steps, self.Eps]
 
-        # Load model if flag is true
-        if self.load_model_flag:
+        # Load model if flag is true, for testing of rl learner only
+        if self.use_plan and self.load_model_flag:
             self.load_model()
 
     def main(self):
+
+        if not self.use_plan:
+            self.learn_executor()
+        else:
+            status = False
+            # Loop until all actions in a plan are successful
+            while not status:
+                # Execute plan
+                status, failed_ops = self.execute_plan(self.plan)
+                self.failed_operator_name = "_".join(failed_ops)
+
+                # Plan failed
+                if status == False:
+                    goal_reached = self.rapid_learn(failed_ops)
+                    if not goal_reached:
+                        rospy.loginfo("RAPid Learn Failed :(")
+                    else:
+                        self.resume_plan()
+                        continue
+            
+        rospy.loginfo("Goal reached!")
+
+
+    def rapid_learn(self, failed_ops):
+            
+        # Check if action executor exists (is directory empty or not)
+        if not os.listdir(self.path_to_save + "/" + "_".join(failed_ops)):    
+            # List is empty, start learner from scratc
+            self.load_model_flag = False
+        else:
+            # Executor exists
+            self.load_model_flag = True
+            self.load_model()
+
+        return self.learn_executor()
+
+    def resume_plan(self, failed_ops):
+        next_action = self.continue_from("_".join(failed_ops))
+
+        if next_action == "None":
+            self.plan = []
+            return
+
+        next_action_index = self.plan.index(next_action.split("_"))
+        self.plan = self.plan[next_action_index:]
+
+    def learn_executor(self):
         
         # Get initial observation
         self.update_state_handler((Bool(True)))
@@ -191,6 +242,11 @@ class Manager(object):
                     rospy.loginfo("Goal state reached! Resetting")
                     self.done = 1
                     self.end_episode(reward=1000)
+
+                    # Return to plan
+                    if self.use_plan:
+                        return True
+
                     break
 
 
@@ -221,6 +277,7 @@ class Manager(object):
         # Save model and data
         self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save=self.path_to_save + "/%s" % self.failed_operator_name)
         self.save_data()
+        return False
 
     def load_model(self):
         file_names = os.listdir(
@@ -244,8 +301,8 @@ class Manager(object):
         while episode_reset != "y":
             episode_reset = raw_input("Reset to starting position? ")
 
-        self.clear_costmaps()
-        self.move_client("exploration_reset")  # reset to begin state
+            self.clear_costmaps()
+            self.move_client("exploration_reset")  # reset to begin state
 
     def print_stuff(self):
         rospy.loginfo(
@@ -274,15 +331,6 @@ class Manager(object):
         self.Eps.append(self.epsilon)
         self.Dones.append(self.done)
 
-    # def bumper_handler(self, msg):
-    #     if msg.state == BumperEvent.PRESSED:
-    #         if rospy.Time.now() - self.last_bumper_time < rospy.Duration(2.0):
-    #             self.last_bump_time = rospy.Time.now()
-    #             self.bumper_counter += 1
-    #         else:
-    #             self.last_bumper_time = rospy.Time.now()
-    #             self.bumper_counter = 0
-
     def execute_plan(self, plan):
 
         for action in plan:
@@ -291,9 +339,9 @@ class Manager(object):
             if not res.success:
                 rospy.loginfo(action[0])
                 rospy.loginfo(res.message)
-                return [False, action]
+                return False, action
 
-        return [True, []]
+        return True, []
 
     def read_plan(self, plan_file_path):
 
@@ -408,14 +456,6 @@ class Manager(object):
         pose_stamped.pose.orientation.w = waypoint[1][3]
 
         return pose_stamped
-
-    def generate_plan(self, goal_state):
-
-        pass
-
-    def instantiate_learner(self, learner_state, action):
-
-        pass
 
     def update_state_handler(self, msg):
         if msg.data == True:
