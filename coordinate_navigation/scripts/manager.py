@@ -14,6 +14,8 @@ import pickle
 import math
 import rospy
 import os
+import csv
+import time
 import numpy as np
 from coffee_bot_srvs.srv import Action, Move, PrimitiveAction
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
@@ -88,23 +90,26 @@ class Manager(object):
 
         # Get model information
         self.load_model_flag = rospy.get_param("load_model_flag")
-        self.failed_operator_name = rospy.get_param("failed_operator_name")
-        self.lfd_flag = rospy.get_param("lfd_flag")
+        
         self.path_to_save = rospy.get_param("model_path")
         self.data_path = rospy.get_param("data_path")
 
         # Other class info
         self.episodes = 0
         self.learner = None
-        self.R = []  # storing rewards per episode
-        self.Dones = []  # storing goal completion per episode
-        self.Steps = []  # storing the number of steps in each episode
-        self.Eps = []  # storing the epsilons in the list for each episode
-        self.data = [self.R, self.Dones, self.Steps, self.Eps]
+        # self.R = []  # storing rewards per episode
+        # self.Dones = []  # storing goal completion per episode
+        # self.Steps = []  # storing the number of steps in each episode
+        # self.Eps = []  # storing the epsilons in the list for each episode
+        # self.data = [self.R, self.Dones, self.Steps, self.Eps]
 
         # Load model if flag is true, for testing of rl learner only
-        if self.use_plan and self.load_model_flag:
+        self.failed_operator_name = ""
+        self.load_model_flag = False
+        if not self.use_plan and self.load_model_flag:
             self.load_model()
+            self.failed_operator_name = rospy.get_param("failed_operator_name")
+            self.lfd_flag = rospy.get_param("lfd_flag")
 
     def main(self):
 
@@ -123,6 +128,7 @@ class Manager(object):
                     goal_reached = self.rapid_learn(failed_ops)
                     if not goal_reached:
                         rospy.loginfo("RAPid Learn Failed :(")
+                        return
                     else:
                         self.resume_plan()
                         continue
@@ -170,6 +176,8 @@ class Manager(object):
         self.learner.agent.set_explore_epsilon(params.MAX_EPSILON)
 
         for episode in range(params.MAX_EPISODES):
+            # Starting episode time
+            start_time = time.time()
 
             # Episode counters
             self.episodes += 1
@@ -242,6 +250,7 @@ class Manager(object):
                     rospy.loginfo("Goal state reached! Resetting")
                     self.done = 1
                     self.end_episode(reward=1000)
+                    self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save=self.path_to_save + "/%s" % self.failed_operator_name)
 
                     # Return to plan
                     if self.use_plan:
@@ -262,21 +271,16 @@ class Manager(object):
                     break
                 
             if episode % params.SAVE_EVERY == 0:
-
-                # Reduce timesteps by 10% every SAVE_EVERY episodes
-                if params.MAX_TIMESTEPS > 50:
-                    params.MAX_TIMESTEPS = int(params.MAX_TIMESTEPS * 0.9)
-
+              
                 # Save model and data
                 self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save=self.path_to_save + "/%s" % self.failed_operator_name)
-                self.save_data()
 
-            self.save_logger()
+            self.elapsed_time = time.time() - start_time
+
             self.print_stuff()
+            self.save_to_file()
 
         # Save model and data
-        self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save=self.path_to_save + "/%s" % self.failed_operator_name)
-        self.save_data()
         return False
 
     def load_model(self):
@@ -302,34 +306,41 @@ class Manager(object):
             episode_reset = raw_input("Reset to starting position? ")
 
             self.clear_costmaps()
-            self.move_client("exploration_reset")  # reset to begin state
+            self.move_client(self.failed_operator_name)  # reset to begin state
 
     def print_stuff(self):
         rospy.loginfo(
-            "Episode--> %s Reward-->> %s Steps--> %s Max Steps --> %s",
+            "Episode--> %s Reward-->> %s Steps--> %s Elapsed Time --> %s",
             self.episodes,
             self.reward,
             self.timesteps,
-            params.MAX_TIMESTEPS
+            self.elapsed_time
         )
 
-    def save_data(self):
-        path = (
-            self.data_path +
-            "/%s/data" % self.failed_operator_name
-            + str(self.episodes)
-            + ".pickle" 
-        )
-        memory = {"data": self.data}
-        f = open(path, "wb")
-        pickle.dump(memory, f)
-        f.close()
+    # def save_data(self):
+    #     path = (
+    #         self.data_path +
+    #         "/%s/data" % self.failed_operator_name
+    #         + str(self.episodes)
+    #         + ".pickle" 
+    #     )
+    #     memory = {"data": self.data}
+    #     f = open(path, "wb")
+    #     pickle.dump(memory, f)
+    #     f.close()
 
-    def save_logger(self):
-        self.Steps.append(self.timesteps)
-        self.R.append(self.reward)
-        self.Eps.append(self.epsilon)
-        self.Dones.append(self.done)
+    # def save_logger(self):
+    #     self.Steps.append(self.timesteps)
+    #     self.R.append(self.reward)
+    #     self.Eps.append(self.epsilon)
+    #     self.Dones.append(self.done)
+
+    def save_to_file(self):
+        data = [self.episodes, self.timesteps, self.reward, self.epsilon, self.elapsed_time]
+        db_file_name = self.data_path + os.sep + self.failed_operator_name + os.sep + "results.csv"
+        with open(db_file_name, 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(data)
 
     def execute_plan(self, plan):
 

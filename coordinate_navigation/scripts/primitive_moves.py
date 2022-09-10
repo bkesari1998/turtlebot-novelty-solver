@@ -122,7 +122,11 @@ class PrimativeMoveAction(object):
                 return
             self.bumper_last_pressed = rospy.Time.now()
             msg = Twist()
-            self.cmd_vel.publish(msg)
+            msg.linear.x = -0.25
+            for i in range(5):
+                self.cmd_vel.publish(msg)
+                self.rate.sleep()
+            self.cmd_vel.publish(Twist())
             self.rate.sleep()
             self.bumper_flag = True
 
