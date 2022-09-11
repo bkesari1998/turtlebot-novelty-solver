@@ -120,7 +120,7 @@ class Manager(object):
     def rapid_learn(self, failed_ops):
             
         # Check if action executor exists (is directory empty or not)
-        if not os.listdir(self.model_path + "/" + self.failed_operator_name):    
+        if not os.listdir(self.model_path + os.sep + self.failed_operator_name + os.sep + "trial_" + str(self.trial_num)):    
             # List is empty, start learner from scratc
             self.load_model_flag = False
         else:
@@ -153,6 +153,8 @@ class Manager(object):
             self.primitive_moves,
             episode_num=self.episodes,
             load_model_flag=self.load_model_flag,
+            log_dir = self.model_path,
+            trial_number = self.trial_num
         )
         self.learner.agent.set_explore_epsilon(params.MAX_EPSILON)
 
@@ -228,11 +230,14 @@ class Manager(object):
                     and self.agent_state["facing"]
                     == self.reward_function[self.failed_operator_name]["facing"]
                 ):
-                    rospy.loginfo("Goal state reached! Resetting")
+                    rospy.loginfo("Goal state reached!")
                     self.done = 1
                     self.end_episode(reward=1000)
-                    self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save = self.model_path + "/%s" % self.failed_operator_name)
-
+                    self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save = self.model_path + os.sep + self.failed_operator_name + os.sep + "trial_" + str(self.trial_num))
+                    
+                    self.print_stuff()
+                    self.save_to_file()
+                    
                     # Return to plan
                     if self.use_plan:
                         return True
@@ -259,7 +264,6 @@ class Manager(object):
             self.print_stuff()
             self.save_to_file()
 
-        # Save model and data
         return False
 
     def load_model(self):
@@ -300,7 +304,7 @@ class Manager(object):
 
     def save_to_file(self):
         data = [self.episodes, self.timesteps, self.reward, self.epsilon, self.elapsed_time]
-        db_file_name = self.data_path + os.sep + self.failed_operator_name + "trial_ " + str(self.trial_num) + os.sep + "results.csv"
+        db_file_name = self.data_path + os.sep + self.failed_operator_name + os.sep + "trial_" + str(self.trial_num) + os.sep + "results.csv"
         with open(db_file_name, 'a') as f:
             writer = csv.writer(f)
             writer.writerow(data)

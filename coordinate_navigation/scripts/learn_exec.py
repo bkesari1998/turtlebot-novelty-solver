@@ -8,13 +8,12 @@ from manager import Manager
 from regular_policy_gradient import RegularPolicyGradient
 
 class Learner:
-    def __init__(self, failed_operator_name, init_obs, init_actions, episode_num, load_model_flag):
+    def __init__(self, failed_operator_name, init_obs, init_actions, episode_num, load_model_flag, log_dir, trial_number):
         
         seed = np.random.randint(0, 100)
         obs_size = init_obs.shape[0]
         action_size = len(init_actions)
-        # self.env = env # environment
-        # self.plan = plan # plan
+        
         self.timestep = 0
         self.episode = 0
         self.failed_operator_name = failed_operator_name
@@ -23,12 +22,7 @@ class Learner:
                                             input_size=obs_size, hidden_layer_size=params.NUM_HIDDEN,
                                             learning_rate=params.LEARNING_RATE, gamma=params.GAMMA, decay_rate=params.DECAY_RATE,
                                             greedy_e_epsilon=params.MAX_EPSILON, actions_id=init_actions, 
-                                            random_seed=seed, load_model_flag=load_model_flag, episode_num=episode_num, failed_operator_name=failed_operator_name)
-
-        # filename = "models"+os.sep+failed_operator_name+"_"+ str(episode_number)+".npz"
-        # if os.path.isfile(filename):
-        #     print ("File exist")
-        #     self.agent.load_model(failed_operator_name, episode_number)
+                                            random_seed=seed, load_model_flag=load_model_flag, episode_num=episode_num, log_dir=log_dir, failed_operator_name=failed_operator_name, trial_number=trial_number)
 
 
     def get_action(self, obs, done=False, action=None):
@@ -38,19 +32,6 @@ class Learner:
         while True:
             action = self.agent.process_step(x = obs, exploring = True, action = action)
             self.timestep += 1
-            
-            # if done == True:
-            #     self.episode += 1
-            #     self.agent.give_reward(1000)
-            #     self.agent.finish_episode()
-            #     self.agent.update_parameters()
-            #     if self.episode > params.MAX_EPISODES:
-            #         if self.check_convergence():
-            #             model_name = self.failed_operator_name+"_converged"
-            #             self.learning_agent.save_model(self.failed_operator_name)
-            #     break
-
-            # self.agent.give_reward(-1)
             
             return action
 

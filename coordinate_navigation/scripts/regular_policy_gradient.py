@@ -30,7 +30,7 @@ class RegularPolicyGradient(object):
      learning_rate, gamma, decay_rate, greedy_e_epsilon, actions_id,
       episode_num, random_seed = 1, actions_to_be_bumped = None,
        guided_policy = None, exploration_mode = None, guided_action = None,
-         load_model_flag = False, failed_operator_name=None):
+         load_model_flag = False, log_dir=None, failed_operator_name=None, trial_number=0):
         # store hyper-params
         self._A = num_actions
         self._D = input_size
@@ -61,13 +61,13 @@ class RegularPolicyGradient(object):
         self.load_model_flag = load_model_flag
         self.failed_operator_name = failed_operator_name
 
-        # TODO dont hardcode path
-        self.log_dir = "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models/%s" % self.failed_operator_name
+        self.log_dir = log_dir
+        self.trial_num = trial_number
 
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
+
         if self.load_model_flag:
-            # print (episode_num)
             self.load_model(self.failed_operator_name, episode_num=episode_num)
 
     def init_model(self,random_seed):
@@ -205,7 +205,6 @@ class RegularPolicyGradient(object):
             # time.sleep(3)
             # print(aprob)
             aprob[0] = [ 1.0/len(aprob[0]) for i in range(len(aprob[0]))]
-            print(aprob)
             #input()
         
         aprob_cum = np.cumsum(aprob)
@@ -214,7 +213,6 @@ class RegularPolicyGradient(object):
 
         # record various intermediates (needed later for backprop)
         t = time.time()
-        print ("self._xs = ", self._xs)
         self._xs.append(x) # observation
         self._hs.append(h)
         # print ("self._xs = ", self._xs)
@@ -276,7 +274,7 @@ class RegularPolicyGradient(object):
     def save_model(self, operator_name, episode_num, path_to_save= None):
 
         if not path_to_save:
-            path_to_save = self.log_dir + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
+            path_to_save = self.log_dir + os.sep + operator_name + os.sep + "trial_" + str(self.trial_num) + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
         else:
             path_to_save = path_to_save + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
         print ("path_to_save = ", path_to_save)
@@ -284,16 +282,9 @@ class RegularPolicyGradient(object):
         np.savez(path_to_save, layer1 = self._model['W1'], layer2 = self._model['W2'])
         print("saved to: ", path_to_save)
 
-    def load_model(self, operator_name, episode_num, lfd = False):
-        # print (operator_name)
-        # print (episode_num)
-        # if not os.path.exists(operator_name):
-        #     return False
-
+    def load_model(self, operator_name, episode_num):
         # if not path_to_load:
-        path_to_load = self.log_dir + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
-        if lfd:
-            path_to_load = self.log_dir + os.sep + operator_name + "_lfd_"+ str(episode_num) + '.npz'
+        path_to_load = self.log_dir + os.sep + operator_name + os.sep + "trial_" + str(self.trial_num) + os.sep + operator_name + "_"+ str(episode_num) + '.npz'
         data = np.load(path_to_load)
         print ("Loaded model from", path_to_load)
         self._model['W1'] = data['layer1']
