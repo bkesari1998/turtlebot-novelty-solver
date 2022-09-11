@@ -235,6 +235,8 @@ class Manager(object):
                     self.end_episode(reward=1000)
                     self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save = self.model_path + os.sep + self.failed_operator_name + os.sep + "trial_" + str(self.trial_num))
                     
+                    self.elapsed_time = time.time() - start_time
+
                     self.print_stuff()
                     self.save_to_file()
                     
