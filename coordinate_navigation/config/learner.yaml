@@ -7,6 +7,7 @@ continue_from: {approach_charger_1_doorway_1_lab : ["approach", "nothing", "desk
     approach_nothing_charger_1_lab: ["dock", "charger_1", "lab"]}
 
 failed_operator_name: "approach_charger_1_doorway_1_lab"
+trail_number: 0
 
 use_plan_flag: true
 plan_path: "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1.plan"

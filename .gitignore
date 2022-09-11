@@ -20,3 +20,5 @@ coordinate_navigation/scripts/pddl_problem_gen.py
 coffee_bot_srvs/srv/.vscode/settings.json
 .gitignore
 coffee_bot_srvs/srv/.vscode/c_cpp_properties.json
+coordinate_navigation/scripts/models/
+coordinate_navigation/scripts/data/

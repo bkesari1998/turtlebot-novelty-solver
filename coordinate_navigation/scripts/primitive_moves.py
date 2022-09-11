@@ -123,7 +123,7 @@ class PrimativeMoveAction(object):
             self.bumper_last_pressed = rospy.Time.now()
             msg = Twist()
             msg.linear.x = -0.25
-            for i in range(5):
+            for i in range(3):
                 self.cmd_vel.publish(msg)
                 self.rate.sleep()
             self.cmd_vel.publish(Twist())
