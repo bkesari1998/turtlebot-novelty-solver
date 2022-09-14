@@ -88,7 +88,10 @@ class Manager(object):
         self.failed_operator_name = ""
         self.lfd_flag = False
         if not self.use_plan and self.load_model_flag:
+            self.failed_operator_name = rospy.get_param("failed_operator_name")
+            self.lfd_flag = rospy.get_param("lfd_flag")
             self.load_model()
+        elif not self.use_plan:
             self.failed_operator_name = rospy.get_param("failed_operator_name")
             self.lfd_flag = rospy.get_param("lfd_flag")
 
@@ -106,18 +109,18 @@ class Manager(object):
 
                 # Plan failed
                 if status == False:
-                    goal_reached = self.rapid_learn(failed_ops)
+                    goal_reached = self.rapid_learn()
                     if not goal_reached:
                         rospy.loginfo("RAPid Learn Failed :(")
                         return
                     else:
-                        self.resume_plan(failed_ops)
+                        self.resume_plan()
                         continue
             
         rospy.loginfo("Goal reached!")
 
 
-    def rapid_learn(self, failed_ops):
+    def rapid_learn(self):
             
         # Check if action executor exists (is directory empty or not)
         if not os.listdir(self.model_path + os.sep + self.failed_operator_name + os.sep + "trial_" + str(self.trial_num)):    
@@ -130,7 +133,7 @@ class Manager(object):
 
         return self.learn_executor()
 
-    def resume_plan(self, failed_ops):
+    def resume_plan(self):
         next_action = self.continue_from[self.failed_operator_name]
 
         if next_action == "None":
@@ -158,43 +161,27 @@ class Manager(object):
         )
         self.learner.agent.set_explore_epsilon(params.MAX_EPSILON)
 
-        for episode in range(params.MAX_EPISODES):
-            # Starting episode time
-            start_time = time.time()
+        # Starting episode time
+        start_time = time.time()
+        self.elapsed_time = 0
 
-            # Episode counters
-            self.episodes += 1
-            self.timesteps = 0
-            self.reward = 0
-            self.done = 0
+        while True:
 
             # set the explore epsilon
             self.epsilon = params.MIN_EPSILON + (
                 params.MAX_EPSILON - params.MIN_EPSILON
-            ) * math.exp(-params.LAMBDA * episode)
+            ) * math.exp(-params.LAMBDA * self.episodes)
             self.learner.agent._explore_eps = self.epsilon
 
             # Build starting state for episode
             self.update_state_handler((Bool(True)))
             obs = np.array(self.build_learner_state())
 
+
+            use_episode_flag = True
+
             # Running timesteps for episode
-            
             while True:
-                
-                # Check for bumper press
-                
-                if self.bumper_counter >= 5:
-                    rospy.loginfo(
-                        "Turtlebot has run into an object too many times consecutively.  Resetting..."
-                    )
-                    if len(self.learner.agent._drs) > 0:
-                        self.learner.agent._drs.pop()  # hack since we might have given a reward already before
-                        # TODO
-                        # Handle situation where _drs is 0
-                    self.end_episode(reward=-5)
-                    self.bumper_counter = 0
-                    break  # out of while loop
 
                 # Get the action from the network and execute
                 if self.lfd_flag:
@@ -213,6 +200,7 @@ class Manager(object):
                 )
 
                 # Action executor client will return False if bumper is pressed to indicate failed action
+                # 
                 if status.success:
                     self.bumper_counter = 0
                 else:
@@ -223,7 +211,39 @@ class Manager(object):
                 self.timesteps += 1
                 obs = np.array(self.build_learner_state())
 
-                 # Check for goal state
+                # Check for catastrophic bumper presses
+                if self.bumper_counter >= 5:
+                    rospy.loginfo(
+                        "Turtlebot has run into an object too many times consecutively.  Resetting..."
+                    )
+                    
+                    timer = time.time()
+                    state_verification = ""
+                    while state_verification not in ["y", "n"]:
+                        state_verification = raw_input("Is the turtlebot localized properly? (y/n): ")
+
+                        if state_verification == "n":
+        
+                            rospy.wait_for_message("/initialpose", PoseWithCovarianceStamped)
+
+                            # Subtract user overhead from elapsed time
+                            self.elapsed_time -= (time.time() - timer)
+
+                            self.learner.agent.throw_out_episode()
+                            self.clear_costmaps()
+                            self.move_client(self.failed_operator_name)  # reset to begin state
+                            use_episode_flag = False
+                        else:
+                            # Subtract user overhead from elapsed time
+                            self.elapsed_time -= (time.time() - timer)
+                    
+                    if not use_episode_flag:      
+                        break
+
+                    self.end_episode(reward=-2)
+                    break  # out of while loop
+
+                # Check for goal state
                 if (
                     self.agent_state["at"]
                     == self.reward_function[self.failed_operator_name]["at"]
@@ -231,15 +251,48 @@ class Manager(object):
                     == self.reward_function[self.failed_operator_name]["facing"]
                 ):
                     rospy.loginfo("Goal state reached!")
-                    self.done = 1
-                    self.end_episode(reward=1000)
-                    self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save = self.model_path + os.sep + self.failed_operator_name + os.sep + "trial_" + str(self.trial_num))
+
+                    timer = time.time()
+
+                    state_verification = ""
+                    if state_verification == "n":
+        
+                            rospy.wait_for_message("/initialpose", PoseWithCovarianceStamped)
+
+                            # Subtract user overhead from elapsed time
+                            self.elapsed_time -= (time.time() - timer)
+
+                            self.learner.agent.throw_out_episode()
+                            self.clear_costmaps()
+                            self.move_client(self.failed_operator_name)  # reset to begin state
+                            use_episode_flag = False
+                    else:
+                        # Subtract user overhead from elapsed time
+                        self.elapsed_time -= (time.time() - timer)
                     
-                    self.elapsed_time = time.time() - start_time
+
+                    if not use_episode_flag:        
+                        break
+
+                    self.done = 1
+                    self.elapsed_time += (time.time() - start_time)
+
+                    self.end_episode(reward=1000)
 
                     self.print_stuff()
                     self.save_to_file()
-                    
+
+                    self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save = self.model_path + os.sep + self.failed_operator_name + os.sep + "trial_" + str(self.trial_num))
+                        
+                    # Episode counters
+                    self.episodes += 1
+                    self.timesteps = 0
+                    self.reward = 0
+                    self.done = 0
+
+                    start_time = time.time()
+                    self.elapsed_time = 0
+
                     # Return to plan
                     if self.use_plan:
                         return True
@@ -247,24 +300,41 @@ class Manager(object):
 
 
                 # reward for each timestep otherwise
-                self.learner.agent.give_reward(-1)
-                self.reward -= 1
+                if self.bumper_counter >= 2:
+                    self.learner.agent.give_reward(-2)
+                    self.reward -= 2
+                else:
+                    self.learner.agent.give_reward(-1)
+                    self.reward -= 1
 
-                # Check for goal load_model_flaged    def read_plan(self, plan_file_path):
                 if self.timesteps >= params.MAX_TIMESTEPS:
+                    
+                    timer = time.time()
+                    state_verification = ""
+
+                    if state_verification == "n":
+        
+                            rospy.wait_for_message("/initialpose", PoseWithCovarianceStamped)
+
+                            # Subtract user overhead from elapsed time
+                            self.elapsed_time -= (time.time() - timer)
+
+                            self.learner.agent.throw_out_episode()
+                            self.clear_costmaps()
+                            self.move_client(self.failed_operator_name)  # reset to begin state
+                            use_episode_flag = False
+                    else:
+                        # Subtract user overhead from elapsed time
+                        self.elapsed_time -= (time.time() - timer)
+                
+                    if not use_episode_flag:        
+                        break
+
                     rospy.loginfo("Max quota reached. Resetting.")
                     self.end_episode()
                     break
-                
-            if episode % params.SAVE_EVERY == 0:
-              
-                # Save model and data
-                self.learner.agent.save_model(self.failed_operator_name, self.episodes, path_to_save=self.model_path + os.sep + self.failed_operator_name + os.sep + "trial_" + str(self.trial_num))
-
-            self.elapsed_time = time.time() - start_time
-
-            self.print_stuff()
-            self.save_to_file()
+            
+            self.bumper_counter = 0  
 
         return False
 
@@ -409,6 +479,12 @@ class Manager(object):
                     learner_state.append(1)
                 else:
                     learner_state.append(0)
+
+        if self.bumper_counter > 0:
+            # Bumped on last action 
+            learner_state.append(1)
+        else:
+            learner_state.append(0)
 
         return learner_state
 

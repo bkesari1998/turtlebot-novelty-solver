@@ -239,7 +239,10 @@ class RegularPolicyGradient(object):
         self._grad_buffer = { k : np.zeros_like(v) for k,v in self._model.items() } # update buffers that add up gradients over a batch
         self._rmsprop_cache = { k : np.zeros_like(v) for k,v in self._model.items() } # rmsprop memory
 
-        
+
+    def throw_out_episode(self):
+        self._xs,self._hs,self._dlogps,self._drs = [],[],[],[] # reset array memory
+
     # this function should be called when an episode (i.e., a game) has finished
     def finish_episode(self):
         # stack together all inputs, hidden states, action gradients, and rewards for this episode
@@ -257,7 +260,7 @@ class RegularPolicyGradient(object):
 
         epdlogp *= discounted_epr # modulate the gradient with advantage (PG magic happens right here.)
         
-        start_time = time.time()
+        # start_time = time.time()
         grad = self.policy_backward(eph, epdlogp)
         #print("--- %s seconds for policy backward ---" % (time.time() - start_time))
         

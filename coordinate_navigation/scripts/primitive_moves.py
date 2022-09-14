@@ -35,7 +35,7 @@ class PrimativeMoveAction(object):
         self.bumper_last_pressed = rospy.Time.now()
 
         # Command velocity publisher
-        self.cmd_vel = rospy.Publisher("/cmd_vel_mux/input/navi", Twist, queue_size=10)
+        self.cmd_vel = rospy.Publisher("/cmd_vel_mux/input/navi", Twist, queue_size=1)
         self.rate = rospy.Rate(10)
 
         # Initialize service
@@ -81,6 +81,9 @@ class PrimativeMoveAction(object):
                 self.cmd_vel.publish(msg)
                 self.rate.sleep()
             else:
+                for i in range(5):
+                    self.cmd_vel.publish(Twist())
+                    self.rate.sleep()
                 self.bumper_flag = False
                 return False
                 
@@ -96,6 +99,9 @@ class PrimativeMoveAction(object):
                 self.cmd_vel.publish(msg)
                 self.rate.sleep()
             else:
+                for i in range(5):
+                    self.cmd_vel.publish(Twist())
+                    self.rate.sleep()
                 self.bumper_flag = False
                 return False
 
@@ -110,6 +116,9 @@ class PrimativeMoveAction(object):
                 self.cmd_vel.publish(msg)
                 self.rate.sleep()
             else:
+                for i in range(5):
+                    self.cmd_vel.publish(Twist())
+                    self.rate.sleep()
                 self.bumper_flag = False
                 return False
 
@@ -121,13 +130,7 @@ class PrimativeMoveAction(object):
             if rospy.Time.now() - self.bumper_last_pressed < rospy.Duration(0.5):
                 return
             self.bumper_last_pressed = rospy.Time.now()
-            msg = Twist()
-            msg.linear.x = -0.25
-            for i in range(3):
-                self.cmd_vel.publish(msg)
-                self.rate.sleep()
-            self.cmd_vel.publish(Twist())
-            self.rate.sleep()
+            
             self.bumper_flag = True
 
     def shutdown(self):
