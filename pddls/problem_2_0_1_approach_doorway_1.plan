@@ -1,0 +1,8 @@
+;;!domain: navbot
+;;!problem: delivery
+
+0.00100: (pass_through_door lab hallway doorway_1)
+0.00200: (approach nothing desk_1 hallway)
+
+; Makespan: 0.004
+; Metric: 0.004

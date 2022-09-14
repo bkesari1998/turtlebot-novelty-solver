@@ -59,6 +59,7 @@ add_service_files(
   Action.srv
   Open_Door.srv
   PrimitiveAction.srv
+  Goal.srv
 )
 
 ## Generate actions in the 'action' folder

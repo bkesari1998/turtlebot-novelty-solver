@@ -5,6 +5,7 @@ import rospy
 
 # ROS Messages/Services
 from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
+from std_msgs.msg import Bool
 from std_srvs.srv import Trigger
 from coffee_bot_srvs.srv import Move, Open_Door, Action, PrimitiveAction
 
@@ -28,6 +29,7 @@ class PlanExecutor():
         # Get state parameters
         self.agents = rospy.get_param("agents")
         self.objects = rospy.get_param("objects")
+        self.update_state_subscriber = rospy.Subscriber("update_state", Bool, self.update_state_handler)
 
         # Wait for action services
         rospy.loginfo("Waiting for undock service")
@@ -66,12 +68,13 @@ class PlanExecutor():
         req: Action() object containing list of strings
         returns: Status of action (bool, string)
         '''
+        self.update_state()
 
         if req.action[0] == 'approach':
            return self.approach(req.action)
 
-        if req.action[0] == 'open_door':
-            return self.open_door(req.action)
+        # if req.action[0] == 'open_door':
+        #     return self.open_door(req.action)
         
         if req.action[0] == 'pass_through_door':
             return self.pass_through_door(req.action)
@@ -386,8 +389,8 @@ class PlanExecutor():
 
         # Make call to primitive move service
         result = self.prim_move_client(action)
-
-        return result
+        
+        return result.success, result.message
 
 ##################### State Update ####################
 
@@ -396,6 +399,11 @@ class PlanExecutor():
         self.state_conf_client()
         self.agents = rospy.get_param("agents")
         self.objects = rospy.get_param("objects")
+
+    def update_state_handler(self, msg):
+        if msg.data == True:
+            self.agents = rospy.get_param("agents")
+            self.objects = rospy.get_param("objects")
 
 ##################### Shutdown #####################
 

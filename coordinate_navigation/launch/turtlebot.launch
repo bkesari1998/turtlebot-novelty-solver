@@ -1,29 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <rosparam file="$(find coordinate_navigation)/config/waypoints.yaml" />
-    <rosparam file="$(find coordinate_navigation)/config/state.yaml" />
     <rosparam file="$(find coordinate_navigation)/config/tags.yaml" />
     <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
-    <include file="$(find coordinate_navigation)/launch/tag_static_frames.launch"/>
-    <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
-	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
-        <arg name="initial_pose_x" value="1.518" />
-        <arg name="initial_pose_y" value="1.943" />
-        <arg name="initial_pose_a" value="0.799" />
-    </include>
     <include file="$(find turtlebot_actions)/launch/server_turtlebot_move.launch" />
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="/camera/rgb" />
         <arg name="image_topic" value="image_raw" />
     </include>
-    <include file="$(find kobuki_auto_docking)/launch/minimal.launch" />
-    <node name="auto_dock" pkg="coordinate_navigation" type="auto_dock.py"/>
-    <node name="undock" pkg="coordinate_navigation" type="undock.py" />
-    <node name="move_to_location" pkg="coordinate_navigation" type="move_to_location.py"/>
-    <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
-    <!-- <node name="tag_handler" pkg="coordinate_navigation" type="april_tag_localization.py"/> -->
-    <node name="power_systems_sub" pkg="coordinate_navigation" type="power_systems_state_confirmer.py"/>
-    <node name="state_confirmer" pkg="coordinate_navigation" type="tag_amcl_state_confirmer.py"/>
-    <node name="primitive_move_actions" pkg="coordinate_navigation" type="primitive_moves.py"/>
-    <node name="action_execution" pkg="coordinate_navigation" type="action_execution.py"/>
 </launch>

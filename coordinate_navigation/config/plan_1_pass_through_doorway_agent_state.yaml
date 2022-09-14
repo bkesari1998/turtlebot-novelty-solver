@@ -1,0 +1,3 @@
+agents: {
+  turtlebot: {at: ["hallway"], facing: ["nothing"], docked: false}
+}

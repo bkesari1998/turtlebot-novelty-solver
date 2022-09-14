@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="waypoints_file" default="pre_novelty_waypoints.yaml"/>
+    <rosparam file="$(find coordinate_navigation)/config/$(arg waypoints_file)" />
+    <rosparam file="$(find coordinate_navigation)/config/object_state.yaml" />
+    <rosparam file="$(find coordinate_navigation)/config/plan_1_start_agent_state.yaml" />
+    <rosparam param="plan_file">/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1.plan</rosparam>
+    <include file="$(find turtlebot_navigation)/launch/amcl_demo.launch" > 
+	    <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
+        <arg name="initial_pose_x" value="-0.941" />
+        <arg name="initial_pose_y" value="1.451" />
+        <arg name="initial_pose_a" value="2.784" />
+    </include>
+    <include file="$(find coordinate_navigation)/launch/nav_bot.launch" />
+</launch> 

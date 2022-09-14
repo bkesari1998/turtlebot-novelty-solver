@@ -1,0 +1,34 @@
+object_list : ["doorway_1", "charger_1", "desk_1", "novel_object", "nothing"]
+
+object_types : {
+  room : ["lab", "hallway"],
+  doorway: ["doorway_1"],
+  charger: ["charger_1"],
+  desk: ["desk_1"],
+  nothing: ["nothing"]
+}
+
+objects : {
+  lab: {},
+
+  kitchen: {},
+
+  doorway_1 : {connect : ["lab", "hallway"], inside: ["lab", "hallway"]},
+
+  charger_1: {inside: ["lab"]},
+
+  desk_1: {inside: ["hallway"]},
+
+  nothing: {inside: ["lab", "hallway"]}
+}
+
+at_boundaries: {
+  lab: [[-1.008, 2.123], [-1.781, 0.026], [-0.486, -0.407], [0.228, 1.465]],
+  hallway: [[0.454, 1.509], [-0.299, -0.471], [0.371, -0.773], [1.147, 1.231]],
+  none: [[-0.182, 0.685], [-0.317, 0.200], [-0.111, 0.127], [0.028, 0.645]]
+}
+
+facing_boundaries: {
+  doorway_1__lab: {boundary: [[-0.305, 0.788], [-0.811, 1.002], [-1.046, 0.426], [-0.424, 0.193]], orientation: [ 0, 0, -0.170, 0.990], orientation_thresh: 0.524},
+  doorway_1__hallway: {boundary: [[0.030, 0.659], [0.675, 0.446], [0.480, -0.197], [-0.195, -0.002]], orientation: [ 0, 0, 0.986, 0.165], orientation_thresh: 0.524}
+}

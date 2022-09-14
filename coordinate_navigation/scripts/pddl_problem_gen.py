@@ -2,6 +2,7 @@
 
 import rospy
 from coffee_bot_srvs.srv import Goal
+import os
 
 
 class PddlProblemGen(object):
@@ -17,15 +18,12 @@ class PddlProblemGen(object):
         rospy.loginfo("pddl_problem_gen node active")
 
         self.agents = rospy.get_param("/agents")
-        self.object_list = rospy.get_param("/object_list")
-        self.object_predicates = rospy.get_param("/object_predicates")
+        self.object_list = rospy.get_param("/object_types")
+        self.object_predicates = rospy.get_param("/objects")
 
         # Initialize service
         self.problem_gen_srv = rospy.Service("problem_gen", Goal, self.generate_problem)
         rospy.loginfo("problem_gen service active")
-
-        # Counter for naming different problem files
-        self.prob_count = 0
 
         while not rospy.is_shutdown():
             rospy.spin()
@@ -37,19 +35,16 @@ class PddlProblemGen(object):
 
         # Load rosparams
         self.agents = rospy.get_param("/agents")
-        self.object_list = rospy.get_param("/object_list")
-        self.object_predicates = rospy.get_param("/object_predicates")
+        self.object_list = rospy.get_param("/object_types")
+        self.object_predicates = rospy.get_param("/objects")
 
         # Create/Open file
-        path = "problem_%d.pddl" % self.prob_count
+        path = "gen_pddls/problem_exploration.pddl"
         fp = open(path, "w")
 
         # Add problem definition to file
-        problem_def = "(define (problem problem_%d) (:domain coffee_bot)\n" % self.prob_count
+        problem_def = "(define (problem problem_exploration) (:domain coffee_bot)\n"
         fp.write(problem_def)
-
-        # Add objects to file
-        fp.write("(:objects\n")
         # Parse dict
         for object_type, objects in self.object_list.items():
             object_line = ""
@@ -74,7 +69,7 @@ class PddlProblemGen(object):
                     state_line = "(%s)\n" % predicate_name
             # Predicate is not boolean
             else:
-                state_line = "(%s %s)\n" % (predicate, value)
+                state_line = "(%s %s)\n" % (predicate_name, value)
             fp.write("\t%s" % state_line)
 
         # Add initial state of other objects
@@ -110,15 +105,12 @@ class PddlProblemGen(object):
         # Write goal to file
         fp.write("(:goal (and\n")
         for state in req.goal:
-            fp.write("\t%s\n" % state)
+            fp.write("\t(%s)\n" % state)
 
         fp.write("))\n)")
         fp.close()
-        self.prob_count += 1
 
-
+        return True
+        
 if __name__ == '__main__':
-    try:
-        pddl = PddlProblemGen()
-    except:
-        rospy.loginfo("PddlProblemGen failed")
+    PddlProblemGen()

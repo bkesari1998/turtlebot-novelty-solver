@@ -1,0 +1,19 @@
+reward: {approach_charger_1_doorway_1_lab : {at: ["hallway"], facing: ["nothing"]},
+    approach_nothing_desk_1_hallway : {at: ["hallway"], facing: ["desk_1"]},
+    approach_nothing_charger_1_lab: {at: ["lab"], facing: ["charger_1"]}}
+
+continue_from: {approach_charger_1_doorway_1_lab : ["approach", "nothing", "desk_1", "hallway"],
+    approach_nothing_desk_1_hallway : "None",
+    approach_nothing_charger_1_lab: ["dock", "charger_1", "lab"]}
+
+failed_operator_name: "approach_charger_1_doorway_1_lab"
+trail_number: 0
+
+use_plan_flag: false
+plan_path: "/home/mulip/catkin_ws/src/coffee-bot/pddls/problem_2_0_1.plan"
+
+load_model_flag: true
+lfd_flag: false
+
+model_path: "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/models"
+data_path: "/home/mulip/catkin_ws/src/coffee-bot/coordinate_navigation/scripts/data"
