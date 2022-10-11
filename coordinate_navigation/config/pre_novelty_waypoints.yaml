@@ -2,13 +2,13 @@ waypoint_list: ["doorway_1_lab_lab", "doorway_1_lab_hallway", "doorway_1_hallway
 
 
 waypoints: {
-    doorway_1_lab_lab : [[-0.653, 0.652, 0], [ 0, 0, -0.170, 0.990]],
-    doorway_1_lab_hallway : [[-0.568, 0.606, 0], [ 0, 0, 0.985, 0.175]],
-    doorway_1_hallway_hallway : [[0.368, 0.242, 0], [ 0, 0, 0.986, 0.165]],
-    doorway_1_hallway_lab : [[0.130, 0.313, 0], [ 0, 0, -0.201, 0.980]],
-    desk_1 : [[0.537, 1.083, 0], [0, 0, 0.573, 0.819]],
-    charger_1 : [[-0.466, 1.293, 0], [0, 0, 0.971, 0.238]],
-    approach_charger_1_doorway_1_lab: [[-0.653, 0.652, 0], [ 0, 0, -0.170, 0.990]],
-    approach_nothing_charger_1_lab: [[-0.466, 1.293, 0], [0, 0, 0.971, 0.238]],
-    approach_nothing_desk_1_hallway: [[0.130, 0.313, 0], [ 0, 0, -0.201, 0.980]],
+    doorway_1_lab_lab : [[0.018, -10.550, 0], [ 0, 0, -0.714, 0.699]],
+    doorway_1_lab_hallway : [[-0.101, -10.644, 0], [ 0, 0, 0.705, 0.709]],
+    doorway_1_hallway_hallway : [[-0.054, -11.493, 0], [ 0, 0, 0.729, 0.684]],
+    doorway_1_hallway_lab : [[-0.066,-11.532, 0], [ 0, 0, -0.716, 0.698]],
+    desk_1 : [[-0.794, -11.479, 0], [0, 0, 0.999,  -0.020]],
+    charger_1 : [[-0.5792, -10.2711, 0], [0, 0,  0.6734,  0.7392]],
+    approach_charger_1_doorway_1_lab: [[0.018, -10.550, 0], [ 0, 0, -0.714, 0.699]],
+    approach_nothing_charger_1_lab: [[-0.5792, -10.2711, 0], [0, 0,  0.6734,  0.7392]],
+    approach_nothing_desk_1_hallway: [[-0.195, -11.438, 0], [0, 0, 0.999, -0.020]],
 }
