@@ -1,4 +1,4 @@
 object_tags : {"1": {distance: 2, orientation: 0.524, predicates: {facing: "charger_1"}},
-"8": {distance: 1, orientation: 0.524, predicates: {facing: "desk_1"}},
+"14": {distance: 1, orientation: 0.524, predicates: {facing: "desk_1"}},
 "11": {distance: 2, orientation: 2, predicates: {facing: "novel_object"}}
 }
